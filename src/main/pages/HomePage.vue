@@ -46,7 +46,7 @@
         <div class="caption-content">
           <h1 class="caption-title">Cenderawasih Juara Manajemen</h1>
           <p class="caption-description">
-            We are a premier sports event promoter dedicated to delivering exceptional experiences for fans and participants alike.
+            we are a premier sports event promoter dedicated to delivering exceptional experiences for fans and participants alike. With a commitment to professionalism, innovation, and the spirit of sportsmanship, we organize a wide range of events, from local tournaments to national and international competitions.
           </p>
           <div class="d-flex gap-2 justify-content-center">
             <button @click="scrollToEventSection" class="btn btn-primary">Join Our Current Events</button>
