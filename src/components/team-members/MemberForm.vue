@@ -250,6 +250,23 @@
             </div>
 
             <div class="mb-3">
+              <label for="age_category_id " class="form-label">Kategori Usia</label>
+              <select
+                class="form-select"
+                id="age_category_id "
+                name="age_category_id "
+                v-model="form.age_category_id"
+                :class="{ 'is-invalid': errors.age_category_id  }"
+              >
+                <option value="" disabled>Choose Age Category</option>
+                <option v-for="ageCategory in ageCategories" :key="ageCategory.id" :value="ageCategory.id">
+                 {{ ageCategory.name }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.age_category_id  }}</div>
+            </div>
+
+            <div class="mb-3">
               <label for="documents" class="form-label">Document Link (Google Drive)</label>
               <input
                 type="text"
@@ -303,6 +320,7 @@ export default {
       districts: [],
       sub_districts: [],
       wards: [],
+      ageCategories: [],
       form: {
         contingent_id: null,
         name: "",
@@ -334,6 +352,7 @@ export default {
     this.fetchCountries();
     this.fetchProvinces();
     this.fetchContingents();
+    this.fetchAgeCategories();
     if (this.isEdit && this.memberId) {
       this.fetchMemberDetail(this.memberId);
     }
@@ -362,6 +381,14 @@ export default {
   },
 
   methods: {
+    async fetchAgeCategories() {
+      try {
+        const response = await axios.get("/age-categories");
+        this.ageCategories = response.data;
+      } catch (error) {
+        console.error("Error fetching age-categories:", error);
+      }
+    },
     async fetchContingents() {
       try {
         // Fetch contingents
@@ -470,6 +497,7 @@ export default {
             ward_id: response.data.ward_id || null,
             address: response.data.address || "",
             category: response.data.category || "",
+            age_category_id: response.data.age_category_id || null,
             documents: response.data.documents || "",
           };
 

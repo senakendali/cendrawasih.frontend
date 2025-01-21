@@ -5,14 +5,48 @@
 
     <!-- Main Banner Section -->
     <div class="image-container w-100 h-100">
-     
-      <img v-if="!isMobile" src="@/assets/images/main/banner/events.png" alt="Logo" class="img-fluid w-100 h-100" />
-      <img v-else src="@/assets/images/main/banner/events.png" alt="Logo" class="img-fluid w-100 h-100" />
+      <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        <!-- Pagination -->
+        <div class="carousel-indicators">
+          <button
+            v-for="(image, index) in images"
+            :key="index"
+            :data-bs-target="'#carouselExampleIndicators'"
+            :data-bs-slide-to="index"
+            :class="{ active: index === 0 }"
+            aria-current="true"
+            :aria-label="'Slide ' + (index + 1)"
+          ></button>
+        </div>
+
+        <!-- Slides -->
+        <div class="carousel-inner">
+          <div
+            class="carousel-item"
+            v-for="(image, index) in images"
+            :key="index"
+            :class="{ active: index === 0 }"
+          >
+            <img :src="image" class="d-block w-100" alt="Event Image" />
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+
       <div v-if="!isLoading" :class="['caption-overlay', isScrolled ? 'scrolled' : '']">
         <div class="caption-content">
           <h1 class="caption-title">Cenderawasih Juara Manajemen</h1>
           <p class="caption-description">
-            we are a premier sports event promoter dedicated to delivering exceptional experiences for fans and participants alike. With a commitment to professionalism, innovation, and the spirit of sportsmanship, we organize a wide range of events, from local tournaments to national and international competitions.
+            We are a premier sports event promoter dedicated to delivering exceptional experiences for fans and participants alike.
           </p>
           <div class="d-flex gap-2 justify-content-center">
             <button @click="scrollToEventSection" class="btn btn-primary">Join Our Current Events</button>
@@ -37,7 +71,6 @@
                   {{ tournamentDescription }}
                 </p>
                 <div class="d-flex gap-2 justify-content-center">
-                  
                   <router-link
                     v-if="slug"
                     :to="{ name: 'registration', params: { slug: slug } }"
@@ -52,17 +85,14 @@
           </div>
         </div>
       </div>
-      
     </div>
-
-   
 
     <TournamentInfo
       :tournament="{
         location: tournamentLocation,
         event_date: tournamentDate,
-        matchCategories:matchCategories,
-        ageCategories:ageCategories
+        matchCategories: matchCategories,
+        ageCategories: ageCategories
       }"
     />
 
@@ -71,21 +101,28 @@
   </div>
 </template>
 
-
 <script>
 import TournamentInfo from '@/components/main/TournamentInfo.vue';
 import OurActivity from '@/components/main/OurActivity.vue';
 import axios from 'axios';
 import API from '@/config/api';
 
+
 export default {
   name: 'HomePage',
   components: {
     TournamentInfo,
-    OurActivity,
+    OurActivity
   },
   data() {
     return {
+      images: [
+        require('@/assets/images/main/banner/1.png'),
+        require('@/assets/images/main/banner/2.png'),
+        require('@/assets/images/main/banner/3.png'),
+        require('@/assets/images/main/banner/4.png'),
+        require('@/assets/images/main/banner/5.png')
+      ],
       isMobile: false,
       isScrolled: false,
       isLoading: false,
@@ -114,12 +151,12 @@ export default {
     window.removeEventListener('scroll', this.handleScroll);
   },
   methods: {
-    scrollToEventSection(){ 
-      const section = document.getElementById('event-image-section'); 
-      section.scrollIntoView({ behavior: 'smooth' }); 
+    scrollToEventSection() {
+      const section = document.getElementById('event-image-section');
+      section.scrollIntoView({ behavior: 'smooth' });
     },
-    checkIfMobile() { 
-      this.isMobile = window.innerWidth <= 768; 
+    checkIfMobile() {
+      this.isMobile = window.innerWidth <= 768;
     },
     handleScroll() {
       this.isScrolled = window.scrollY > 100;
@@ -174,8 +211,6 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 
 .event-image{
@@ -211,9 +246,16 @@ export default {
 
 /* Container to hold the image and caption */
 .image-container {
+  background-color: #000000;
   position: relative;
   width: 100%;
   height: 100vh; /* Make the container take full viewport height */
+}
+
+.carousel-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .image-container img {
@@ -243,8 +285,10 @@ export default {
 }
 
 .caption-overlay.scrolled {
-  position: absolute; /* Change to absolute when scrolled */
-  bottom: 0; /* Keep it at the bottom of the image */
+    position: static;
+    bottom: 0;
+    transform: none;
+    background: #000;
 }
 
 .caption-content {
@@ -338,7 +382,7 @@ export default {
   .image-container{
     margin-top: 60px;
   }
-  
+
   .caption-overlay {
     position:static;
     background-color: #000000; /* Semi-transparent black background */

@@ -81,17 +81,22 @@ export default {
 }
 
 .navbar-brand {
+  position: absolute;
+  top: -40px;
+  left: -35px;
   margin-bottom: 30px;
   text-align: center;
 }
 
 .navbar-brand img {
-  max-width: 150px;
+  max-width: 200px;
   height: auto;
 }
 
 .nav {
+  margin-top: 170px;
   width: 100%;
+  
 }
 
 .nav-item .nav-link {
