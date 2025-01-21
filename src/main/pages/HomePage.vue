@@ -6,28 +6,56 @@
     <!-- Main Banner Section -->
     <div class="image-container w-100 h-100">
      
-      <img v-if="!isMobile" src="@/assets/images/main/banner/main-banner.png" alt="Logo" class="img-fluid w-100 h-100" />
-      <img v-else src="@/assets/images/main/banner/m-main-banner.png" alt="Logo" class="img-fluid w-100 h-100" />
+      <img v-if="!isMobile" src="@/assets/images/main/banner/events.png" alt="Logo" class="img-fluid w-100 h-100" />
+      <img v-else src="@/assets/images/main/banner/events.png" alt="Logo" class="img-fluid w-100 h-100" />
       <div v-if="!isLoading" :class="['caption-overlay', isScrolled ? 'scrolled' : '']">
         <div class="caption-content">
-          <h1 class="caption-title">{{ tournamentName }}</h1>
+          <h1 class="caption-title">Cenderawasih Juara Manajemen</h1>
           <p class="caption-description">
-            {{ tournamentDescription }}
+            we are a premier sports event promoter dedicated to delivering exceptional experiences for fans and participants alike. With a commitment to professionalism, innovation, and the spirit of sportsmanship, we organize a wide range of events, from local tournaments to national and international competitions.
           </p>
           <div class="d-flex gap-2 justify-content-center">
-            
-            <router-link
-              v-if="slug"
-              :to="{ name: 'registration', params: { slug: slug } }"
-              class="btn btn-primary"
-            >
-            Daftar
-          </router-link>
-            <button @click="downloadDocument(document)" class="btn btn-primary">Download</button>
+            <button @click="scrollToEventSection" class="btn btn-primary">Join Our Current Events</button>
           </div>
         </div>
       </div>
     </div>
+    
+    <div id="event-image-section" class="event-image">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <img src="@/assets/images/main/banner/bogor-ps.png" alt="Logo" class="img-fluid w-100 h-100" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div v-if="!isLoading" class="event-caption">
+              <div class="caption-content">
+                <h1 class="caption-title">{{ tournamentName }}</h1>
+                <p class="caption-description">
+                  {{ tournamentDescription }}
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                  
+                  <router-link
+                    v-if="slug"
+                    :to="{ name: 'registration', params: { slug: slug } }"
+                    class="btn btn-primary"
+                  >
+                  Daftar
+                </router-link>
+                  <button @click="downloadDocument(document)" class="btn btn-primary">Download</button>
+                </div>
+              </div>
+          </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+   
 
     <TournamentInfo
       :tournament="{
@@ -86,6 +114,10 @@ export default {
     window.removeEventListener('scroll', this.handleScroll);
   },
   methods: {
+    scrollToEventSection(){ 
+      const section = document.getElementById('event-image-section'); 
+      section.scrollIntoView({ behavior: 'smooth' }); 
+    },
     checkIfMobile() { 
       this.isMobile = window.innerWidth <= 768; 
     },
@@ -146,6 +178,15 @@ export default {
 
 <style scoped>
 
+.event-image{
+  background-color: #000000;
+  height: auto;
+}
+
+.event-image img{
+  border-top: 5px solid #D32F2F;;
+}
+
 /* Loading Bar Style */
 .loading-bar {
   position: fixed;
@@ -181,12 +222,20 @@ export default {
   object-fit: cover; /* Ensure the image covers the full container */
 }
 
+.event-caption{
+  
+  background-color: #000000; 
+  padding: 20px 30px;
+  width: 100%; /* Full width */
+  box-sizing: border-box; /* To include padding in the width */
+}
+
 .caption-overlay {
   position: fixed; /* Start with the caption fixed */
   bottom: 0; /* Fix the caption to the bottom of the container */
   left: 50%; /* Center the caption horizontally */
   transform: translateX(-50%); /* Adjust horizontal position */
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
   padding: 20px 30px;
   width: 100%; /* Full width */
   box-sizing: border-box; /* To include padding in the width */
@@ -216,7 +265,7 @@ export default {
   font-family: "Urbanist", sans-serif;
 }
 
-.caption-overlay .btn-primary {
+.btn-primary {
   font-size: 1rem;
   padding: 10px 20px;
   border: none;
@@ -227,13 +276,15 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.caption-overlay .btn-primary:hover {
+.btn-primary:hover {
   background-color: #FF5722; /* Darker red on hover */
 }
 
 /* For mobile devices */
 @media only screen and (max-width: 600px) {
-
+  .image-container{
+    margin-top: 60px;
+  }
   .caption-overlay {
     position:static;
     background-color: #000000; /* Semi-transparent black background */
@@ -284,6 +335,10 @@ export default {
 
 /* For tablets */
 @media only screen and (max-width: 768px) {
+  .image-container{
+    margin-top: 60px;
+  }
+  
   .caption-overlay {
     position:static;
     background-color: #000000; /* Semi-transparent black background */

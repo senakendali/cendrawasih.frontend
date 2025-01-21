@@ -91,7 +91,7 @@ export default {
 
 <style scoped>
 .my-navbar {
-  background-color: transparent; /* Set navbar background to transparent initially */
+  background-color: rgba(0, 0, 0, 0.8); /* Set navbar background to transparent initially */
   padding: 10px;
   transition: background-color 0.3s ease, height 0.3s ease, padding 0.3s ease; /* Smooth transition for background color, height, and padding changes */
   height: 120px;
@@ -171,7 +171,7 @@ export default {
 /* For mobile devices */
 @media only screen and (max-width: 600px) {
   .my-navbar {
-    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+    background-color: #000000; 
     height: 60px; /* Reduced height when scrolled */
     padding: 5px; /* Reduced padding when scrolled */
   }
