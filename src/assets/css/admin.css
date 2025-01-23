@@ -105,12 +105,15 @@ a{
 .table th, .table td{
     padding: 10px 15px;
     vertical-align: middle;
+    color: #1E2A57;
+    border-bottom: 1px solid #E2F1FD;
     
 }
 
 .table th{
-    background-color: #F7F7F7;
-    color: #404040;
+    background-color: #E2F1FD;
+    color: #1E2A57;
+    border-bottom:1px solid #E2F1FD;
 }
 
 .table .number-column{

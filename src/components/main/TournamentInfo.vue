@@ -60,6 +60,43 @@
             </div>
           </div>
         </div>
+        <div class="row d-flex justify-content-center">
+          <div class="col-md-4 ">
+
+           
+            <div class="tournament-info-item">
+              
+              <div class="tournament-info-item-content">
+                <h5>Biaya Pendaftaran</h5>
+                <ul>
+                  <li v-for="(matchCategory, index) in tournament.matchCategories" :key="index" class="registration_fee">
+                    <span class="category-name">{{ matchCategory.name }}</span>
+                    <span class="dots"></span>
+                    <span class="fee">: {{ matchCategory.registration_fee }}</span>
+                  </li>
+                </ul>
+                
+              </div>
+            </div>
+            
+          </div>
+          <div class="col-md-4 ">
+            <div class="tournament-info-item">
+              <div class="tournament-info-item-content">
+                <h5>Contact Person</h5>
+                <ul>
+                  <li v-for="(contactPerson, index) in tournament.contactPersons" :key="index">
+                    <div class="contact-person">
+                      <span class="category-name">{{ contactPerson.name }}</span>
+                      <span class="category-name">{{ contactPerson.phone }}</span>
+                    </div>
+                    
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 </template>
@@ -79,7 +116,40 @@
 <style scoped>
 .tournament-info{
     background-color: #000000;
+    padding-bottom: 20px;
 }
+
+
+.registration_fee {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px; /* Adjust gap if needed */
+}
+
+.category-name {
+  flex: 0 0 20%; /* Set a fixed width for the category name */
+  text-align: left;
+}
+
+.dots {
+  flex: 1;
+  border-bottom: 1px dotted #FFFFFF; /* Create the dotted line */
+  height: 1px;
+  margin-top:9px;
+}
+
+.fee {
+  
+  text-align: right;
+}
+
+.contact-person{
+  display: flex;
+  justify-content: space-between;
+}
+
+
 .section-title {
     text-align: start;
     font-size: 2rem;
@@ -101,7 +171,7 @@
   position: relative;
   background-color: #18181B;
   overflow: hidden;
-  min-height: 160px;
+  min-height: 175px;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
   border-top: 2px solid #D32F2F;

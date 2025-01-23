@@ -10,7 +10,7 @@
           :to="'/admin/' + menu.url"  
           @click.prevent="toggleSubMenu(menu.id, menu.children)"
         >
-          <i :class="menu.icon + ' me-2'"></i> {{ menu.name }}
+          <i class="bi bi-file-earmark me-2"></i> {{ menu.name }}
           <i v-if="menu.children" :class="isSubMenuOpen === menu.id ? 'bi bi-dash-circle' : 'bi bi-plus-circle'"></i>
         </router-link>
         <ul v-if="menu.children && isSubMenuOpen === menu.id" class="sub-menu">

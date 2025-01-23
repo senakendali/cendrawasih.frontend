@@ -33,12 +33,10 @@
 
         <!-- Navigation -->
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
+          <i class="bi bi-arrow-left-square"></i>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
+          <i class="bi bi-arrow-right-square"></i>
         </button>
       </div>
 
@@ -92,7 +90,8 @@
         location: tournamentLocation,
         event_date: tournamentDate,
         matchCategories: matchCategories,
-        ageCategories: ageCategories
+        ageCategories: ageCategories,
+        contactPersons: contactPersons
       }"
     />
 
@@ -138,6 +137,7 @@ export default {
       matchCategories: [],
       ageCategories: [],
       activities: [],
+      contactPersons: [],
     };
   },
   created() {
@@ -176,8 +176,10 @@ export default {
           this.dateEnd = response.data.end_date || '';
           this.matchCategories = response.data.categories || [];
           this.ageCategories = response.data.age_categories || [];
+          this.contactPersons = response.data.contact_persons || [];
           this.document = response.data.document || '';
           this.activities = response.data.activities || [];
+          console.log(this.contactPersons);
         }
       } catch (error) {
         this.toast.error("Error fetching tournament details.");
@@ -381,6 +383,11 @@ export default {
 @media only screen and (max-width: 768px) {
   .image-container{
     margin-top: 60px;
+  }
+
+  .image-container .carousel-inner .carousel-control-prev{
+    font-size:35px;
+    color:#FFFFFF;
   }
 
   .caption-overlay {
