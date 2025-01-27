@@ -20,7 +20,7 @@
           <!-- Contingent Name -->
           <div class="col-lg-6">
             <div class="mb-3">
-              <label for="contingent_id" class="form-label">Kontingen</label>
+              <label for="contingent_id" class="form-label">Contingent</label>
               <select
                 class="form-select"
                 id="contingent_id"
@@ -28,7 +28,7 @@
                 v-model="form.contingent_id"
                 :class="{ 'is-invalid': errors.contingent_id }"
               >
-                <option value="" disabled>Pilih Kontingen</option>
+                <option value="" disabled>Choose Contingent</option>
                 <option v-for="contingent in contingents" :key="contingent.id" :value="contingent.id">
                   {{ contingent.name }}
                 </option>
@@ -36,7 +36,7 @@
               <div class="invalid-feedback">{{ errors.contingent_id }}</div>
             </div>
             <div class="mb-3">
-              <label for="name" class="form-label">Nama</label>
+              <label for="name" class="form-label">Name</label>
               <input
                 type="text"
                 class="form-control"
@@ -80,8 +80,8 @@
                 id="gender"
                 v-model="form.gender"
               >
-                <option value="M">Laki-laki</option>
-                <option value="F">Perempuan</option>
+                <option value="male">Laki-laki</option>
+                <option value="female">Perempuan</option>
               </select>
               <div class="invalid-feedback">{{ errors.gender }}</div>
             </div>
@@ -154,7 +154,7 @@
               <div class="invalid-feedback">{{ errors.country_id }}</div>
             </div>
             <div class="mb-3">
-              <label for="province_id" class="form-label">Provinsi</label>
+              <label for="province_id" class="form-label">Province</label>
               <select
                 class="form-select"
                 id="province_id"
@@ -172,7 +172,7 @@
             </div>
 
             <div class="mb-3">
-              <label for="district_id" class="form-label">Kabupaten/Kota</label>
+              <label for="district_id" class="form-label">City (Kabupaten/Kota)</label>
               <select
                 class="form-select"
                 id="district_id"
@@ -181,7 +181,7 @@
                 @change="fetchSubDistricts"
                 :class="{ 'is-invalid': errors.district_id }"
               >
-                <option value="" disabled>Pilih Kabupaten/Kota</option>
+                <option value="" disabled>Choose City</option>
                 <option v-for="district in districts" :key="district.id" :value="district.id">
                   {{ district.name }}
                 </option>
@@ -190,7 +190,7 @@
             </div>
 
             <div class="mb-3">
-              <label for="subdistrict_id" class="form-label">Kecamatan</label>
+              <label for="subdistrict_id" class="form-label">District (Kecamatan)</label>
               <select
                 class="form-select"
                 id="subdistrict_id"
@@ -199,7 +199,7 @@
                 @change="fetchWards"
                 :class="{ 'is-invalid': errors.subdistrict_id }"
               >
-                <option value="" disabled>Pilih Kecamatan</option>
+                <option value="" disabled>Choose District (Kecamatan)</option>
                 <option v-for="sub_district in sub_districts" :key="sub_district.id" :value="sub_district.id">
                   {{ sub_district.name }}
                 </option>
@@ -208,7 +208,7 @@
             </div>
 
             <div class="mb-3">
-              <label for="ward_id" class="form-label">Kelurahan</label>
+              <label for="ward_id" class="form-label">Village (Kelurahan)</label>
               <select
                 class="form-select"
                 id="ward_id"
@@ -216,7 +216,7 @@
                 v-model="form.ward_id"
                 :class="{ 'is-invalid': errors.ward_id }"
               >
-                <option value="" disabled>Pilih Kelurahan</option>
+                <option value="" disabled>Choose Village (Kelurahan)</option>
                 <option v-for="ward in wards" :key="ward.id" :value="ward.id">
                   {{ ward.name }}
                 </option>
@@ -225,7 +225,7 @@
             </div>
 
             <div class="mb-3">
-              <label for="address" class="form-label">Alamat</label>
+              <label for="address" class="form-label">Addres</label>
               <textarea
                 class="form-control"
                 :class="{ 'is-invalid': errors.address }"
@@ -236,7 +236,7 @@
             </div>
 
             <div class="mb-3">
-              <label for="category" class="form-label">Kategori</label>
+              <label for="category" class="form-label">Category</label>
               <select
                 class="form-select"
                 :class="{ 'is-invalid': errors.type }"
@@ -250,12 +250,13 @@
             </div>
 
             <div class="mb-3">
-              <label for="age_category_id " class="form-label">Kategori Usia</label>
+              <label for="age_category_id " class="form-label">Age Category</label>
               <select
                 class="form-select"
                 id="age_category_id "
                 name="age_category_id "
                 v-model="form.age_category_id"
+                @change="fetchCategoryClasses"
                 :class="{ 'is-invalid': errors.age_category_id  }"
               >
                 <option value="" disabled>Choose Age Category</option>
@@ -264,6 +265,23 @@
                 </option>
               </select>
               <div class="invalid-feedback">{{ errors.age_category_id  }}</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="category_class_id" class="form-label">Class</label>
+              <select
+                class="form-select"
+                id="category_class_id"
+                name="category_class_id"
+                v-model="form.category_class_id"
+                :class="{ 'is-invalid': errors.category_class_id  }"
+              >
+                <option value="" disabled>Choose Class</option>
+                <option v-for="categoryClass in categoryClasses" :key="categoryClass.id" :value="categoryClass.id">
+                 {{ categoryClass.name }} - ( {{  categoryClass.weight_min }} KG - {{  categoryClass.weight_max }} KG )
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.category_class_id  }}</div>
             </div>
 
             <div class="mb-3">
@@ -321,6 +339,7 @@ export default {
       sub_districts: [],
       wards: [],
       ageCategories: [],
+      categoryClasses: [],
       form: {
         contingent_id: null,
         name: "",
@@ -337,6 +356,8 @@ export default {
         district_id: null,
         subdistrict_id: null,
         ward_id: null,
+        age_category_id: null,
+        category_class_id: null,
         address: "",
         category: "",
         documents: "",
@@ -353,6 +374,7 @@ export default {
     this.fetchProvinces();
     this.fetchContingents();
     this.fetchAgeCategories();
+    this.fetchCategoryClasses();
     if (this.isEdit && this.memberId) {
       this.fetchMemberDetail(this.memberId);
     }
@@ -387,6 +409,21 @@ export default {
         this.ageCategories = response.data;
       } catch (error) {
         console.error("Error fetching age-categories:", error);
+      }
+    },
+
+    async fetchCategoryClasses() {
+      try {
+        const response = await axios.get('/category-classes/fetch-class/' + this.form.age_category_id, {
+          params: {
+              age_category_id: this.form.age_category_id,
+              gender: this.form.gender,
+              body_weight: this.form.body_weight
+          }
+      });
+        this.categoryClasses = response.data;
+      } catch (error) {
+        console.error("Error fetching category-classes:", error);
       }
     },
     async fetchContingents() {
@@ -498,6 +535,7 @@ export default {
             address: response.data.address || "",
             category: response.data.category || "",
             age_category_id: response.data.age_category_id || null,
+            category_class_id: response.data.category_class_id || null,
             documents: response.data.documents || "",
           };
 
@@ -509,6 +547,9 @@ export default {
           }
           if (this.form.subdistrict_id) {
             await this.fetchWards();
+          }
+          if (this.form.age_category_id) {
+            await this.fetchCategoryClasses();
           }
         }
       } catch (error) {
