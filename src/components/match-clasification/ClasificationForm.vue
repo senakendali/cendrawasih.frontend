@@ -111,16 +111,15 @@
                   >
                     <td class="custom-border px-4 py-2">
                       <div class="form-check">
+
                         <input 
-                          class="form-check-input"
-                          type="checkbox"
-                          v-model="maleClass.selected"
-                          :checked="maleClass.selected" 
-                          aria-label="Checkbox for following text input"
-                        >
-                        <label class="form-check-label">
-                          {{ maleClass.name }}
-                        </label>
+                            class="form-check-input"
+                            type="checkbox" 
+                            :id="'male-' + maleClass.id" 
+                            v-model="maleClass.selected"
+                            :value="maleClass.id"
+                        />
+                        <label class="form-check-label" :for="'male-' + maleClass.id">{{ maleClass.name }}</label>
                       </div>
                     </td>
                     <td class="custom-border px-4 py-2">{{ maleClass.weight_min }}</td>
@@ -153,15 +152,17 @@
                     :key="femaleClass.id"
                   >
                     <td class="custom-border px-4 py-2">
-                      <input 
-                        class="form-check-input mt-0"
-                        type="checkbox"
-                        v-model="femaleClass.selected"
-                        :checked="femaleClass.selected"
-                        aria-label="Checkbox for following text input"
-                      >
-                      {{ femaleClass.name }}
-                    </td>
+                        <div class="form-check">
+                          <input 
+                                class="form-check-input"
+                                type="checkbox" 
+                                :id="'male-' + femaleClass.id" 
+                                v-model="femaleClass.selected"
+                                :value="femaleClass.id"
+                            />
+                            <label class="form-check-label" :for="'female-' + femaleClass.id"> {{ femaleClass.name }}</label>
+                        </div>
+                      </td>
                     <td class="custom-border px-4 py-2">{{ femaleClass.weight_min }}</td>
                     <td class="custom-border px-4 py-2">{{ femaleClass.weight_max }}</td>
                   </tr>
@@ -204,8 +205,8 @@ export default {
   },
 
   watch: {
-    'form.match_category_id': 'updateClassificationName',
-    'form.age_category_id': 'updateClassificationName',
+    /*'form.match_category_id': 'updateClassificationName',
+    'form.age_category_id': 'updateClassificationName',*/
   },
 
   computed: {
@@ -317,45 +318,49 @@ export default {
     async fetchClasificationDetail(id) {
       this.loading = true;
       try {
-        const response = await axios.get(`/match-clasifications/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-        });
+          const response = await axios.get(`/match-clasifications/${id}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+              },
+          });
 
-        if (response.data) {
-          const data = response.data;
+          if (response.data) {
+              const data = response.data;
 
-          // Populate form with fetched data
-          this.form = {
-            tournament_id: data.tournament_id || null,
-            match_category_id: data.match_category_id || null,
-            age_category_id: data.age_category_id || null,
-            name: data.name || "",
-          };
+              // Populate form with fetched data
+              this.form = {
+                  tournament_id: data.tournament_id || null,
+                  match_category_id: data.match_category_id || null,
+                  age_category_id: data.age_category_id || null,
+                  name: data.name || "",
+              };
 
-          // Ensure details have male and female categories, defaulting to empty arrays
-          const maleDetails = data.details.male || [];
-          const femaleDetails = data.details.female || [];
+              // Ensure details have male and female categories, defaulting to empty arrays
+              const maleDetails = data.details.male || [];
+              const femaleDetails = data.details.female || [];
 
-          // Assign male and female classes
-          this.maleClasses = maleDetails.map(item => ({
-            ...item,
-            selected: maleDetails.some(detail => detail.id === item.id),
-          }));
+              // Loop through all male categories and update based on the 'isSelected' field
+              this.maleClasses = maleDetails.map(item => ({
+                  ...item,
+                  selected: item.isSelected || false,  // Set checkbox as checked/unchecked based on 'isSelected'
+              }));
 
-          this.femaleClasses = femaleDetails.map(item => ({
-            ...item,
-            selected: femaleDetails.some(detail => detail.id === item.id),
-          }));
-        }
+              // Loop through all female categories and update based on the 'isSelected' field
+              this.femaleClasses = femaleDetails.map(item => ({
+                  ...item,
+                  selected: item.isSelected || false,  // Set checkbox as checked/unchecked based on 'isSelected'
+              }));
+
+              console.log('Male Classes:', this.maleClasses);
+              console.log('Female Classes:', this.femaleClasses);
+          }
       } catch (error) {
-        this.toast.error("Error fetching classification details.");
-        console.error("Error:", error);
+          this.toast.error("Error fetching classification details.");
+          console.error("Error:", error);
       } finally {
-        this.loading = false;
+          this.loading = false;
       }
-    },
+  },
 
     async submitForm() {
       this.loading = true;
