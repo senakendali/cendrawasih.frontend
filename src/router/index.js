@@ -21,7 +21,15 @@ import ContingentEditPage from "@/admin/pages/contingent/ContingentEditPage.vue"
 import AdminTeamMembersList from '../admin/pages/team-members/MembersList.vue';
 import TeamMembersCreatePage from "@/admin/pages/team-members/MembersCreatePage.vue";
 import TeamMembersEditPage from "@/admin/pages/team-members/MembersEditPage.vue";
-
+import AdminPaymentList from '../admin/pages/payment/PaymentList.vue';
+import PaymentCreatePage from "@/admin/pages/payment/PaymentCreatePage.vue";
+import PaymentEditPage from "@/admin/pages/payment/PaymentEditPage.vue";
+import ClassesList from '../admin/pages/classes/ClassList.vue';
+import ClassesCreatePage from "@/admin/pages/classes/ClassCreatePage.vue";
+import ClassesEditPage from "@/admin/pages/classes/ClassEditPage.vue";
+import ClasificationList from '@/admin/pages/match-clasification/ClasificationList.vue';
+import ClasificationCreatePage from '@/admin/pages/match-clasification/ClasificationCreatePage.vue';
+import ClasificationEditPage from '@/admin/pages/match-clasification/ClasificationEditPage.vue';
 
 const routes = [
   {
@@ -186,6 +194,84 @@ const routes = [
     props: true, // Kirim parameter ID ke komponen sebagai props
     children: [
       { path: '', component: TeamMembersEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/payment',
+    component: AdminLayout,
+    children: [
+      { path: '', component: AdminPaymentList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/payment/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: PaymentCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/payment/edit/:id',
+    name: "EditPayment",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { path: '', component: PaymentEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/classes',
+    component: AdminLayout,
+    children: [
+      { path: '', component: ClassesList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/classes/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: ClassesCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/classes/edit/:id',
+    name: "EditClass",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { path: '', component: ClassesEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/match-clasification',
+    component: AdminLayout,
+    children: [
+      { path: '', component: ClasificationList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/match-clasification/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: ClasificationCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/match-clasification/edit/:id',
+    name: "EditClasification",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { path: '', component: ClasificationEditPage }
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },

@@ -4,22 +4,42 @@
       <img src="@/assets/float-logo.png" alt="Logo" />
     </a>
     <ul class="nav flex-column">
-      <li v-for="menu in menus" :key="menu.id" class="nav-item">
-        <router-link
-          class="nav-link text-start"
-          :to="'/admin/' + menu.url"  
+      <li
+        v-for="menu in menus"
+        :key="menu.id"
+        class="nav-item"
+        :class="{ 'has-children': menu.children }"
+      >
+        <!-- Parent Menu Item -->
+        <span
+          v-if="menu.url === '#'"
+          class="nav-link text-start pointer"
           @click.prevent="toggleSubMenu(menu.id, menu.children)"
         >
-          <i class="bi bi-file-earmark me-2"></i> {{ menu.name }}
-          <i v-if="menu.children" :class="isSubMenuOpen === menu.id ? 'bi bi-dash-circle' : 'bi bi-plus-circle'"></i>
+          <i :class="getMenuIcon(menu)"></i>{{ menu.name }}
+        </span>
+
+        <!-- Regular Menu Item -->
+        <router-link
+          v-else
+          class="nav-link text-start"
+          :to="'/admin/' + menu.url"
+          :class="{ active: isActive(menu) }"
+        >
+          <i :class="getMenuIcon(menu)"></i>
+          {{ menu.name }}
         </router-link>
+
+        <!-- Submenu -->
         <ul v-if="menu.children && isSubMenuOpen === menu.id" class="sub-menu">
           <li v-for="child in menu.children" :key="child.id" class="nav-item">
             <router-link
               class="nav-link text-start"
-              :to="'/admin/' + child.url"  
+              :to="'/admin/' + child.url"
+              :class="{ active: isActive(child) }"
             >
-              <i :class="child.icon + ' me-2'"></i> {{ child.name }}
+              <i class="bi bi-file-earmark me-2"></i>
+              {{ child.name }}
             </router-link>
           </li>
         </ul>
@@ -29,6 +49,7 @@
 </template>
 
 
+
 <script>
 import axios from "axios";
 
@@ -36,38 +57,69 @@ export default {
   name: "AdminSidebar",
   data() {
     return {
-      isSubMenuOpen: null, // Keeps track of the currently open submenu
+      isSubMenuOpen: null, // Tracks the currently open submenu
       menus: [], // Stores the fetched menus
     };
   },
   methods: {
+    /**
+     * Toggles the visibility of submenus.
+     * @param {Number} menuId - ID of the menu.
+     * @param {Array|null} children - Children of the menu.
+     */
     toggleSubMenu(menuId, children) {
-      if (children) {
-        // Toggle the visibility of the submenu
+      if (children && children.length > 0) {
         this.isSubMenuOpen = this.isSubMenuOpen === menuId ? null : menuId;
       }
     },
+
+    /**
+     * Checks if the menu item is active based on the current route.
+     * @param {Object} item - Menu item object.
+     * @returns {Boolean} - True if the item is active, false otherwise.
+     */
+    isActive(item) {
+      if (item.children) {
+        return item.children.some(child => this.isActive(child));
+      }
+      return this.$route.path.includes(item.url);
+    },
+
+    /**
+     * Fetches menu items from the API and stores them in the `menus` state.
+     */
     async fetchMenus() {
       try {
-        // Replace with the actual URL of your API
         const response = await axios.get("/menus", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-
-        this.menus = response.data; // Store the menu data in the component state
+        this.menus = response.data || [];
       } catch (error) {
         console.error("Error fetching menus:", error);
       }
     },
+
+    /**
+     * Returns the appropriate icon class for a menu item.
+     * @param {Object} menu - Menu object.
+     * @returns {String} - Icon class.
+     */
+    getMenuIcon(menu) {
+      if (menu.children && menu.children.length > 0) {
+        return this.isSubMenuOpen === menu.id
+          ? "bi bi-dash-circle me-2"
+          : "bi bi-plus-circle me-2";
+      }
+      return "bi bi-file-earmark me-2";
+    },
   },
   mounted() {
-    this.fetchMenus(); // Fetch menus when the component is mounted
+    this.fetchMenus();
   },
 };
 </script>
-
 <style scoped>
 .sidebar {
   background-color: #1e2a57;
@@ -78,6 +130,10 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.pointer {
+  cursor: pointer;
 }
 
 .navbar-brand {
@@ -96,7 +152,6 @@ export default {
 .nav {
   margin-top: 170px;
   width: 100%;
-  
 }
 
 .nav-item .nav-link {
@@ -112,13 +167,18 @@ export default {
   border-radius: 4px;
 }
 
+.nav-item.has-children .nav-link {
+  font-size: 14px;
+  font-weight: bold;
+}
+
 .sub-menu {
   margin-top: 5px;
-  margin-left: 20px;
+  margin-left: -12px;
 }
 
 .sub-menu .nav-link {
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 .sub-menu .nav-link:hover {
@@ -128,4 +188,17 @@ export default {
 .bi {
   font-size: 1.2rem;
 }
+
+.router-link-exact-active {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: white;
+}
+
+.nav-item .nav-link.active {
+  font-weight: bold;
+}
 </style>
+
+
+

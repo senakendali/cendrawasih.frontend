@@ -522,17 +522,6 @@ export default {
     
     async submitForm() {
       this.loading = true;
-      
-
-     
-
-     
-
-      // Log FormData for debugging
-      /*for (let pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }*/
-
       try {
         const endpoint = this.isEdit ? `/team-members/${this.memberId}` : "/team-members";
         const method = this.isEdit ? "put" : "post";
