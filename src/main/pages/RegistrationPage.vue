@@ -9,7 +9,7 @@
             
           </p>
           <p>
-            Untuk mengikuti kejuaraan ini, Anda harus memiliki akun terlebih dahulu untuk mendaftarkan kontingen Anda. Jika sudah memiliki akun, silahkan login dan mulai mendaftarkan kontingen dan atlit Anda untuk mengikut kejuaraan ini.
+            Untuk mengikuti kejuaraan ini, Anda harus memiliki akun terlebih dahulu untuk mendaftarkan kontingen Anda. Jika sudah memiliki akun, silahkan login dan mulai mendaftarkan kontingen dan atlit Anda untuk mengikuti kejuaraan ini.
           </p>
         </div>
       </div>

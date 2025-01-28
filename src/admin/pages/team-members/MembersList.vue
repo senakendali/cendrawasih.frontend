@@ -41,7 +41,7 @@
         <tr v-for="(member, index) in members" :key="member.id">
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
           <td>{{ member.name }}</td>
-          <td>{{ member.category }}</td>
+          <td>{{ member.championship_category.name }}</td>
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">

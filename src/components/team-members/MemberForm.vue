@@ -86,17 +86,6 @@
               <div class="invalid-feedback">{{ errors.gender }}</div>
             </div>
             <div class="mb-3">
-              <label for="body_weight" class="form-label">Body Weight</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.body_weight }"
-                id="body_weight"
-                v-model="form.body_weight"
-              />
-              <div class="invalid-feedback">{{ errors.body_weight }}</div>
-            </div>
-            <div class="mb-3">
               <label for="body_height" class="form-label">Body Height</label>
               <input
                 type="text"
@@ -107,6 +96,18 @@
               />
               <div class="invalid-feedback">{{ errors.body_height }}</div>
             </div>
+            <div class="mb-3">
+              <label for="body_weight" class="form-label">Body Weight</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.body_weight }"
+                id="body_weight"
+                v-model="form.body_weight"
+              />
+              <div class="invalid-feedback">{{ errors.body_weight }}</div>
+            </div>
+            
             <div class="mb-3">
               <label for="nik" class="form-label">ID Card Number (Nomor KTP)</label>
               <input
@@ -236,17 +237,37 @@
             </div>
 
             <div class="mb-3">
-              <label for="category" class="form-label">Category</label>
+              <label for="category" class="form-label">Championship Category</label>
+
+              <select
+                class="form-select"
+                id="championship_category_id"
+                name="championship_category_id"
+                v-model="form.championship_category_id"
+                @change="fetchmatchCategories"
+                :class="{ 'is-invalid': errors.championship_category_id  }"
+              >
+                <option value="" disabled>Choose Championship Category</option>
+                <option v-for="championshipCategory in championshipCategories" :key="championshipCategory.id" :value="championshipCategory.id">
+                 {{ championshipCategory.name }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.championship_category_id }}</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="match_category_id" class="form-label">Match Category</label>
               <select
                 class="form-select"
                 :class="{ 'is-invalid': errors.type }"
-                id="category"
-                v-model="form.category"
+                id="match_category_id"
+                v-model="form.match_category_id"
               >
-                <option value="Tanding">Tanding</option>
-                <option value="Seni">Seni</option>
+                <option v-for="matchCategory in matchCategories" :key="matchCategory.id" :value="matchCategory.id">
+                 {{ matchCategory.name }}
+                </option>
               </select>
-              <div class="invalid-feedback">{{ errors.category }}</div>
+              <div class="invalid-feedback">{{ errors.match_category_id }}</div>
             </div>
 
             <div class="mb-3">
@@ -338,6 +359,8 @@ export default {
       districts: [],
       sub_districts: [],
       wards: [],
+      championshipCategories: [],
+      matchCategories: [],
       ageCategories: [],
       categoryClasses: [],
       form: {
@@ -358,6 +381,8 @@ export default {
         ward_id: null,
         age_category_id: null,
         category_class_id: null,
+        championship_category_id: null,
+        match_category_id: null,
         address: "",
         category: "",
         documents: "",
@@ -375,6 +400,8 @@ export default {
     this.fetchContingents();
     this.fetchAgeCategories();
     this.fetchCategoryClasses();
+    this.fetchChampionshipCategories();
+    this.fetchmatchCategories();
     if (this.isEdit && this.memberId) {
       this.fetchMemberDetail(this.memberId);
     }
@@ -403,6 +430,23 @@ export default {
   },
 
   methods: {
+    async fetchChampionshipCategories() {
+      try {
+        const response = await axios.get("/championship-categories");
+        this.championshipCategories = response.data;
+      } catch (error) {
+        console.error("Error fetching age-categories:", error);
+      }
+    },
+
+    async fetchmatchCategories() {
+      try {
+        const response = await axios.get(`/match-categories?championship_category_id=${this.form.championship_category_id}`);
+        this.matchCategories = response.data;
+      } catch (error) {
+        console.error("Error fetching age-categories:", error);
+      }
+    },
     async fetchAgeCategories() {
       try {
         const response = await axios.get("/age-categories");
@@ -533,7 +577,8 @@ export default {
             subdistrict_id: response.data.subdistrict_id || null,
             ward_id: response.data.ward_id || null,
             address: response.data.address || "",
-            category: response.data.category || "",
+            championship_category_id: response.data.championship_category_id || null,
+            match_category_id: response.data.match_category_id || null,
             age_category_id: response.data.age_category_id || null,
             category_class_id: response.data.category_class_id || null,
             documents: response.data.documents || "",
@@ -551,6 +596,11 @@ export default {
           if (this.form.age_category_id) {
             await this.fetchCategoryClasses();
           }
+          if (this.form.championship_category_id) {
+            await this.fetchmatchCategories();
+          }
+
+
         }
       } catch (error) {
         this.toast.error("Error fetching member details.");

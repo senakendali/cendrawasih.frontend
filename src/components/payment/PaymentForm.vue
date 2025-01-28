@@ -16,44 +16,98 @@
 
       <!-- Form -->
       <form @submit.prevent="submitForm" class="admin-form mt-4">
-        <table class="table mt-4">
+        <div class="row">
+          <!-- Contingent Name -->
+          <div class="col-lg-6">
+            <div class="mb-3">
+              <label for="tournament_id" class="form-label">Tournament</label>
+              <select
+                class="form-select"
+                id="tournament_id"
+                name="tournament_id"
+                v-model="form.tournament_id"
+                :class="{ 'is-invalid': errors.tournament_id }"
+              >
+                <option value="" disabled>Choose Tournament</option>
+                <option v-for="tournament in tournaments" :key="tournament.id" :value="tournament.id">
+                  {{ tournament.name }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.tournament_id }}</div>
+            </div>
+            <div class="mb-3">
+              <label for="bank_name" class="form-label">Bank Name</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.bank_name }"
+                id="bank_name"
+                name="bank_name"
+                v-model="form.bank_name"
+              />
+              <div class="invalid-feedback">{{ errors.bank_name }}</div>
+            </div>
+            <div class="mb-3">
+              <label for="account_number" class="form-label">Account Number</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.account_number }"
+                id="account_number"
+                name="account_number"
+                v-model="form.account_number"
+              />
+              <div class="invalid-feedback">{{ errors.name }}</div>
+            </div>
+            <div class="mb-3">
+              <label for="account_name" class="form-label">Account Name</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.account_name }"
+                id="account_name"
+                name="account_name"
+                v-model="form.account_name"
+              />
+              <div class="invalid-feedback">{{ errors.account_name }}</div>
+            </div>
+            <div class="mb-3">
+              <label for="notes" class="form-label">Notes</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.notes }"
+                id="notes"
+                name="notes"
+                v-model="form.notes"
+              />
+              <div class="invalid-feedback">{{ errors.notes }}</div>
+            </div>
+          </div>
+
+         
+        </div>
+        <table class="table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>#</th>
               <th>Name</th>
               <th>Category</th>
               <th>Actions</th>
             </tr>
           </thead>
           <!-- Wrapper element with v-if -->
-          <tbody v-if="members.length > 0">
-            
+          <!-- Template Part: Handle Undefined Members Safely -->
+          <tbody v-if="members?.length > 0">
             <tr v-for="(member, index) in members" :key="member.id">
-              <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
+              <td>{{ index + 1  }}</td>
               <td>{{ member.name }}</td>
-              <td>{{ member.category }}</td>
+              <td>{{ member.championship_category.name }}</td>
               <td class="action-column">
-                <div class="btn-group" role="group">
-                  <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-card-checklist"></i> Action
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" href="#" @click="EditMember(member.id)">
-                        <i class="bi bi-pencil-square"></i> Edit
-                      </a>
-                    </li>
-                    <!--li>
-                      <a class="dropdown-item" href="#" @click="deleteMenu(member.id)">
-                        <i class="bi bi-trash"></i> Delete
-                      </a>
-                    </li-->
-                  </ul>
-                </div>
+                
               </td>
             </tr>
           </tbody>
-          <!-- Fallback message when there is no data -->
           <tbody v-else>
             <tr>
               <td colspan="4" class="text-center">No members found.</td>
@@ -61,271 +115,9 @@
           </tbody>
 
 
+
         </table>
-        <div class="row">
-          <!-- Contingent Name -->
-          <div class="col-lg-6">
-            <div class="mb-3">
-              <label for="contingent_id" class="form-label">Kontingen</label>
-              <select
-                class="form-select"
-                id="contingent_id"
-                name="contingent_id"
-                v-model="form.contingent_id"
-                :class="{ 'is-invalid': errors.contingent_id }"
-              >
-                <option value="" disabled>Pilih Kontingen</option>
-                <option v-for="contingent in contingents" :key="contingent.id" :value="contingent.id">
-                  {{ contingent.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.contingent_id }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="name" class="form-label">Nama</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.name }"
-                id="name"
-                name="name"
-                v-model="form.name"
-              />
-              <div class="invalid-feedback">{{ errors.name }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="birth_place" class="form-label">Birth Place</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.birth_place }"
-                id="birth_place"
-                v-model="form.birth_place"
-              />
-              <div class="invalid-feedback">{{ errors.birth_place }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="birth_date" class="form-label">Birth Date</label>
-              <input
-                type="date"
-                class="form-control"
-                :class="{ 'is-invalid': errors.birth_date }"
-                id="birth_date"
-                v-model="form.birth_date"
-              />
-              <div class="invalid-feedback">{{ errors.birth_date }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="gender" class="form-label">Gender</label>
-              <select
-                class="form-select"
-                :class="{ 'is-invalid': errors.type }"
-                id="gender"
-                v-model="form.gender"
-              >
-                <option value="M">Laki-laki</option>
-                <option value="F">Perempuan</option>
-              </select>
-              <div class="invalid-feedback">{{ errors.gender }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="body_weight" class="form-label">Body Weight</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.body_weight }"
-                id="body_weight"
-                v-model="form.body_weight"
-              />
-              <div class="invalid-feedback">{{ errors.body_weight }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="body_height" class="form-label">Body Height</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.body_height }"
-                id="body_height"
-                v-model="form.body_height"
-              />
-              <div class="invalid-feedback">{{ errors.body_height }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="nik" class="form-label">ID Card Number (Nomor KTP)</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.nik }"
-                id="nik"
-                v-model="form.nik"
-              />
-              <div class="invalid-feedback">{{ errors.nik }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="family_card_number" class="form-label">Family Card Number (Nomor KK)</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.family_card_number }"
-                id="family_card_number"
-                v-model="form.family_card_number"
-              />
-              <div class="invalid-feedback">{{ errors.family_card_number }}</div>
-            </div>
-            
-
-           
-          </div>
-
-          <!-- Person Responsible -->
-          <div class="col-lg-6">
-            <div class="mb-3">
-              <label for="country_id" class="form-label">Country</label>
-              <select
-                class="form-select"
-                id="country_id"
-                name="country_id"
-                v-model="form.country_id"
-                @change="fetchDistricts"
-                :class="{ 'is-invalid': errors.country_id }"
-              >
-                <option value="" disabled>Choose Country</option>
-                <option v-for="country in countries" :key="country.id" :value="country.id">
-                  <img src="{{ country.flag }}" alt="">{{ country.country_name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.country_id }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="province_id" class="form-label">Provinsi</label>
-              <select
-                class="form-select"
-                id="province_id"
-                name="province_id"
-                v-model="form.province_id"
-                @change="fetchDistricts"
-                :class="{ 'is-invalid': errors.province_id }"
-              >
-                <option value="" disabled>Pilih Provinsi</option>
-                <option v-for="province in provinces" :key="province.id" :value="province.id">
-                  {{ province.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.province_id }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="district_id" class="form-label">Kabupaten/Kota</label>
-              <select
-                class="form-select"
-                id="district_id"
-                name="district_id"
-                v-model="form.district_id"
-                @change="fetchSubDistricts"
-                :class="{ 'is-invalid': errors.district_id }"
-              >
-                <option value="" disabled>Pilih Kabupaten/Kota</option>
-                <option v-for="district in districts" :key="district.id" :value="district.id">
-                  {{ district.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.district_id }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="subdistrict_id" class="form-label">Kecamatan</label>
-              <select
-                class="form-select"
-                id="subdistrict_id"
-                name="subdistrict_id"
-                v-model="form.subdistrict_id"
-                @change="fetchWards"
-                :class="{ 'is-invalid': errors.subdistrict_id }"
-              >
-                <option value="" disabled>Pilih Kecamatan</option>
-                <option v-for="sub_district in sub_districts" :key="sub_district.id" :value="sub_district.id">
-                  {{ sub_district.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.subdistrict_id }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="ward_id" class="form-label">Kelurahan</label>
-              <select
-                class="form-select"
-                id="ward_id"
-                name="ward_id"
-                v-model="form.ward_id"
-                :class="{ 'is-invalid': errors.ward_id }"
-              >
-                <option value="" disabled>Pilih Kelurahan</option>
-                <option v-for="ward in wards" :key="ward.id" :value="ward.id">
-                  {{ ward.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.ward_id }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="address" class="form-label">Alamat</label>
-              <textarea
-                class="form-control"
-                :class="{ 'is-invalid': errors.address }"
-                id="address"
-                v-model="form.address"
-              ></textarea>
-              <div class="invalid-feedback">{{ errors.address }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="category" class="form-label">Kategori</label>
-              <select
-                class="form-select"
-                :class="{ 'is-invalid': errors.type }"
-                id="category"
-                v-model="form.category"
-              >
-                <option value="Tanding">Tanding</option>
-                <option value="Seni">Seni</option>
-              </select>
-              <div class="invalid-feedback">{{ errors.category }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="age_category_id " class="form-label">Kategori Usia</label>
-              <select
-                class="form-select"
-                id="age_category_id "
-                name="age_category_id "
-                v-model="form.age_category_id"
-                :class="{ 'is-invalid': errors.age_category_id  }"
-              >
-                <option value="" disabled>Choose Age Category</option>
-                <option v-for="ageCategory in ageCategories" :key="ageCategory.id" :value="ageCategory.id">
-                 {{ ageCategory.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.age_category_id  }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="documents" class="form-label">Document Link (Google Drive)</label>
-              <input
-                type="text"
-                class="form-control"
-                :class="{ 'is-invalid': errors.documents }"
-                id="documents"
-                v-model="form.documents"
-              />
-              <div class="invalid-feedback">{{ errors.documents }}</div>
-            </div>
-            
-          </div>
-        </div>
+        
 
         <!-- Submit Button -->
         <div class="row">
@@ -360,6 +152,7 @@ export default {
   data() {
     return {
       paymentId: null,
+      tournaments: [],
       members:[],
       form: {
         contingent_id: null,
@@ -389,6 +182,7 @@ export default {
 
   created() {
     this.paymentId = this.$route.params.id;
+    this.fetchActiveTournaments();
     this.loadTeamMembers();
     if (this.isEdit && this.paymentId) {
       //this.fetchMemberDetail(this.paymentId);
@@ -418,34 +212,28 @@ export default {
   },
 
   methods: {
-    async loadTeamMembers(page = 1) {
+    async fetchActiveTournaments() {
+      try {
+        const response = await axios.get("/tournaments/active");
+        this.tournaments = response.data;
+      } catch (error) {
+        console.error("Error fetching tournaments:", error);
+      }
+    },
+    async loadTeamMembers() {
       this.loading = true;
       try {
-        const response = await axios.get("/team-members", {
+        const response = await axios.get("/team-members?fetch_all=true", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
-          },
-          params: {
-            page,
-            perPage: this.perPage,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        const {
-          current_page,
-          last_page,
-          data,
-          next_page_url,
-          prev_page_url,
-        } = response.data;
-
-        this.members = data; // Assign team members
-        this.currentPage = current_page; // Current page
-        this.totalPages = last_page; // Total pages
-        this.nextPageUrl = next_page_url; // Next page URL
-        this.prevPageUrl = prev_page_url; // Previous page URL
-        this.loading = false;
+        this.members = response.data || []; // Ensure it assigns an array even if data is empty
       } catch (error) {
         console.error("Error loading members:", error);
+        this.members = []; // Fallback to an empty array on error
+      } finally {
+        this.loading = false;
       }
     },
     async fetchAgeCategories() {
