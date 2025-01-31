@@ -11,8 +11,13 @@
 </template>
 
 <script>
+import { ref, provide, onMounted } from 'vue';
 import AdminHeader from '../../components/admin/AdminHeader.vue';
 import Sidebar from '../../components/admin/AdminSidebar.vue';
+import axios from "axios";
+import API from "@/config/api";
+
+axios.defaults.baseURL = API.API_BASE_URL;
 
 
 
@@ -21,6 +26,28 @@ export default {
   components: {
     AdminHeader,
     Sidebar
+  },
+  setup() {
+    const permissions = ref([]);
+
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get("/user/permissions", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        permissions.value = response.data;
+      } catch (error) {
+        console.error("Failed to fetch permissions:", error);
+      }
+    };
+
+    provide('permissions', permissions); // Provide sebagai ref agar tetap reaktif
+
+    onMounted(fetchPermissions); // Memuat data saat komponen dipasang
+
+    return { permissions };
   }
 };
 </script>

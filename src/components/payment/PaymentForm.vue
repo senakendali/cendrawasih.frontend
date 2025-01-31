@@ -1,11 +1,7 @@
 <template>
   <div class="dashboard-container">
     <!-- Loader: Top Progress Bar -->
-    <div
-      v-if="loading"
-      class="progress-bar"
-      :style="{ width: progress + '%' }"
-    ></div>
+    <div v-if="loading" class="progress-bar" :style="{ width: progress + '%' }"></div>
 
     <div class="container">
       <!-- Form Title -->
@@ -17,7 +13,7 @@
       <!-- Form -->
       <form @submit.prevent="submitForm" class="admin-form mt-4">
         <div class="row">
-          <!-- Contingent Name -->
+          <!-- Tournament Name -->
           <div class="col-lg-6">
             <div class="mb-3">
               <label for="tournament_id" class="form-label">Tournament</label>
@@ -35,6 +31,8 @@
               </select>
               <div class="invalid-feedback">{{ errors.tournament_id }}</div>
             </div>
+
+            <!-- Bank Details -->
             <div class="mb-3">
               <label for="bank_name" class="form-label">Bank Name</label>
               <input
@@ -47,6 +45,8 @@
               />
               <div class="invalid-feedback">{{ errors.bank_name }}</div>
             </div>
+
+            <!-- Account Number -->
             <div class="mb-3">
               <label for="account_number" class="form-label">Account Number</label>
               <input
@@ -57,8 +57,10 @@
                 name="account_number"
                 v-model="form.account_number"
               />
-              <div class="invalid-feedback">{{ errors.name }}</div>
+              <div class="invalid-feedback">{{ errors.account_number }}</div>
             </div>
+
+            <!-- Account Name -->
             <div class="mb-3">
               <label for="account_name" class="form-label">Account Name</label>
               <input
@@ -71,66 +73,146 @@
               />
               <div class="invalid-feedback">{{ errors.account_name }}</div>
             </div>
+
+            <!-- Notes -->
             <div class="mb-3">
               <label for="notes" class="form-label">Notes</label>
-              <input
-                type="text"
+              <textarea
                 class="form-control"
                 :class="{ 'is-invalid': errors.notes }"
                 id="notes"
-                name="notes"
                 v-model="form.notes"
-              />
+              ></textarea>
               <div class="invalid-feedback">{{ errors.notes }}</div>
             </div>
           </div>
-
-         
         </div>
+        <div v-if="isEdit" class="row mb-3">
+          <div class="col-lg-12 d-flex justify-content-end">
+            <button 
+              type="button" 
+              class="button button-primary" 
+              :disabled="loading" 
+              @click="togglePopup"
+            >
+              <i class="bi" :class="showPopup ? 'bi bi-x-square' : 'bi bi-plus-square'"></i>
+              <span>{{ showPopup ? 'Close' : 'Add Another Member' }}</span>
+            </button>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-lg-12">
+            <div v-if="showPopup" class="popup-overlay">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Contingent</th>
+                    <th>Name</th>
+                    <th>Championship Category</th>
+                    <th>Match Category</th>
+                    <th>Registration Fee</th>
+                    <th class="text-center">Select</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(member, index) in unselectedMembers" :key="member.id">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ member.contingent.name }}</td>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.championship_category.name }}</td>
+                    <td>{{ member.match_category.name }}</td>
+                    <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
+                    <td v-if="isEdit" class="action-column text-center">
+                      <button 
+                        v-if="!member.exists_in_billing_details"
+                        type="button" 
+                        class="button button-primary" 
+                        :disabled="loading || member.isAdding" 
+                        @click="addMemberToBilling(member)"
+                      >
+                        <i class="bi" :class="member.isAdding ? 'bi bi-hourglass-split' : 'bi bi-plus-square'"></i>
+                        <span>{{ member.isAdding ? 'Adding...' : 'Add' }}</span>
+                      </button>
+                      <span v-else class="text-success"><i class="bi bi-check-circle"></i> Added</span>
+                    </td>
+
+                    
+                  </tr>
+                  <tr v-if="members.length === 0">
+                    <td colspan="5" class="text-center">No members found.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Members Table -->
         <table class="table">
           <thead>
             <tr>
               <th>#</th>
+              <th>Contingent</th>
               <th>Name</th>
-              <th>Category</th>
-              <th>Actions</th>
+              <th>Championship Category</th>
+              <th>Match Category</th>
+              <th>Registration Fee</th>
+              <th class="text-center">Select</th>
             </tr>
           </thead>
-          <!-- Wrapper element with v-if -->
-          <!-- Template Part: Handle Undefined Members Safely -->
-          <tbody v-if="members?.length > 0">
+          <tbody>
             <tr v-for="(member, index) in members" :key="member.id">
-              <td>{{ index + 1  }}</td>
+              <td>{{ index + 1 }}</td>
+              <td>{{ member.contingent.name }}</td>
               <td>{{ member.name }}</td>
               <td>{{ member.championship_category.name }}</td>
-              <td class="action-column">
+              <td>{{ member.match_category.name }}</td>
+              <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
+              <td v-if="isEdit" class="action-column text-center">
+                <input v-if="member.exists_in_billing_details"
+                  type="checkbox"
+                  :id="'member-' + member.id"
+                  v-model="selectedMembers"
+                  :value="member.id"
+                />
+
                 
+
+              </td>
+              <td v-else class="action-column text-center">
+                <input v-if="!member.exists_in_billing_details"
+                  type="checkbox"
+                  :id="'member-' + member.id"
+                  v-model="selectedMembers"
+                  :value="member.id"
+                />
+
+                
+
               </td>
             </tr>
-          </tbody>
-          <tbody v-else>
-            <tr>
-              <td colspan="4" class="text-center">No members found.</td>
+            <tr v-if="members.length === 0">
+              <td colspan="5" class="text-center">No members found.</td>
             </tr>
           </tbody>
-
-
-
         </table>
-        
 
         <!-- Submit Button -->
         <div class="row">
           <div class="col-lg-12 text-center">
             <button type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
-              <span>{{ isEdit ? "Update Member" : "Add Member" }}</span>
+              <span>{{ isEdit ? "Update Payment" : "Submit Payment" }}</span>
             </button>
           </div>
         </div>
       </form>
     </div>
   </div>
+
+  
 </template>
 
 <script>
@@ -138,7 +220,7 @@ import axios from "axios";
 import { useToast } from "vue-toastification";
 
 export default {
-  name: "MemberForm",
+  name: "PaymentForm",
   props: {
     isEdit: {
       type: Boolean,
@@ -151,67 +233,71 @@ export default {
   },
   data() {
     return {
-      paymentId: null,
       tournaments: [],
-      members:[],
+      members: [],
+      unselectedMembers: [],
+      selectedMembers: [], // This will hold the selected members' IDs
       form: {
-        contingent_id: null,
-        name: "",
-        birth_place: "",
-        birth_date: "",
-        gender: "",
-        body_weight: "",
-        body_height: "",
-        blood_type: "",
-        nik: "",
-        family_card_number: "",
-        country_id: null,
-        province_id: null,
-        district_id: null,
-        subdistrict_id: null,
-        ward_id: null,
-        address: "",
-        category: "",
-        documents: "",
+        tournament_id: null,
+        bank_name: "",
+        account_number: "",
+        account_name: "",
+        notes: "",
       },
       errors: {},
       loading: false,
       progress: 0,
+      paymentId: null, // Define paymentId for update mode
+      showPopup: false, // Control the pop-up visibility
     };
   },
 
   created() {
     this.paymentId = this.$route.params.id;
     this.fetchActiveTournaments();
+
     this.loadTeamMembers();
     if (this.isEdit && this.paymentId) {
-      //this.fetchMemberDetail(this.paymentId);
+      this.fetchPaymentDetail(this.paymentId);
     }
   },
 
   beforeRouteUpdate(to, from, next) {
-    if (this.isEdit && to.params.id !== this.memberId) {
-      this.memberId = to.params.id;
-      this.fetchMemberDetail(this.memberId);
+    if (this.isEdit && to.params.id !== this.paymentId) {
+      this.paymentId = to.params.id;
+      this.fetchPaymentDetail(this.paymentId);
     }
     next();
   },
 
   watch: {
-    // Watch for changes to the memberId from the route params
+    // Watch for changes to the paymentId from the route params
     '$route.params.id': {
       immediate: true,
       handler(newId) {
         // Fetch contingent data when route param changes
         if (this.isEdit && newId) {
-          this.memberId = newId;
-          this.fetchMemberDetail(newId); 
+          this.paymentId = newId;
+          this.fetchPaymentDetail(newId); 
         }
       },
     }
   },
 
   methods: {
+    togglePopup() {
+      this.showPopup = !this.showPopup; // Toggle the pop-up visibility
+    },
+    formatNumber(value) {
+      if (value == null) return "-"; // Return a fallback for empty or null values
+      return new Intl.NumberFormat("en-US", { 
+        style: "currency", 
+        currency: "IDR", 
+        minimumFractionDigits: 2 
+      }).format(value);
+    },
+
+    
     async fetchActiveTournaments() {
       try {
         const response = await axios.get("/tournaments/active");
@@ -229,104 +315,21 @@ export default {
           },
         });
         this.members = response.data || []; // Ensure it assigns an array even if data is empty
+        this.unselectedMembers = response.data || [];
       } catch (error) {
         console.error("Error loading members:", error);
         this.members = []; // Fallback to an empty array on error
+        this.unselectedMembers = [];
       } finally {
         this.loading = false;
       }
     },
-    async fetchAgeCategories() {
-      try {
-        const response = await axios.get("/age-categories");
-        this.ageCategories = response.data;
-      } catch (error) {
-        console.error("Error fetching age-categories:", error);
-      }
-    },
-    async fetchContingents() {
-      try {
-        // Fetch contingents
-        const response = await axios.get(
-          `/contingents/fetch-all`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('authToken')}`
-            }
-          }
-        );
-        this.contingents = response.data;
-      } catch (error) {
-        console.error("Error fetching contingents:", error);
-      }
-    },
-
-    async fetchCountries() {
-      try {
-        const response = await axios.get("/countries");
-        this.countries = response.data;
-      } catch (error) {
-        console.error("Error fetching countries:", error);
-      }
-    },
-    async fetchProvinces() {
-      try {
-        const response = await axios.get("/provinces");
-        this.provinces = response.data;
-      } catch (error) {
-        console.error("Error fetching provinces:", error);
-      }
-    },
-    async fetchDistricts() {
-      if (!this.form.province_id) {
-        this.districts = [];
-        this.form.district_id = null;
-        this.form.subdistrict_id = null;
-        this.form.ward_id = null;
-        this.sub_districts = [];
-        this.wards = [];
-        return;
-      }
-      try {
-        const response = await axios.get(`/districts?province_id=${this.form.province_id}`);
-        this.districts = response.data;
-      } catch (error) {
-        console.error("Error fetching districts:", error);
-      }
-    },
-    async fetchSubDistricts() {
-      if (!this.form.district_id) {
-        this.sub_districts = [];
-        this.form.subdistrict_id = null;
-        this.form.ward_id = null;
-        this.wards = [];
-        return;
-      }
-      try {
-        const response = await axios.get(`/subdistricts?district_id=${this.form.district_id}`);
-        this.sub_districts = response.data;
-      } catch (error) {
-        console.error("Error fetching sub-districts:", error);
-      }
-    },
-    async fetchWards() {
-      if (!this.form.subdistrict_id) {
-        this.wards = [];
-        this.form.ward_id = null;
-        return;
-      }
-      try {
-        const response = await axios.get(`/wards?subdistrict_id=${this.form.subdistrict_id}`);
-        this.wards = response.data;
-      } catch (error) {
-        console.error("Error fetching wards:", error);
-      }
-    },
-    async fetchMemberDetail(id) {
+    
+    async fetchPaymentDetail(id) {
       this.loading = true;
       try {
         const response = await axios.get(
-          `/team-members/${id}`,
+          `/billings/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('authToken')}`
@@ -335,26 +338,22 @@ export default {
         );
         if (response.data) {
           this.form = {
-            name: response.data.name || "",
-            contingent_id: response.data.contingent_id || null,
-            birth_place: response.data.birth_place || "",
-            birth_date: response.data.birth_date || "",
-            gender: response.data.gender || "",
-            body_weight: response.data.body_weight || "",
-            body_height: response.data.body_height || "",
-            blood_type: response.data.blood_type || "",
-            nik: response.data.nik || "",
-            family_card_number: response.data.family_card_number || "",
-            country_id: response.data.country_id || null,
-            province_id: response.data.province_id || null,
-            district_id: response.data.district_id || null,
-            subdistrict_id: response.data.subdistrict_id || null,
-            ward_id: response.data.ward_id || null,
-            address: response.data.address || "",
-            category: response.data.category || "",
-            age_category_id: response.data.age_category_id || null,
-            documents: response.data.documents || "",
+            tournament_id: response.data.tournament_id || null,
+            bank_name: response.data.bank_name || "",
+            account_number: response.data.account_number || "",
+            account_name: response.data.account_name || "",
+            members: response.data.billing_details || [],
+            total_amount: response.data.total_amount || 0,
+            notes: response.data.notes || "",
           };
+
+          // Update members and pre-select checkboxes based on `exists_in_billing_details`
+          this.members = response.data.billing_details || [];
+          this.selectedMembers = this.members
+            .filter(member => member.exists_in_billing_details)
+            .map(member => member.id);
+
+          console.log("Selected members:", this.selectedMembers);
 
           if (this.form.province_id) {
             await this.fetchDistricts();
@@ -367,34 +366,68 @@ export default {
           }
         }
       } catch (error) {
-        this.toast.error("Error fetching member details.");
-        console.error("Error fetching member details:", error);
+        this.toast.error("Error fetching payment details.");
+        console.error("Error fetching payment details:", error);
       } finally {
         this.loading = false;
+      }
+    },
+
+    async addMemberToBilling(member) {
+      if (!this.paymentId) {
+        this.toast.error("Payment ID is required before adding members.");
+        return;
+      }
+
+      member.isAdding = true; // Indikasi sedang diproses
+
+      try {
+        const response = await axios.post(
+          `/billings/add-member`, // Sesuaikan dengan endpoint baru
+          {
+            billing_id: this.paymentId, // Kirim billing_id sesuai API
+            team_member_id: member.id, // Kirim member_id sesuai API
+            tournament_category_id: member.match_category.tournament_categories[0]?.id,
+            amount: member.match_category.tournament_categories[0]?.registration_fee, // Kirim amount sesuai API
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
+
+        if (response.status === 201) { // Sesuaikan respons berhasil dengan kode status 201
+          this.toast.success("Member successfully added to billing.");
+          member.exists_in_billing_details = true; // Tandai anggota sudah ditambahkan
+          this.selectedMembers.push(member.id);
+          this.fetchPaymentDetail(this.paymentId);
+        } else {
+          this.toast.error(response.data.message || "Failed to add member.");
+        }
+      } catch (error) {
+        console.error("Error adding member to billing:", error);
+        this.toast.error(error.response?.data?.message || "An error occurred while adding the member.");
+      } finally {
+        member.isAdding = false; // Kembalikan tombol ke status semula
       }
     },
 
     
     async submitForm() {
       this.loading = true;
-      
-
-     
-
-     
-
-      // Log FormData for debugging
-      /*for (let pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }*/
-
       try {
-        const endpoint = this.isEdit ? `/team-members/${this.memberId}` : "/team-members";
+        const payload = {
+          ...this.form,
+          member_ids: this.selectedMembers, // Include selected members in the request
+        };
+
         const method = this.isEdit ? "put" : "post";
+        const endpoint = this.isEdit ? `/billings/${this.paymentId}` : "/billings";
 
         await axios[method](
           endpoint,
-          this.form,
+          payload,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add Authorization header
@@ -402,19 +435,20 @@ export default {
           }
         );
 
-        this.toast.success(this.isEdit ? "Team member updated successfully!" : "Team member added successfully!");
-        this.$router.push("/admin/team-members");
+
+        this.toast.success(this.isEdit ? "Payment updated" : "Payment added");
+        this.$router.push("/admin/payment"); // Redirect after successful submission
       } catch (error) {
-        if (error.response && error.response.data.errors) {
-          this.errors = error.response.data.errors;
-          this.toast.error("An error occurred while submitting the form.");
-        } else {
-          this.toast.error("An error occurred while submitting the form.");
-        }
+        this.toast.error("Error submitting form");
+        this.errors = error.response?.data.errors || {};
       } finally {
         this.loading = false;
       }
     },
+
+    
+
+
   },
 };
 </script>

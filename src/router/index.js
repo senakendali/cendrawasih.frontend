@@ -24,6 +24,7 @@ import TeamMembersEditPage from "@/admin/pages/team-members/MembersEditPage.vue"
 import AdminPaymentList from '../admin/pages/payment/PaymentList.vue';
 import PaymentCreatePage from "@/admin/pages/payment/PaymentCreatePage.vue";
 import PaymentEditPage from "@/admin/pages/payment/PaymentEditPage.vue";
+import PaymentConfirmationPage from "@/admin/pages/payment/PaymentConfirmationPage.vue";
 import ClassesList from '../admin/pages/classes/ClassList.vue';
 import ClassesCreatePage from "@/admin/pages/classes/ClassCreatePage.vue";
 import ClassesEditPage from "@/admin/pages/classes/ClassEditPage.vue";
@@ -220,6 +221,16 @@ const routes = [
     props: true, // Kirim parameter ID ke komponen sebagai props
     children: [
       { path: '', component: PaymentEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/payment/confirm/:id',
+    name: "ConfirmPayment",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { path: '', component: PaymentConfirmationPage }
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },

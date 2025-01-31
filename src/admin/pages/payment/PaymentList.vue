@@ -1,59 +1,63 @@
 <template>
   <div class="dashboard-container">
-    <div
-      v-if="loading"
-      class="progress-bar"
-      :style="{ width: progress + '%' }"
-    ></div>
+    <div v-if="loading" class="progress-bar" :style="{ width: progress + '%' }"></div>
 
     <div class="mb-2 page-title">
       <i class="bi bi-file-earmark-text"></i> Payment
     </div>
 
     <div class="mb-2 d-flex justify-content-end align-items-center">
-      <!-- Search Bar -->
-      <!--input 
-        v-model="searchQuery" 
-        type="text" 
-        class="form-control w-auto" 
-        placeholder="Search..." 
-        @input="searchContingent" 
-      /-->
-
       <!-- Create Menu Button -->
-      <router-link to="/admin/payment/create" class="button button-primary">
+      <router-link v-if="permissions && permissions.includes('create payment')" to="/admin/payment/create" class="button button-primary">
         <i class="bi bi-plus-square"></i> Add New
       </router-link>
     </div>
 
-    <!-- Table to display navigation data -->
+    <!-- Table -->
     <table class="table mt-4">
       <thead>
         <tr>
           <th>ID</th>
           <th>Invoice Number</th>
           <th>Bank</th>
-          <th>Account Number</th>
+          <th>Amount</th>
+          <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody v-if="billings.length > 0">
         <tr v-for="(billing, index) in billings" :key="billing.id">
-        <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
-       
-          <td>{{ billing.id }}</td>
+          <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
           <td>{{ billing.invoice_number }}</td>
-          <td>{{ billing.bank }}</td>
-          <td>{{ billing.account_number }}</td>
+          <td>{{ billing.bank_name }}</td>
+          <td>{{ formatNumber(billing.amount) }}</td>
+          <td>
+            <div :class="['payment-status', { 'paid': billing.status === 'paid' }]">
+              {{ billing.status }}
+            </div>
+          </td>
           
           <td class="action-column">
-            <div class="btn-group" role="group">
+            <div v-if="billing.status != 'paid'" class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-card-checklist"></i> Action
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" @click="EditContingent(contingent.id)"><i class="bi bi-pencil-square"></i> Edit</a></li>
-                <!--li><a class="dropdown-item" href="#" @click="deleteContingent(contingent.id)"><i class="bi bi-trash"></i> Delete</a></li-->
+                <li v-if="permissions && permissions.includes('edit payment')">
+                  <a class="dropdown-item" href="#" @click="EditPayment(billing.id)">
+                    <i class="bi bi-pencil-square"></i> Edit
+                  </a>
+                </li>
+                <li v-if="permissions && permissions.includes('upload payment struk')">
+                  <a class="dropdown-item" href="#" @click="ConfirmPayment(billing.id)">
+                    <i class="bi bi-credit-card-2-back"></i> Upload Payment Struk
+                  </a>
+                </li>
+                <li v-if="permissions && permissions.includes('confirm payment')">
+                  <a class="dropdown-item" href="#" @click="ConfirmPayment(billing.id)">
+                    <i class="bi bi-credit-card-2-back"></i> Confirm Payment
+                  </a>
+                </li>
               </ul>
             </div>
           </td>
@@ -66,33 +70,20 @@
       </tbody>
     </table>
 
-    <!-- Pagination Controls -->
+    <!-- Pagination -->
     <nav v-if="totalPages > 1">
       <ul class="pagination pagination-lg justify-content-end">
         <li class="page-item" :class="{ disabled: !prevPageUrl }">
-          <button
-            class="page-link"
-            @click="changePage(currentPage - 1)"
-            :disabled="!prevPageUrl"
-          >
-          <i class="bi bi-arrow-left-square"></i>
+          <button class="page-link" @click="changePage(currentPage - 1)" :disabled="!prevPageUrl">
+            <i class="bi bi-arrow-left-square"></i>
           </button>
         </li>
-        <li
-          v-for="page in totalPages"
-          :key="page"
-          class="page-item"
-          :class="{ active: currentPage === page }"
-        >
+        <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
           <button class="page-link" @click="changePage(page)">{{ page }}</button>
         </li>
         <li class="page-item" :class="{ disabled: !nextPageUrl }">
-          <button
-            class="page-link"
-            @click="changePage(currentPage + 1)"
-            :disabled="!nextPageUrl"
-          >
-          <i class="bi bi-arrow-right-square"></i>
+          <button class="page-link" @click="changePage(currentPage + 1)" :disabled="!nextPageUrl">
+            <i class="bi bi-arrow-right-square"></i>
           </button>
         </li>
       </ul>
@@ -103,6 +94,7 @@
 <script>
 import axios from "axios";
 import API from "@/config/api";
+import { inject } from 'vue';
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
@@ -111,29 +103,33 @@ export default {
   data() {
     return {
       billings: [],
-      searchQuery: "", // User's search input
-      currentPage: 1, // Current page of results
-      perPage: 10, // Results per page
-      totalPages: 0, // Total number of pages
-      prevPageUrl: null, // URL of the previous page
-      nextPageUrl: null, // URL of the next page
+      searchQuery: "",
+      currentPage: 1,
+      perPage: 10,
+      totalPages: 0,
+      prevPageUrl: null,
+      nextPageUrl: null,
       loading: false,
       progress: 0,
     };
   },
-  mounted() {
-    this.loadBillings(); // Corrected the method name
+
+  setup() {
+    const permissions = inject('permissions', []);  // Ensure permissions is always an array
+    return { permissions };
   },
+
+  mounted() {
+    this.loadBillings();
+  },
+
   methods: {
     async loadBillings(page = 1) {
       this.loading = true;
-      console.log(this.loading);
       try {
-        this.loading = true;
-
         const response = await axios.get("/billings", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           params: {
             page,
@@ -141,22 +137,17 @@ export default {
             search: this.searchQuery.trim(),
           },
         });
-        const {
-          current_page,
-          last_page,
-          data,
-          next_page_url,
-          prev_page_url,
-        } = response.data;
 
-        this.billings = data; // Assign team members
-        this.currentPage = current_page; // Current page
-        this.totalPages = last_page; // Total pages
-        this.nextPageUrl = next_page_url; // Next page URL
-        this.prevPageUrl = prev_page_url; // Previous page URL
-        this.loading = false;
+        const { current_page, last_page, data, next_page_url, prev_page_url } = response.data;
+        this.billings = data;
+        this.currentPage = current_page;
+        this.totalPages = last_page;
+        this.nextPageUrl = next_page_url;
+        this.prevPageUrl = prev_page_url;
       } catch (error) {
-        console.error("Error loading members:", error);
+        console.error("Error loading billings:", error);
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -166,27 +157,21 @@ export default {
       }
     },
 
-
-    searchContingent() {
-      this.currentPage = 1; // Reset to page 1 for new search
-      this.loadBillings();
+    formatNumber(value) {
+      if (value == null) return "-";
+      return new Intl.NumberFormat("id-ID", { 
+        style: "currency", 
+        currency: "IDR", 
+        minimumFractionDigits: 2 
+      }).format(value);
     },
 
-    EditContingent(id) {
-      this.$router.push({ name: "EditContingent", params: { id } });
+    EditPayment(id) {
+      this.$router.push({ name: "EditPayment", params: { id } });
     },
 
-    deleteContingent(id) {
-      console.log("Delete contingent with ID:", id);
-      // Implement logic to delete the contingent (e.g., API call)
-    },
-  },
-  computed: {
-    prevPageExists() {
-      return this.currentPage > 1;
-    },
-    nextPageExists() {
-      return this.currentPage < this.totalPages;
+    ConfirmPayment(id) {
+      this.$router.push({ name: "ConfirmPayment", params: { id } });
     },
   },
 };
@@ -207,22 +192,21 @@ export default {
   padding: 10px;
 }
 
-.navbar {
-  background-color: #1E2A57 !important;
+.payment-status{
+  background-color: #CCC;
+  border:1px solid #CCC;
+  padding: 8px;
+  border-radius: 5px;
+  text-align: center;
+  min-width: 150px;
+  width: fit-content;
+  color: #404040;
 }
 
-.navbar-toggler-icon {
-  background-color: white;
-}
-
-.nav-link {
-  color: white !important;
-}
-
-
-
-.form-control {
-  width: 250px;
+.payment-status.paid{
+  background-color: #388E3C;
+  border-color: #388E3C;
+  color: #fff;
 }
 
 .progress-bar {
@@ -234,19 +218,9 @@ export default {
   animation: loader-animation 1.5s infinite;
 }
 
-/* Animasi garis loader */
 @keyframes loader-animation {
-  0% {
-    width: 0;
-    background-color: #388E3C; /* Warna awal */
-  }
-  50% {
-    width: 50%;
-    background-color: #388E3C; /* Warna saat animasi */
-  }
-  100% {
-    width: 100%;
-    background-color: #388E3C;
-  }
+  0% { width: 0; background-color: #388E3C; }
+  50% { width: 50%; background-color: #388E3C; }
+  100% { width: 100%; background-color: #388E3C; }
 }
 </style>

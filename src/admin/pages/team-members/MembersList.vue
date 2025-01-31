@@ -32,6 +32,7 @@
           <th>ID</th>
           <th>Name</th>
           <th>Category</th>
+          <th>Registration Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -42,6 +43,10 @@
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
           <td>{{ member.name }}</td>
           <td>{{ member.championship_category.name }}</td>
+          <td>
+            <div :class="['member-status', { 'paid': member.registration_status === 'approved' }]">
+              {{ member.registration_status }}
+            </div></td>
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
@@ -215,6 +220,23 @@ export default {
 .table th,
 .table td {
   padding: 10px;
+}
+
+.member-status{
+  background-color: #CCC;
+  border:1px solid #CCC;
+  padding: 8px;
+  border-radius: 5px;
+  text-align: center;
+  min-width: 150px;
+  width: fit-content;
+  color: #404040;
+}
+
+.member-status.paid{
+  background-color: #388E3C;
+  border-color: #388E3C;
+  color: #fff;
 }
 
 .navbar {
