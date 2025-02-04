@@ -31,6 +31,10 @@ import ClassesEditPage from "@/admin/pages/classes/ClassEditPage.vue";
 import ClasificationList from '@/admin/pages/match-clasification/ClasificationList.vue';
 import ClasificationCreatePage from '@/admin/pages/match-clasification/ClasificationCreatePage.vue';
 import ClasificationEditPage from '@/admin/pages/match-clasification/ClasificationEditPage.vue';
+import DrawingCreatePage from '@/admin/pages/drawing/DrawingCreatePage.vue';
+import DrawingEditPage from '@/admin/pages/drawing/DrawingEditPage.vue';
+import DrawingList from '@/admin/pages/drawing/DrawingList.vue';
+import MatchChartPage from '@/admin/pages/match-chart/MatchChartPage.vue';
 
 const routes = [
   {
@@ -283,6 +287,40 @@ const routes = [
     props: true, // Kirim parameter ID ke komponen sebagai props
     children: [
       { path: '', component: ClasificationEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/drawing',
+    component: AdminLayout,
+    children: [
+      { path: '', component: DrawingList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/drawing/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: DrawingCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/drawing/edit/:id',
+    name: "EditDrawing",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { path: '', component: DrawingEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/match-chart',
+    component: AdminLayout,
+    children: [
+      { path: '', component: MatchChartPage }
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
