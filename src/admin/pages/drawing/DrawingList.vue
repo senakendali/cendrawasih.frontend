@@ -43,14 +43,14 @@
         <tr v-for="match in matches" :key="match.match_id">
           <td>{{ match.match_id }}</td>
           <td>{{ match.round }}</td>
-          <td>{{ match.team_member_1_contingent }}</td>
-          <td>{{ match.team_member_1_name }}</td>
-          <td>{{ match.team_member_2_contingent }}</td>
-          <td>{{ match.team_member_2_name }}</td>
-          <td>{{ match.winner }}</td>
-          
+          <td>{{ match.team_member_1_contingent ?? 'TBD' }}</td>
+          <td>{{ match.team_member_1_name ?? 'TBD' }}</td>
+          <td>{{ match.team_member_2_contingent ?? 'TBD' }}</td>
+          <td>{{ match.team_member_2_name ?? 'TBD' }}</td>
+          <td>{{ match.winner ?? 'TBD' }}</td>
         </tr>
       </tbody>
+
       <!-- Fallback message when there is no data -->
       <tbody v-else>
         <tr>

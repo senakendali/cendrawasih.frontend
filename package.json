@@ -14,11 +14,13 @@
     "bootstrap-icons": "^1.11.3",
     "core-js": "^3.8.3",
     "vue": "^3.2.13",
+    "vue-bracket": "^0.0.5",
     "vue-carousel": "^0.18.0",
     "vue-meta": "^3.0.0-alpha.2",
     "vue-multiselect": "^3.1.0",
     "vue-router": "^4.0.13",
     "vue-toastification": "^2.0.0-rc.5",
+    "vue-tournament-bracket": "^3.0.0",
     "vuex": "^4.0.2"
   },
   "devDependencies": {

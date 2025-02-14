@@ -2,11 +2,13 @@
   <div class="dashboard-container">
     <div v-if="loading" class="progress-bar" :style="{ width: progress + '%' }"></div>
     <div class="container">
+      <!-- Form Title -->
       <div class="mb-2 page-title">
         <i class="bi bi-file-earmark-text"></i>
         {{ isEdit ? "Edit Match" : "Generate Match" }}
       </div>
 
+      <!-- Form -->
       <form @submit.prevent="submitForm" class="admin-form mt-4">
         <div class="row">
           <div class="col-lg-12">
@@ -19,6 +21,7 @@
                 </option>
               </select>
             </div>
+
             <div class="mb-3">
               <label for="match_category_id" class="form-label">Match Category</label>
               <select class="form-select" id="match_category_id" v-model="form.match_category_id">
@@ -28,6 +31,7 @@
                 </option>
               </select>
             </div>
+
             <div class="mb-3">
               <label for="age_category_id" class="form-label">Age Category</label>
               <select class="form-select" id="age_category_id" v-model="form.age_category_id">
@@ -39,6 +43,7 @@
             </div>
           </div>
         </div>
+
         <div class="row">
           <div class="col-lg-12 text-center">
             <button type="submit" class="button button-primary" :disabled="loading">
@@ -49,18 +54,32 @@
         </div>
       </form>
 
-      <!-- Tournament Bracket -->
       <div class="row">
         <div class="bracket-container">
-          <Bracket v-if="bracketMatches.length > 0" :rounds="bracketMatches">
-            <template v-slot:player="{ player }">
-              {{ player.name }}
-            </template>
-          </Bracket>
-          <p v-else>Belum ada bracket yang tersedia.</p>
-        </div>
+          <div class="bracket">
+            <!-- Loop untuk setiap babak -->
+            <div v-for="(round, roundIndex) in bracketMatches" :key="roundIndex" class="round">
+              <h4>Round {{ roundIndex + 1 }}</h4>
+              <div class="match-container">
+                  <!-- Loop untuk setiap pertandingan dalam babak -->
+                  <div
+                    v-for="(match, matchIndex) in round"
+                    :key="matchIndex"
+                    class="match"
+                    :style="{ marginTop: roundIndex > 0 ? getVerticalSpacing(roundIndex, matchIndex) + 'px' :  '0px' }"
+                  >
+                    <div class="participant1">{{ match.participant1.name || "TBD" }}</div>
+                    <div class="participant2">{{ match.participant2.name || "TBD" }}</div>
+                  </div>
 
+              </div>
+              
+            </div>
+          </div>
+        </div>
       </div>
+      <!-- Bracket Display Section -->
+      
     </div>
   </div>
 </template>
@@ -68,13 +87,9 @@
 <script>
 import axios from "axios";
 import { useToast } from "vue-toastification";
-import Bracket from "vue-tournament-bracket"; // Importing the bracket library
 
 export default {
   name: "MatchChartForm",
-  components: {
-    Bracket
-  },
   props: {
     isEdit: {
       type: Boolean,
@@ -94,7 +109,8 @@ export default {
       ageCategories: [],
       errors: {},
       loading: false,
-      bracketMatches: [],  // Store the bracket data
+      bracketMatches: [],
+      maxRowCount: 0,
     };
   },
 
@@ -105,48 +121,59 @@ export default {
   },
 
   methods: {
-
-    formatBracket(bracketData) {
-      return bracketData.map((roundData, roundIndex) => ({
-        games: roundData.matches.map((match, matchIndex) => ({
-          player1: {
-            id: `r${roundIndex + 1}m${matchIndex + 1}p1`,
-            name: match.player1?.name || "TBD",
-            winner: match.winner_id ? match.winner_id === match.player1?.id : null, // Jika winner_id null, jangan tetapkan pemenang
-          },
-          player2: {
-            id: `r${roundIndex + 1}m${matchIndex + 1}p2`,
-            name: match.player2?.name || "TBD",
-            winner: match.winner_id ? match.winner_id === match.player2?.id : null, // Jika winner_id null, jangan tetapkan pemenang
-          },
-        })),
-      }));
-    },
-
-
     async submitForm() {
       this.loading = true;
+
       try {
         const response = await axios.get(
           `/show-bracket/${this.form.tournament_id}/${this.form.match_category_id}/${this.form.age_category_id}`
         );
-        
-        console.log("API Response:", response.data);
 
-        if (response.data && Array.isArray(response.data.bracket)) {
-          this.bracketMatches = this.formatBracket(response.data.bracket);
-        } else {
-          console.error("Invalid bracket format:", response.data);
-          this.bracketMatches = [];
-        }
+        // Proses data bracket
+        this.bracketMatches = this.processBracketData(response.data.bracket);
+        this.maxRowCount = this.bracketMatches[0].length;
+
+        this.toast.success("Bracket generated successfully!");
       } catch (error) {
-        console.error("Error fetching bracket:", error);
-        this.bracketMatches = [];
+        this.toast.error("Failed to generate bracket.");
       } finally {
         this.loading = false;
       }
     },
 
+    processBracketData(bracketData) {
+      const rounds = Object.values(bracketData);
+      const totalRounds = Math.ceil(Math.log2(rounds[0].length * 2)); // Hitung total babak
+
+      // Tambahkan babak berikutnya dengan peserta TBD
+      while (rounds.length < totalRounds) {
+        const previousRound = rounds[rounds.length - 1] || [];
+        const nextRound = new Array(Math.ceil(previousRound.length / 2)).fill({
+          participant1: { name: "TBD" },
+          participant2: { name: "TBD" },
+        });
+        rounds.push(nextRound);
+      }
+
+      return rounds;
+    },
+
+    getVerticalSpacing(roundIndex, matchIndex) {
+      const multipliers_first = [0, 100, 300, 700, 1400, 3100]; // Atur kelipatan per ronde
+      const multipliers_next = [0, 300, 700, 1500, 3200, 722]; // Atur kelipatan per ronde
+     
+      if (matchIndex > 0) {
+        if(roundIndex == 0){
+          return 220;
+        }else{
+          return (multipliers_next[roundIndex] || multipliers_next[multipliers_next.length - 1]);
+        }
+      } else {
+        if(roundIndex > 0){
+            return (multipliers_first[roundIndex] || multipliers_first[multipliers_first.length - 1]); // Jika ronde lebih dari array, pakai nilai terakhir
+        }
+      }
+    },
 
     async fetchActiveTournaments() {
       await this.fetchData("/tournaments/active", "activeTournaments");
@@ -182,6 +209,7 @@ export default {
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative; 
 }
 
 .progress-bar {
@@ -190,22 +218,56 @@ export default {
   left: 0;
   height: 5px;
   background-color: #388E3C;
+  animation: loader-animation 1.5s infinite;
 }
 
-.bracket-container {
+@keyframes loader-animation {
+  0% {
+    width: 0;
+    background-color: #388E3C; /* Warna awal */
+  }
+  50% {
+    width: 50%;
+    background-color: #388E3C; /* Warna saat animasi */
+  }
+  100% {
+    width: 100%;
+    background-color: #388E3C;
+  }
+}
+
+.bracket-container{
+  position: relative;
   overflow: auto;
   width: 100%;
+}
+
+.bracket {
+  display: flex;
+  /*justify-content: center;*/
+  gap: 40px;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.match {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 5px;
+  text-align: center;
  
+  height: 100px;
+  width: 190px;
+  margin-bottom: 100px;
 }
 
-::v-deep(.vtb-item-players) {
-  width:200px;
-  background-color: #f0f0f0;
-}
-
-::v-deep(.vtb-player1) {
+.participant1 {
   font-size: 12px;
-  color:#1E2A57;
   width:100%;
   height: 50px;
   padding:12px;
@@ -213,25 +275,13 @@ export default {
   border-top:1px solid #388E3C;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
-  
+  border-bottom:1px solid #388E3C;
   border-right:1px solid #388E3C;
   background: #ffffff;
 }
 
-::v-deep(.vtb-player1)::after {
-  width: 100%;
-  height: 1px;
-  background-color: #388E3C;
-  display: block;
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0px;
-}
-
-::v-deep(.vtb-player2) {
+.participant2 {
   font-size: 12px;
-  color:#1E2A57;
   width:100%;
   height: 50px;
   padding:12px;
@@ -244,35 +294,7 @@ export default {
 
 }
 
-::v-deep(.vtb-item-child:after, .vtb-item-child:before) {
-    content: "";
-    position: absolute;
-    background-color: #388E3C;
-    top: 50%;
-}
 
-::v-deep(.vtb-item-child:before) {
-    right: 0;
-    -webkit-transform: translateX(100%);
-    transform: translateX(100%);
-    width: 25px;
-    height: 1px;
-}
 
-::v-deep(.vtb-item-parent:after) {
-    position: absolute;
-    content: "";
-    width: 25px;
-    height: 1px;
-    left: 0;
-    top: 50%;
-    background-color: #388E3C;
-    transform: translateX(-100%);
-}
 
-::v-deep(.vtb-item-child:after){
-    right: -25px;
-    height: calc(50% + 22px);
-    width: 1px;
-}
 </style>

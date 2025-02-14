@@ -193,15 +193,21 @@ export default {
 /* Bracket */
 .bracket {
   display: flex;
-  justify-content: center;
-  gap: 40px;
+  /*justify-content: center;*
+  gap: 40px;*/
 }
 
 .round {
-  display: flex;
+  flex: 1;
+	display: flex;
+	margin-right: 30px;
+	flex-direction: column;
+	justify-content: space-around;
+
+  /*display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
+  position: relative;*/
 }
 
 .match {

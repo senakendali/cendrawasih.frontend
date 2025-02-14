@@ -49,17 +49,20 @@
         </div>
       </form>
 
-      <!-- Tournament Bracket -->
       <div class="row">
         <div class="bracket-container">
-          <Bracket v-if="bracketMatches.length > 0" :rounds="bracketMatches">
-            <template v-slot:player="{ player }">
-              {{ player.name }}
-            </template>
-          </Bracket>
-          <p v-else>Belum ada bracket yang tersedia.</p>
-        </div>
+          <div class="bracket">
+            <div v-for="(round, roundIndex) in bracketMatches" :key="roundIndex" class="round">
+              <div class="match-container mt-4">
+                <div v-for="(match, matchIndex) in round" :key="matchIndex" class="match" :style="{ marginTop: roundIndex > 0 ? getVerticalSpacing(roundIndex, matchIndex) + 'px' : '0px' }">
+                  <div class="participant1">{{ match.team_member_1_name || "TBD" }}</div>
+                  <div class="participant2">{{ match.team_member_2_name || "TBD" }}</div>
+                </div>
 
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -68,13 +71,9 @@
 <script>
 import axios from "axios";
 import { useToast } from "vue-toastification";
-import Bracket from "vue-tournament-bracket"; // Importing the bracket library
 
 export default {
   name: "MatchChartForm",
-  components: {
-    Bracket
-  },
   props: {
     isEdit: {
       type: Boolean,
@@ -94,7 +93,7 @@ export default {
       ageCategories: [],
       errors: {},
       loading: false,
-      bracketMatches: [],  // Store the bracket data
+      bracketMatches: [],
     };
   },
 
@@ -105,48 +104,29 @@ export default {
   },
 
   methods: {
-
-    formatBracket(bracketData) {
-      return bracketData.map((roundData, roundIndex) => ({
-        games: roundData.matches.map((match, matchIndex) => ({
-          player1: {
-            id: `r${roundIndex + 1}m${matchIndex + 1}p1`,
-            name: match.player1?.name || "TBD",
-            winner: match.winner_id ? match.winner_id === match.player1?.id : null, // Jika winner_id null, jangan tetapkan pemenang
-          },
-          player2: {
-            id: `r${roundIndex + 1}m${matchIndex + 1}p2`,
-            name: match.player2?.name || "TBD",
-            winner: match.winner_id ? match.winner_id === match.player2?.id : null, // Jika winner_id null, jangan tetapkan pemenang
-          },
-        })),
-      }));
-    },
-
-
     async submitForm() {
       this.loading = true;
       try {
         const response = await axios.get(
           `/show-bracket/${this.form.tournament_id}/${this.form.match_category_id}/${this.form.age_category_id}`
         );
-        
-        console.log("API Response:", response.data);
-
-        if (response.data && Array.isArray(response.data.bracket)) {
-          this.bracketMatches = this.formatBracket(response.data.bracket);
-        } else {
-          console.error("Invalid bracket format:", response.data);
-          this.bracketMatches = [];
-        }
+        this.bracketMatches = this.processBracketData(response.data.bracket);
+        this.toast.success("Bracket generated successfully!");
       } catch (error) {
-        console.error("Error fetching bracket:", error);
-        this.bracketMatches = [];
+        this.toast.error("Failed to generate bracket.");
       } finally {
         this.loading = false;
       }
     },
 
+    processBracketData(bracketData) {
+      return Object.values(bracketData);
+    },
+
+    getVerticalSpacing(roundIndex) {
+      const spacings = [0, 100, 300, 700, 1400, 3100];
+      return roundIndex > 0 ? spacings[roundIndex] || spacings[spacings.length - 1] : 0;
+    },
 
     async fetchActiveTournaments() {
       await this.fetchData("/tournaments/active", "activeTournaments");
@@ -195,84 +175,32 @@ export default {
 .bracket-container {
   overflow: auto;
   width: 100%;
- 
 }
 
-::v-deep(.vtb-item-players) {
-  width:200px;
-  background-color: #f0f0f0;
+.bracket {
+  display: flex;
+  gap: 40px;
 }
 
-::v-deep(.vtb-player1) {
+.round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.match {
+  background-color: #ffffff;
+  border-radius: 5px;
+  text-align: center;
+  height: 100px;
+  width: 190px;
+  margin-bottom: 100px;
+}
+
+.participant1, .participant2 {
   font-size: 12px;
-  color:#1E2A57;
-  width:100%;
-  height: 50px;
-  padding:12px;
-  border-left: 5px solid #388E3C;
-  border-top:1px solid #388E3C;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  
-  border-right:1px solid #388E3C;
-  background: #ffffff;
-}
-
-::v-deep(.vtb-player1)::after {
   width: 100%;
-  height: 1px;
-  background-color: #388E3C;
-  display: block;
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0px;
-}
-
-::v-deep(.vtb-player2) {
-  font-size: 12px;
-  color:#1E2A57;
-  width:100%;
   height: 50px;
-  padding:12px;
-  border-left: 5px solid #858585;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  border-bottom:1px solid #858585;
-  border-right:1px solid #858585;
-  background: #ffffff;
-
-}
-
-::v-deep(.vtb-item-child:after, .vtb-item-child:before) {
-    content: "";
-    position: absolute;
-    background-color: #388E3C;
-    top: 50%;
-}
-
-::v-deep(.vtb-item-child:before) {
-    right: 0;
-    -webkit-transform: translateX(100%);
-    transform: translateX(100%);
-    width: 25px;
-    height: 1px;
-}
-
-::v-deep(.vtb-item-parent:after) {
-    position: absolute;
-    content: "";
-    width: 25px;
-    height: 1px;
-    left: 0;
-    top: 50%;
-    background-color: #388E3C;
-    transform: translateX(-100%);
-}
-
-::v-deep(.vtb-item-child:after){
-    right: -25px;
-    height: calc(50% + 22px);
-    width: 1px;
+  padding: 12px;
 }
 </style>
