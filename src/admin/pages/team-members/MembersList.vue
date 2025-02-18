@@ -44,9 +44,8 @@
           <td>{{ member.name }}</td>
           <td>{{ member.championship_category.name }}</td>
           <td>
-            <div :class="['member-status', { 'paid': member.registration_status === 'approved' }]">
-              {{ member.registration_status }}
-            </div></td>
+            <i class="bi bi-check-square"></i> Registered
+          </td>
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
