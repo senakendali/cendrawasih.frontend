@@ -1,4 +1,24 @@
 <template>
+  <div>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Konfirmasi Hapus</h5>
+            <i class="bi bi-x-square"></i>
+          </div>
+          <div class="modal-body">
+            Apakah Anda yakin ingin menghapus kontingen ini?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-danger" @click="deleteData">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="dashboard-container">
     <div
       v-if="loading"
@@ -57,11 +77,11 @@
                     <i class="bi bi-pencil-square"></i> Edit
                   </a>
                 </li>
-                <!--li>
-                  <a class="dropdown-item" href="#" @click="deleteMenu(member.id)">
+                <li>
+                  <a class="dropdown-item" href="#" @click="confirmDelete(member.id)">
                     <i class="bi bi-trash"></i> Delete
                   </a>
-                </li-->
+                </li>
               </ul>
             </div>
           </td>
@@ -117,6 +137,8 @@
 <script>
 import axios from "axios";
 import API from "@/config/api";
+import { Modal } from "bootstrap";
+import { useToast } from "vue-toastification";
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
@@ -124,6 +146,8 @@ export default {
   name: "MembersList",
   data() {
     return {
+      memberId: null,
+      deleteModal: null,
       members: [], // Array to hold paginated team members
       searchQuery: "", // User's search input
       currentPage: 1, // Current page of results
@@ -135,10 +159,20 @@ export default {
       progress: 0,
     };
   },
+
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
   mounted() {
     this.loadTeamMembers(); // Load menu data when the component is mounted
+    this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    confirmDelete(id) {
+      this.memberId = id;
+      this.deleteModal.show();
+    },
     async loadTeamMembers(page = 1) {
       this.loading = true;
       try {
@@ -168,6 +202,25 @@ export default {
         this.loading = false;
       } catch (error) {
         console.error("Error loading members:", error);
+      }
+    },
+
+    async deleteData() {
+      try {
+
+        await axios.delete(`/team-members/${this.memberId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
+          }
+        });
+        this.$emit("memberDeleted", this.memberId); // Emit event jika perlu
+        this.loadTeamMembers();
+        this.toast.success("Deleted successfully!");
+        this.deleteModal.hide(); // Tutup modal setelah sukses
+      } catch (error) {
+        this.deleteModal.hide(); // Tutup modal setelah sukses
+        this.toast.error("Gagal menghapus:", error);
+        console.error("Gagal menghapus:", error);
       }
     },
 

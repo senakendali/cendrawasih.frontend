@@ -52,14 +52,13 @@
       <!-- Tournament Bracket -->
       <div class="row">
         <div class="bracket-container">
-          <Bracket v-if="bracketMatches.length > 0" :rounds="bracketMatches">
+          <Bracket v-if="bracketMatches.length > 0" :flat-tree="bracketMatches">
             <template v-slot:player="{ player }">
               {{ player.name }}
             </template>
           </Bracket>
           <p v-else>Belum ada bracket yang tersedia.</p>
         </div>
-
       </div>
     </div>
   </div>
@@ -94,7 +93,7 @@ export default {
       ageCategories: [],
       errors: {},
       loading: false,
-      bracketMatches: [],  // Store the bracket data
+      bracketMatches: [], // Store the bracket data
     };
   },
 
@@ -105,24 +104,44 @@ export default {
   },
 
   methods: {
-
     formatBracket(bracketData) {
-      return bracketData.map((roundData, roundIndex) => ({
-        games: roundData.matches.map((match, matchIndex) => ({
-          player1: {
-            id: `r${roundIndex + 1}m${matchIndex + 1}p1`,
-            name: match.player1?.name || "TBD",
-            winner: match.winner_id ? match.winner_id === match.player1?.id : null, // Jika winner_id null, jangan tetapkan pemenang
-          },
-          player2: {
-            id: `r${roundIndex + 1}m${matchIndex + 1}p2`,
-            name: match.player2?.name || "TBD",
-            winner: match.winner_id ? match.winner_id === match.player2?.id : null, // Jika winner_id null, jangan tetapkan pemenang
-          },
-        })),
-      }));
-    },
+      let matchMap = {}; // Simpan referensi pertandingan berdasarkan ID
 
+      // Simpan pertandingan ke dalam matchMap
+      bracketData.forEach((roundData) => {
+        roundData.matches.forEach((match) => {
+          matchMap[match.id] = match;
+        });
+      });
+
+      console.log("✅ matchMap:", matchMap);
+
+      // Format bracket dengan `next` yang benar
+      return bracketData.flatMap((roundData, roundIndex) => 
+        roundData.matches.map((match) => {
+          let nextMatch = matchMap[match.next] || null;
+
+          console.log(
+            `Match ID: ${match.id} (Round: ${roundIndex + 1}) → Next: ${match.next}`
+          );
+
+          return {
+            id: match.id,
+            next: nextMatch ? nextMatch.id : null,
+            player1: {
+              id: `m${match.id}p1`,
+              name: match.player1?.name || "TBD",
+              winner: match.winner_id ? match.winner_id === match.player1?.id : null,
+            },
+            player2: {
+              id: `m${match.id}p2`,
+              name: match.player2?.name || "TBD",
+              winner: match.winner_id ? match.winner_id === match.player2?.id : null,
+            },
+          };
+        })
+      );
+    },
 
     async submitForm() {
       this.loading = true;
@@ -130,7 +149,7 @@ export default {
         const response = await axios.get(
           `/show-bracket/${this.form.tournament_id}/${this.form.match_category_id}/${this.form.age_category_id}`
         );
-        
+
         console.log("API Response:", response.data);
 
         if (response.data && Array.isArray(response.data.bracket)) {
@@ -146,7 +165,6 @@ export default {
         this.loading = false;
       }
     },
-
 
     async fetchActiveTournaments() {
       await this.fetchData("/tournaments/active", "activeTournaments");
@@ -174,6 +192,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .dashboard-container {

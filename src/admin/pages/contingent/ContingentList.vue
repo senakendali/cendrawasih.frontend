@@ -1,4 +1,24 @@
 <template>
+  <div>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Konfirmasi Hapus</h5>
+            <i class="bi bi-x-square"></i>
+          </div>
+          <div class="modal-body">
+            Apakah Anda yakin ingin menghapus kontingen ini?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-danger" @click="deleteContingent">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="dashboard-container">
     <div
       v-if="loading"
@@ -53,7 +73,11 @@
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#" @click="EditContingent(contingent.id)"><i class="bi bi-pencil-square"></i> Edit</a></li>
-                <!--li><a class="dropdown-item" href="#" @click="deleteContingent(contingent.id)"><i class="bi bi-trash"></i> Delete</a></li-->
+                <li>
+                  <a class="dropdown-item" href="#" @click="confirmDelete(contingent.id)">
+                    <i class="bi bi-trash"></i> Delete
+                  </a>
+                </li>
               </ul>
             </div>
           </td>
@@ -103,6 +127,8 @@
 <script>
 import axios from "axios";
 import API from "@/config/api";
+import { Modal } from "bootstrap";
+import { useToast } from "vue-toastification";
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
@@ -110,6 +136,8 @@ export default {
   name: "ContingentList",
   data() {
     return {
+      contingentId: null,
+      deleteModal: null,
       contingents: [],
       searchQuery: "", // User's search input
       currentPage: 1, // Current page of results
@@ -121,10 +149,21 @@ export default {
       progress: 0,
     };
   },
+
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
   mounted() {
     this.loadContingent(); // Corrected the method name
+    this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    confirmDelete(id) {
+      this.contingentId = id;
+      this.deleteModal.show();
+    },
+    
     async loadContingent(page = 1) {
       this.loading = true;
       console.log(this.loading);
@@ -160,6 +199,8 @@ export default {
       }
     },
 
+    
+
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) {
         this.loadContingent(page);
@@ -176,9 +217,23 @@ export default {
       this.$router.push({ name: "EditContingent", params: { id } });
     },
 
-    deleteContingent(id) {
-      console.log("Delete contingent with ID:", id);
-      // Implement logic to delete the contingent (e.g., API call)
+    async deleteContingent() {
+      try {
+
+        await axios.delete(`/contingents/${this.contingentId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
+          }
+        });
+        this.$emit("contingentDeleted", this.contingentId); // Emit event jika perlu
+        this.loadContingent();
+        this.toast.success("Contingent deleted successfully!");
+        this.deleteModal.hide(); // Tutup modal setelah sukses
+      } catch (error) {
+        this.deleteModal.hide(); // Tutup modal setelah sukses
+        this.toast.error("Gagal menghapus:", error);
+        console.error("Gagal menghapus:", error);
+      }
     },
   },
   computed: {
