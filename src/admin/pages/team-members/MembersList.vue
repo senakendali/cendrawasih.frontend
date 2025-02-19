@@ -77,7 +77,7 @@
                     <i class="bi bi-pencil-square"></i> Edit
                   </a>
                 </li>
-                <li>
+                <li v-if="permissions && permissions.includes('delete member')">
                   <a class="dropdown-item" href="#" @click="confirmDelete(member.id)">
                     <i class="bi bi-trash"></i> Delete
                   </a>
@@ -139,6 +139,7 @@ import axios from "axios";
 import API from "@/config/api";
 import { Modal } from "bootstrap";
 import { useToast } from "vue-toastification";
+import { inject } from 'vue';
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
@@ -162,7 +163,9 @@ export default {
 
   setup() {
     const toast = useToast();
-    return { toast };
+    const permissions = inject('permissions', []); // Ensure permissions is always an array
+    
+    return { toast, permissions };
   },
   mounted() {
     this.loadTeamMembers(); // Load menu data when the component is mounted

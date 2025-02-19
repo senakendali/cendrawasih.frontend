@@ -73,7 +73,7 @@
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#" @click="EditContingent(contingent.id)"><i class="bi bi-pencil-square"></i> Edit</a></li>
-                <li>
+                <li v-if="permissions && permissions.includes('delete contingent')">
                   <a class="dropdown-item" href="#" @click="confirmDelete(contingent.id)">
                     <i class="bi bi-trash"></i> Delete
                   </a>
@@ -129,6 +129,7 @@ import axios from "axios";
 import API from "@/config/api";
 import { Modal } from "bootstrap";
 import { useToast } from "vue-toastification";
+import { inject } from 'vue';
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
@@ -152,7 +153,9 @@ export default {
 
   setup() {
     const toast = useToast();
-    return { toast };
+    const permissions = inject('permissions', []); // Ensure permissions is always an array
+    
+    return { toast, permissions };
   },
   mounted() {
     this.loadContingent(); // Corrected the method name
