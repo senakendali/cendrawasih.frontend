@@ -29,15 +29,15 @@
       <i class="bi bi-file-earmark-text"></i> Team Member List
     </div>
 
-    <div class="mb-2 d-flex justify-content-end align-items-center">
+    <div class="mb-2 d-flex justify-content-between align-items-center">
       <!-- Search Bar -->
-      <!--input 
+      <input 
         v-model="searchQuery" 
         type="text" 
         class="form-control w-auto" 
         placeholder="Search" 
         @input="searchMembers" 
-      /-->
+      />
 
       <!-- Create Menu Button -->
       <router-link to="/admin/team-members/create" class="button button-primary">
@@ -50,6 +50,7 @@
       <thead>
         <tr>
           <th>ID</th>
+          <th>Contingent Name</th>
           <th>Name</th>
           <th>Category</th>
           <th>Registration Status</th>
@@ -61,6 +62,7 @@
         
         <tr v-for="(member, index) in members" :key="member.id">
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
+          <td>{{ member.contingent.name }}</td>
           <td>{{ member.name }}</td>
           <td>{{ member.championship_category.name }}</td>
           <td>
@@ -310,6 +312,14 @@ export default {
 
 .form-control {
   width: 250px;
+}
+
+input::placeholder {
+    color: #888;  /* Change text color */
+    font-size: 15px;  /* Change font size */
+    font-style: italic;  /* Change font style */
+    opacity: 1;  /* Full opacity (default is 0.5) */
+    font-family: 'Figtree', sans-serif;
 }
 
 .progress-bar {

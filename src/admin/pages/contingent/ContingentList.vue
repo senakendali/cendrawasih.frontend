@@ -30,15 +30,15 @@
       <i class="bi bi-file-earmark-text"></i> Contingent List
     </div>
 
-    <div class="mb-2 d-flex justify-content-end align-items-center">
+    <div class="mb-2 d-flex justify-content-between align-items-center">
       <!-- Search Bar -->
-      <!--input 
+      <input 
         v-model="searchQuery" 
         type="text" 
         class="form-control w-auto" 
-        placeholder="Search..." 
+        placeholder="Search" 
         @input="searchContingent" 
-      /-->
+      >
 
       <!-- Create Menu Button -->
       <router-link to="/admin/contingent/create" class="button button-primary">
@@ -55,6 +55,7 @@
           <th>PIC Name</th>
           <th>PIC Phone</th>
           <th>PIC Email</th>
+          <th>Total Team Members</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -66,6 +67,7 @@
           <td>{{ contingent.pic_name }}</td>
           <td>{{ contingent.pic_phone }}</td>
           <td>{{ contingent.pic_email }}</td>
+          <td>{{ contingent.team_members_count }}</td>
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
@@ -276,6 +278,15 @@ export default {
 .nav-link {
   color: white !important;
 }
+
+input::placeholder {
+    color: #888;  /* Change text color */
+    font-size: 15px;  /* Change font size */
+    font-style: italic;  /* Change font style */
+    opacity: 1;  /* Full opacity (default is 0.5) */
+    font-family: 'Figtree', sans-serif;
+}
+
 
 
 
