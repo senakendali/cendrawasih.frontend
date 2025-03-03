@@ -60,6 +60,7 @@
                 class="form-select"
                 id="age_category_id"
                 v-model="form.age_category_id"
+                @change="fetchCategoryClasses"
                 :class="{ 'is-invalid': errors.age_category_id }"
               >
                 <option value="" disabled>Choose Age Category</option>
@@ -72,6 +73,26 @@
                 </option>
               </select>
               <div class="invalid-feedback">{{ errors.age_category_id }}</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="category_class_id" class="form-label">Class</label>
+              <select
+                class="form-select"
+                id="category_class_id"
+                v-model="form.category_class_id"
+                :class="{ 'is-invalid': errors.category_class_id }"
+              >
+                <option value="" disabled>Choose Class</option>
+                <option 
+                  v-for="categoryClass in categoryClasses" 
+                  :key="categoryClass.class_id" 
+                  :value="categoryClass.class_id"
+                >
+                  {{ categoryClass.gender }} Class {{ categoryClass.class_name }},  ( {{  categoryClass.weight_min }} KG - {{  categoryClass.weight_max }} KG ). Total Participant: {{ categoryClass.team_member_count }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.category_class_id }}</div>
             </div>
 
             <!--div class="mb-3">
@@ -122,12 +143,12 @@ export default {
   },
 
   computed: {
-    maleClassesData() {
+    /*maleClassesData() {
       return this.categoryClasses.filter((item) => item.gender === "male");
     },
     femaleClassesData() {
       return this.categoryClasses.filter((item) => item.gender === "female");
-    },
+    },*/
   },
 
   setup() {
@@ -142,6 +163,7 @@ export default {
         tournament_id: "",
         match_category_id: "",
         age_category_id: "",
+        category_class_id: "",
         name: "",
       },
       maleClasses: [], // Move the data here
@@ -161,6 +183,7 @@ export default {
     this.fetchActiveTournaments();
     this.fetchMatchCategories();
     this.fetchAgeCategories();
+    this.fetchCategoryClasses();
     if (this.isEdit && this.clasificationId) {
       this.fetchClasificationDetail(this.clasificationId);
     }
@@ -192,7 +215,21 @@ export default {
     async fetchAgeCategories() {
       await this.fetchData("/age-categories", "ageCategories");
     },
+
     async fetchCategoryClasses() {
+      if (!this.form.age_category_id){
+        this.categoryClasses = [];
+      }
+
+      try {
+        const response = await axios.get(`/fetch-available-class?age_category_id=${this.form.age_category_id}`);
+        this.categoryClasses = response.data;
+      } catch (error) {
+        console.error("Error fetching districts:", error);
+      }
+      //await this.fetchData("/fetch-available-class", "categoryClasses");
+    },
+    /*async fetchCategoryClasses() {
       if (!this.form.age_category_id) return;
 
       try {
@@ -216,7 +253,7 @@ export default {
       } catch (error) {
         this.toast.error("Failed to fetch category classes.");
       }
-    },
+    },*/
 
     async fetchData(url, targetKey) {
       try {

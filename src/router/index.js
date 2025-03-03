@@ -72,7 +72,7 @@ const routes = [
     ],
   },  
   {
-    path: '/kejuaraan',
+    path: '/detail',
     component: MainLayout, // Use MainLayout for all /kejuaraan routes
     children: [
       {
@@ -81,7 +81,7 @@ const routes = [
         component: TournamentPage, // TournamentPage as the default view
       },
       {
-        path: ':id', // Matches /kejuaraan/:id
+        path: ':slug', // Matches /kejuaraan/:id
         name: 'GalleryDetail',
         component: GalleryDetail, // GalleryDetail for specific IDs
         props: true, // Pass route params as props

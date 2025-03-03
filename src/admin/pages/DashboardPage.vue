@@ -25,7 +25,7 @@
             <p class="card-text">{{ tournament.description }}</p>
            
             <div class="d-flex gap-2 justify-content-start">
-              <router-link
+              <router-link v-if="tournament.status === 'active'"
               :to="{ name: 'contingent-registration', params: { id: tournament.id } }"
               class="button button-secondary"
               >

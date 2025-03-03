@@ -52,57 +52,17 @@
         </div>
       </div>
     </div>
+
+    <TournamentGallery/>
     
-    <div id="event-image-section" class="event-image">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <img src="@/assets/images/main/banner/bogor-ps.png" alt="Logo" class="img-fluid w-100 h-100" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-12">
-            <div v-if="!isLoading" class="event-caption">
-              <div class="caption-content">
-                <h1 class="caption-title">{{ tournamentName }}</h1>
-                <p class="caption-description">
-                  {{ tournamentDescription }}
-                </p>
-                <div class="d-flex gap-2 justify-content-center">
-                  <router-link
-                    v-if="slug"
-                    :to="{ name: 'registration', params: { slug: slug } }"
-                    class="btn btn-primary"
-                  >
-                  Daftar
-                </router-link>
-                  <button @click="downloadDocument(document)" class="btn btn-primary">Download</button>
-                </div>
-              </div>
-          </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <TournamentInfo
-      :tournament="{
-        location: tournamentLocation,
-        event_date: tournamentDate,
-        matchCategories: matchCategories,
-        ageCategories: ageCategories,
-        contactPersons: contactPersons
-      }"
-    />
-
-    <!-- Our Activity Section -->
-    <OurActivity :activities="activities"/>
+    
   </div>
 </template>
 
 <script>
-import TournamentInfo from '@/components/main/TournamentInfo.vue';
-import OurActivity from '@/components/main/OurActivity.vue';
+//import TournamentInfo from '@/components/main/TournamentInfo.vue';
+//import OurActivity from '@/components/main/OurActivity.vue';
+import TournamentGallery from '@/components/main/TournamentGallery.vue';
 import axios from 'axios';
 import API from '@/config/api';
 
@@ -110,8 +70,7 @@ import API from '@/config/api';
 export default {
   name: 'HomePage',
   components: {
-    TournamentInfo,
-    OurActivity
+    TournamentGallery
   },
   data() {
     return {
@@ -152,7 +111,7 @@ export default {
   },
   methods: {
     scrollToEventSection() {
-      const section = document.getElementById('event-image-section');
+      const section = document.getElementById('gallery');
       section.scrollIntoView({ behavior: 'smooth' });
     },
     checkIfMobile() {

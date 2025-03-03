@@ -31,18 +31,27 @@
 
     <div class="mb-2 d-flex justify-content-between align-items-center">
       <!-- Search Bar -->
-      <input 
-        v-model="searchQuery" 
-        type="text" 
-        class="form-control w-auto" 
-        placeholder="Search" 
-        @input="searchMembers" 
-      />
+       <div class="search">
+            <input 
+            v-model="searchQuery" 
+            type="text" 
+            class="form-control w-auto" 
+            placeholder="Search" 
+            @input="searchMembers" 
+          />
+       </div>
+      
 
-      <!-- Create Menu Button -->
-      <router-link to="/admin/team-members/create" class="button button-primary">
-        <i class="bi bi-plus-square"></i> Add New
-      </router-link>
+      <div class="tool-bar d-flex gap-2">
+        <button class="button button-primary" @click="exportToExcel">
+          <i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel
+        </button>
+
+        <router-link to="/admin/team-members/create" class="button button-primary">
+          <i class="bi bi-plus-square"></i> Add New
+        </router-link>
+      </div> <!-- Create Menu Button -->
+      
     </div>
 
     <!-- Table to display navigation data -->
@@ -174,6 +183,31 @@ export default {
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    async exportToExcel() {
+      try {
+        const response = await axios.get("/team-members/export", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          responseType: "blob", // Agar response berupa file
+        });
+
+        // Buat URL dari blob response
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "team_members.xlsx"); // Nama file saat diunduh
+        document.body.appendChild(link);
+        link.click();
+
+        // Hapus elemen setelah digunakan
+        link.remove();
+      } catch (error) {
+        console.error("Gagal mengekspor:", error);
+        this.toast.error("Gagal mengekspor data!");
+      }
+    },
+
     confirmDelete(id) {
       this.memberId = id;
       this.deleteModal.show();
@@ -228,9 +262,6 @@ export default {
         console.error("Gagal menghapus:", error);
       }
     },
-
-
-
 
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) {

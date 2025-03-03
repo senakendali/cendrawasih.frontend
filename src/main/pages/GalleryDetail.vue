@@ -1,25 +1,141 @@
 <template>
     <div class="main-container">
       <div class="container">
-        <h1>Gallery Detail - Item {{ id }}</h1>
+        <h1>{{ tournamentName }}</h1>
+        
+        <div class="row">
+          <div class="col-lg-12">
+              <p>{{ tournamentDescription }}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div v-if="!isLoading" class="event-caption">
+              
+              <div class="d-flex gap-2 justify-content-center">
+                <router-link
+                  v-if="slug && tournamentStatus === 'active'"
+                  :to="{ name: 'registration', params: { slug: slug } }"
+                  class="btn btn-primary"
+                >
+                Daftar
+                </router-link>
+                <button @click="downloadDocument(document)" class="btn btn-primary">Download</button>
+              </div>
+             
+          </div>
+          </div>
+        </div>
 
-        <img src="@/assets/images/main/banner/main-banner.png" alt="Gallery Image 1" class="img-fluid mb-3" />
+        <TournamentInfo
+          :tournament="{
+            location: tournamentLocation,
+            event_date: tournamentDate,
+            matchCategories: matchCategories,
+            ageCategories: ageCategories,
+            contactPersons: contactPersons
+          }"
+        />
 
-        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Accusantium aperiam, voluptatem, delectus nisi veniam odit officia molestias voluptatibus libero beatae molestiae in odio velit sapiente facere ducimus, quod impedit dolor inventore? Perferendis nihil itaque quam molestias debitis ducimus. Illo sequi natus aliquid eligendi, libero earum maxime ea maiores ratione architecto?</p>
-        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. At unde dolorum laudantium, sequi, eligendi odit similique deleniti, sunt eveniet voluptas necessitatibus. Illum nihil corrupti possimus aspernatur! Commodi quidem cum, pariatur sequi fuga labore laudantium vero molestiae eaque totam expedita ratione quasi iure odit veniam nemo esse dicta neque reiciendis. Iusto.</p>
-        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. At unde dolorum laudantium, sequi, eligendi odit similique deleniti, sunt eveniet voluptas necessitatibus. Illum nihil corrupti possimus aspernatur! Commodi quidem cum, pariatur sequi fuga labore laudantium vero molestiae eaque totam expedita ratione quasi iure odit veniam nemo esse dicta neque reiciendis. Iusto.</p>
+        <!-- Our Activity Section -->
+        <OurActivity :activities="activities"/>
+
+        
       </div>
+      <div v-if="isLoading" class="loading-bar"></div>
     </div>
 </template>
   
   <script>
+  import TournamentInfo from '@/components/main/TournamentInfo.vue';
+  import OurActivity from '@/components/main/OurActivity.vue';
+  import axios from 'axios';
+  import API from '@/config/api';
+
   export default {
     name: 'GalleryDetail',
-    props: {
-      id: {
-        type: String,
-        required: true,
+    components: {
+      TournamentInfo,
+      OurActivity
+    },
+    data() {
+      return {
+        tournamentId: null,
+        tournamentName: '',
+        slug: '',
+        tournamentDescription: '',
+        tournamentDate: '',
+        tournamentLocation: '',
+        tournamentStatus: '',
+        dateStart: '',
+        dateEnd: '',
+        document: '',
+        matchCategories: [],
+        ageCategories: [],
+        activities: [],
+        contactPersons: [],
+        errors: {},
+        isLoading: false,
+      };
+    },
+
+  
+    created() {
+      this.fetchTournamentDetail(this.$route.params.slug);
+    },
+    methods: {
+      async fetchTournamentDetail(slug) {
+        this.isLoading = true; // Show loader
+        try {
+          const response = await axios.get(`/tournaments/detail/${slug}`);
+          if (response.data) {
+            this.tournamentId = response.data.id || '';
+            this.tournamentName = response.data.name || '';
+            this.slug = response.data.slug || '';
+            this.tournamentDescription = response.data.description || '';
+            this.tournamentDate = response.data.event_date || '';
+            this.tournamentLocation = response.data.location || '';
+            this.dateStart = response.data.start_date || '';
+            this.dateEnd = response.data.end_date || '';
+            this.matchCategories = response.data.categories || [];
+            this.ageCategories = response.data.age_categories || [];
+            this.contactPersons = response.data.contact_persons || [];
+            this.document = response.data.document || '';
+            this.activities = response.data.activities || [];
+            this.tournamentStatus = response.data.status || '';
+            console.log(this.contactPersons);
+          }
+        } catch (error) {
+          this.toast.error("Error fetching contingent details.");
+        } finally {
+          this.isLoading = false;
+        }
       },
+
+      async downloadDocument(filename) {
+        this.isLoading = true;
+        try {
+          const response = await axios.get(
+            `${API.API_BASE_URL}/download-document/${filename}`,
+            { responseType: 'blob' }
+          );
+
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        } catch (error) {
+          console.error('Error downloading the document:', error);
+          alert('Failed to download the document. Please try again later.');
+        } finally {
+          this.isLoading = false;
+        }
+      },
+    
+
     },
   };
   </script>
@@ -32,5 +148,54 @@
     min-height: 100vh;
     padding: 2rem 0;
   }
-  </style>
+
+  .btn-primary {
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    background-color: #D32F2F; /* Red background for the button */
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #FF5722; /* Darker red on hover */
+  }
+
+  /* Loader Styles */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #D32F2F;
+  z-index: 9999;
+  animation: loading 1s infinite linear;
+}
+
+/* Define animation for the loading bar */
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+small {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .myForm .row{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+</style>
   
