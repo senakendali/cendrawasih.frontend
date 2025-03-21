@@ -5,6 +5,7 @@ import AdminLayout from '../admin/layouts/AdminLayout.vue';
 import LoginLayout from '../admin/layouts/LoginLayout.vue';
 import DashboardPage from '../admin/pages/DashboardPage.vue';
 import ContingentRegistrationPage from '../admin/pages/ContingentRegistrationPage.vue';
+import TournamentInsightPage from '@/admin/pages/dashboard/TournamentInsightPage.vue';
 import LoginPage from '../admin/pages/LoginPage.vue';
 import RegistrationPage from '@/main/pages/RegistrationPage.vue';
 import TournamentPage from '@/main/pages/TournamentPage.vue';
@@ -115,6 +116,18 @@ const routes = [
       },
     ],
   },  
+  {
+    path: '/tournament-insight/:id',
+    component: AdminLayout,
+    children: [
+      {
+        props: true, // Kirim parameter ID ke komponen sebagai props
+        name: 'tournament-insight', // Name should be here in the child route
+        path: '', // Child route should not redefine ":id"
+        component: TournamentInsightPage,
+      },
+    ],
+  }, 
   { 
     path: '/admin/login', 
     component: LoginLayout, 

@@ -31,6 +31,12 @@
               >
               Daftar
               </router-link>
+              <router-link
+              :to="{ name: 'tournament-insight', params: { id: tournament.id } }"
+              class="button button-secondary"
+              >
+              Detail
+              </router-link>
               <button @click="downloadDocument(tournament.document)" class="button button-secondary">Download</button>
             </div>
             

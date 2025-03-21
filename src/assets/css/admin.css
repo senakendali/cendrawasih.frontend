@@ -132,6 +132,11 @@ a{
     width: 100px;
 }
 
+.table th.header{
+    background-color: #1E2A57;
+    color: #FFFFFF;
+}
+
 .sub-menu{
     list-style: none;
 }
