@@ -1,24 +1,38 @@
 <template>
+  <div>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Konfirmasi Hapus</h5>
+            <i class="bi bi-x-square"></i>
+          </div>
+          <div class="modal-body">
+            Apakah Anda yakin ingin menghapus kontingen ini?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-danger" @click="deleteContingent">Yes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="dashboard-container">
     <div
       v-if="loading"
       class="progress-bar"
       :style="{ width: progress + '%' }"
     ></div>
+
     <div class="mb-2 page-title">
-      <i class="bi bi-file-earmark-text"></i> Match List
+      <i class="bi bi-file-earmark-text"></i> Drawing
     </div>
 
     <div class="mb-2 d-flex justify-content-end align-items-center">
       <!-- Search Bar -->
-      <!--input 
-        v-model="searchQuery" 
-        type="text" 
-        class="form-control w-auto" 
-        placeholder="Search" 
-        @input="searchMembers" 
-      /-->
-
+     
       <!-- Create Menu Button -->
       <router-link to="/admin/drawing/create" class="button button-primary">
         <i class="bi bi-plus-square"></i> Add New
@@ -29,115 +43,144 @@
     <table class="table mt-4">
       <thead>
         <tr>
-          <th>Match</th>
-          <th>Round</th>
-          <th>Contingent 1</th>
-          <th>Participant 1</th>
-          <th>Contingent 2</th>
-          <th>Participant 2</th>
-          <th>Winner</th>
+          <th>Tournament</th>
+          <th>Pool</th>
+          <th>Match Category</th>
+          <th>Age Category</th>
+          <th>Class Category</th>
+          <th>Bracket Type</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <!-- Wrapper element with v-if -->
-      <tbody v-if="matches.length > 0">
-        <tr v-for="match in matches" :key="match.match_id">
-          <td>{{ match.match_id }}</td>
-          <td>{{ match.round }}</td>
-          <td>{{ match.team_member_1_contingent ?? 'TBD' }}</td>
-          <td>{{ match.team_member_1_name ?? 'TBD' }}</td>
-          <td>{{ match.team_member_2_contingent ?? 'TBD' }}</td>
-          <td>{{ match.team_member_2_name ?? 'TBD' }}</td>
-          <td>{{ match.winner ?? 'TBD' }}</td>
+      <tbody v-if="pools.length > 0">
+        <tr v-for="pool in pools" :key="pool.pool_id">
+          
+       
+          <td>{{ pool.tournament_name }}</td>
+          <td>{{ pool.name }}</td>
+          <td>{{ pool.match_category }}</td>
+          <td>{{ pool.age_category }}</td>
+          <td>{{ pool.category_class.gender }} - {{ pool.category_class.name }} ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)</td>
+          <td class="text-center">{{ pool.match_chart }}</td>
+          <td class="action-column">
+            <div class="btn-group" role="group">
+              <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-card-checklist"></i> Action
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" @click="GenerateMatch(pool.pool_id)"><i class="bi bi-diagram-3"></i> View Bracket</a></li>
+                <li><a class="dropdown-item" href="#" @click="ViewMatch(pool.pool_id)"><i class="bi bi-eye"></i> View Match</a></li>
+                
+              </ul>
+            </div>
+          </td>
         </tr>
       </tbody>
-
-      <!-- Fallback message when there is no data -->
       <tbody v-else>
         <tr>
-          <td colspan="7" class="text-center">No match found.</td>
+          <td colspan="7" class="text-center">No data found.</td>
         </tr>
       </tbody>
-
-
     </table>
 
-    
-
-
-
+    <!-- Pagination Controls -->
+    <nav v-if="totalPages > 1">
+      <ul class="pagination pagination-lg justify-content-end">
+        <li class="page-item" :class="{ disabled: !prevPageUrl }">
+          <button
+            class="page-link"
+            @click="changePage(currentPage - 1)"
+            :disabled="!prevPageUrl"
+          >
+          <i class="bi bi-arrow-left-square"></i>
+          </button>
+        </li>
+        <li
+          v-for="page in totalPages"
+          :key="page"
+          class="page-item"
+          :class="{ active: currentPage === page }"
+        >
+          <button class="page-link" @click="changePage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" :class="{ disabled: !nextPageUrl }">
+          <button
+            class="page-link"
+            @click="changePage(currentPage + 1)"
+            :disabled="!nextPageUrl"
+          >
+          <i class="bi bi-arrow-right-square"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import API from "@/config/api";
+import { Modal } from "bootstrap";
+import { useToast } from "vue-toastification";
+import { inject } from 'vue';
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
 export default {
-  name: "DrawingList",
+  name: "ContingentList",
   data() {
     return {
-      matches: [], // Array to hold paginated team members
-      searchQuery: "", // User's search input
-      currentPage: 1, // Current page of results
-      perPage: 10, // Results per page
-      totalPages: 0, // Total number of pages
-      prevPageUrl: null, // URL of the previous page
-      nextPageUrl: null, // URL of the next page
+      poolId: null,
+      deleteModal: null,
+      pools: [],
       loading: false,
       progress: 0,
     };
   },
+
+  setup() {
+    const toast = useToast();
+    const permissions = inject('permissions', []); // Ensure permissions is always an array
+    
+    return { toast, permissions };
+  },
   mounted() {
-    this.loadMatches(); // Load menu data when the component is mounted
+    this.loadPools(); // Corrected the method name
+    this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
-    async loadMatches() {
+    confirmDelete(id) {
+      this.poolId = id;
+      this.deleteModal.show();
+    },
+    
+    async loadPools() {
       this.loading = true;
+      console.log(this.loading);
       try {
-        const response = await axios.get("/drawings", {
+        this.loading = true;
+
+        const response = await axios.get("/pools", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
-          },
-          params: {
-            search: this.searchQuery.trim(),
           },
         });
         const {
           data,
         } = response.data;
 
-        this.matches = data; // Assign team membersL
+        this.pools = data; // Assign team members
         this.loading = false;
       } catch (error) {
-        console.error("Error loading members:", error);
+        console.error("Error loading data:", error);
       }
     },
 
-   
-
-
-    searchDrawing() {
-      this.currentPage = 1; // Reset to page 1 for new search
-      this.loadMatches();
+    GenerateMatch(id) {
+      this.$router.push({ name: "GenerateMatch", params: { id } });
     },
-
-    async EditDrawing(id) {
-      this.$router.push({ name: "EditDrawing", params: { id } });
-    },
-
-    deleteMenu(id) {
-      console.log("Delete menu with ID:", id);
-      // Implement logic to delete the menu (e.g., API call)
-    },
-  },
-  computed: {
-    prevPageExists() {
-      return this.currentPage > 1;
-    },
-    nextPageExists() {
-      return this.currentPage < this.totalPages;
+    ViewMatch(id) {
+      this.$router.push({ name: "ViewMatch", params: { id } });
     },
   },
 };
@@ -159,16 +202,25 @@ export default {
 }
 
 .navbar {
-  background-color: #1E2A57 !important; /* Base color */
+  background-color: #1E2A57 !important;
 }
 
 .navbar-toggler-icon {
-  background-color: white; /* Ensure toggle icon is visible */
+  background-color: white;
 }
 
 .nav-link {
-  color: white !important; /* Navigation link color */
+  color: white !important;
 }
+
+input::placeholder {
+    color: #888;  /* Change text color */
+    font-size: 15px;  /* Change font size */
+    font-style: italic;  /* Change font style */
+    opacity: 1;  /* Full opacity (default is 0.5) */
+    font-family: 'Figtree', sans-serif;
+}
+
 
 
 

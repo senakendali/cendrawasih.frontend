@@ -51,36 +51,131 @@
     </div>
     
     <div v-if="activeTab === 'summary'">
-      <table class="table mt-4">
-        <thead>
-          <tr>
-            <th colspan="5" class="header">
-              <i class="bi bi-clipboard-data"></i> Detail Peserta Kotingen Berdasarkan Kategori
-            </th>
-          </tr>
-          <tr>
-            <th>No</th>
-            <th>Contingent Name</th>
-            <th>Tanding</th>
-            <th>Seni</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody v-if="contingents.length > 0">
-          <tr v-for="(contingent, index) in contingents" :key="contingent.id">
-            <td>{{ index + 1 }}</td>
-            <td>{{ contingent.contingent_name }}</td>
-            <td>{{ contingent.total_tanding }}</td>
-            <td>{{ contingent.total_seni }}</td>
-            <td>{{ contingent.total_members }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="5" class="text-center">No data found.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="row mt-4">
+        <div class="col-lg-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th colspan="5" class="header">
+                  <i class="bi bi-clipboard-data"></i> Jumlah Kontingen Mendaftar per hari
+                </th>
+              </tr>
+              <tr>
+                <th>No</th>
+                <th>Tanggal</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+
+            <tbody v-if="totalRegistrance.length > 0">
+              <tr v-for="(item, index) in totalRegistrance" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>{{ item.join_date }}</td>
+                <td>{{ item.total_contingents }}</td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr>
+                <td colspan="5" class="text-center">No data found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-lg-6">
+          <table class="table">
+            <thead>
+              <tr>
+                <th colspan="3" class="header">
+                  <i class="bi bi-clipboard-data"></i> Proyeksi Uang Diterima
+                </th>
+              </tr>
+              <tr>
+                <th>No</th>
+                <th>Deskripsi</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody v-if="RevenueProjection.length > 0">
+              <tr v-for="(item, index) in RevenueProjection" :key="index">
+                <td>{{ item.id }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ formatCurrency(item.total_amount) }}</td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr>
+                <td colspan="3" class="text-center">No data found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-lg-6">
+          <table class="table">
+            <thead>
+              <tr>
+                <th colspan="3" class="header">
+                  <i class="bi bi-clipboard-data"></i> Laporan Pembayaran
+                </th>
+              </tr>
+              <tr>
+                <th>No</th>
+                <th>Deskripsi</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody v-if="tournamentIncomes.length > 0">
+              <tr v-for="(item, index) in tournamentIncomes" :key="index">
+                <td>{{ item.id }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ formatCurrency(item.amount) }}</td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr>
+                <td colspan="3" class="text-center">No data found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+      <div class="row mt-4">
+        <div class="col-lg-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th colspan="5" class="header">
+                  <i class="bi bi-clipboard-data"></i> Detail Peserta Kotingen Berdasarkan Kategori
+                </th>
+              </tr>
+              <tr>
+                <th>No</th>
+                <th>Contingent Name</th>
+                <th>Tanding</th>
+                <th>Seni</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody v-if="contingents.length > 0">
+              <tr v-for="(contingent, index) in contingents" :key="contingent.id">
+                <td>{{ index + 1 }}</td>
+                <td>{{ contingent.contingent_name }}</td>
+                <td>{{ contingent.total_tanding }}</td>
+                <td>{{ contingent.total_seni }}</td>
+                <td>{{ contingent.total_members }}</td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr>
+                <td colspan="5" class="text-center">No data found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
       <div class="row mt-4">
         <div class="col-lg-4">
           <table class="table">
@@ -168,7 +263,33 @@
         </div>
       </div>
       <div class="row mt-4">
-        <div class="col-lg-6">
+        <div class="col-lg-4">
+          <table class="table">
+            <thead>
+              <tr>
+                <th colspan="3" class="header">
+                  <i class="bi bi-clipboard-data"></i> Peserta Berdasarkan Gender
+                </th>
+              </tr>
+              <tr>
+                <th>Gender</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody v-if="participantsByGender.length > 0">
+              <tr v-for="(item, index) in participantsByGender" :key="index">
+                <td>{{ item.gender }}</td>
+                <td>{{ item.total }}</td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr>
+                <td colspan="2" class="text-center">No data found.</td>
+              </tr>
+            </tbody> 
+          </table>
+        </div>
+        <div class="col-lg-4">
           <table class="table">
             <thead>
               <tr>
@@ -196,7 +317,7 @@
             </tbody> 
           </table>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
           <table class="table">
             <thead>
               <tr>
@@ -229,24 +350,48 @@
 
     <div v-if="activeTab === 'statistic'">
       <div class="row mt-4">
+        <div class="col-lg-12">
+          <div class="chart-container">
+            <div class="title"><i class="bi bi-bar-chart-line"></i> Peserta Berdasarkan Kelas</div>
+            <v-chart :option="ContingentRegistraionByDateChartData" style="width: 100%; height: 500px;"></v-chart>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-4">
+        <div class="col-lg-6">
+          <div class="chart-container">
+            <div class="title"><i class="bi bi-pie-chart"></i> Laporan Pembayaran</div>
+            <v-chart :option="paymentReportChartData" style="width: 100%; height: 400px;"></v-chart>
+          </div> 
+        </div>
         <div class="col-lg-6">
           <div class="chart-container">
             <div class="title"><i class="bi bi-pie-chart"></i> Kontingen berdasarkan Provinsi</div>
             <v-chart :option="contingentsByProvinceChartData" style="width: 100%; height: 400px;"></v-chart>
           </div> 
         </div>
+      </div>
+      <div class="row mt-4">
         <div class="col-lg-6">
           <div class="chart-container">
             <div class="title"><i class="bi bi-pie-chart"></i> Peserta berdasarkan Provinsi</div>
             <v-chart :option="participantsByProvinceChartData" style="width: 100%; height: 400px;"></v-chart>
           </div>
         </div>
-      </div>
-      <div class="row mt-4">
         <div class="col-lg-6">
           <div class="chart-container">
             <div class="title"><i class="bi bi-pie-chart"></i> Peserta Berdasarkan Kota</div>
             <v-chart :option="participantsByDistrictChartData" style="width: 100%; height: 400px;"></v-chart>
+          </div>
+        </div>
+       
+      </div>
+      <div class="row mt-4">
+        <div class="col-lg-6">
+          <div class="chart-container">
+            <div class="title"><i class="bi bi-pie-chart"></i> Peserta Berdasarkan Gender</div>
+            <v-chart :option="participantsByGenderChartData" style="width: 100%; height: 400px;"></v-chart>
           </div>
         </div>
         <div class="col-lg-6">
@@ -273,11 +418,11 @@ import { defineComponent } from "vue";
 import axios from 'axios';
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import { BarChart, PieChart } from "echarts/charts";
+import { BarChart, PieChart, LineChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import VChart from "vue-echarts";
 
-use([CanvasRenderer, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent]);
+use([CanvasRenderer, BarChart, PieChart, LineChart, GridComponent, TooltipComponent, LegendComponent]);
 
 
 export default defineComponent({
@@ -307,12 +452,40 @@ export default defineComponent({
       participantsByAge :[],
       participantsByClass :[],
       participantsByDistrict :[],
+      participantsByGender :[],
+      tournamentIncomes: [],
+      RevenueProjection: [],
+      totalRegistrance: [],
       ageChartData: {
         tooltip: { trigger: "item" },
         legend: { top: "bottom" },
         series: [
           {
             name: "Participants by Age",
+            type: "pie",
+            radius: "50%",
+            data: [],
+          },
+        ],
+      },
+      paymentReportChartData: {
+        tooltip: { trigger: "item" },
+        legend: { top: "bottom" },
+        series: [
+          {
+            name: "Laporan Pembayaran",
+            type: "pie",
+            radius: "50%",
+            data: [],
+          },
+        ],
+      },
+      participantsByGenderChartData: {
+        tooltip: { trigger: "item" },
+        legend: { top: "bottom" },
+        series: [
+          {
+            name: "Participants by Gender",
             type: "pie",
             radius: "50%",
             data: [],
@@ -361,6 +534,13 @@ export default defineComponent({
         yAxis: { type: "value" },
         series: [{ type: "bar", data: [] }],
       },
+      ContingentRegistraionByDateChartData: {
+        tooltip: { trigger: "axis" },
+        legend: { data: ["Registrations"] },
+        xAxis: { type: "category", data: [] },
+        yAxis: { type: "value" },
+        series: [{ type: "line", data: [] }],
+      },
       formData: {
         person_responsible: '',
         email: '',
@@ -375,6 +555,8 @@ export default defineComponent({
   
 
   created() {
+    this.loading = true; 
+    this.fetchTotalRegistrance(this.$route.params.id);
     this.fetchTournamentDetail(this.$route.params.id);
     this.fetchAcount();
     this.fetchTournamentInsight(this.$route.params.id);
@@ -384,12 +566,24 @@ export default defineComponent({
     this.fetchParticipantsByAge(this.$route.params.id);
     this.fetchParticipantsByClass(this.$route.params.id);
     this.fetchParticipantsByDistrict(this.$route.params.id);
+    this.fetchParticipantsByGender(this.$route.params.id); 
+    this.fetchTournamentIncomes(this.$route.params.id);
+    this.fetchRevenueProjection(this.$route.params.id);
   },
   //
   methods: {
+    formatCurrency(value) {
+      if (!value) return "Rp 0";
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(value);
+    },
+    
     
     async fetchTournamentDetail(id) {
-      this.loading = true; // Show loader
+     
       try {
         const response = await axios.get(`/tournaments/${id}`);
         if (response.data) {
@@ -657,6 +851,139 @@ export default defineComponent({
         this.loading = false;
       }
     },
+
+    //participantsByGender
+    async fetchParticipantsByGender(tournamentId) {
+      this.loading = true;
+      try {
+        const response = await axios.get(`/tournaments/${tournamentId}/participants-by-gender`);
+        if (response.status === 200) {
+          this.participantsByGender = response.data.map((item) => ({
+            gender: item.gender,
+            total: item.total_participants
+          }));
+
+          //participantsByGenderChartData
+          this.participantsByGenderChartData = {
+            tooltip: { trigger: "item" },
+            legend: { top: "bottom" },
+            series: [
+              {
+                name: "Peserta Berdasarkan Gender",
+                type: "pie",
+                radius: "50%",
+                data: this.participantsByGender.map(item => ({
+                  name: item.gender,
+                  value: item.total
+                }))
+              }
+            ]
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    //fetchTournamentIncomes
+    async fetchTournamentIncomes(tournamentId) {
+      this.loading = true;
+      try {
+        const response = await axios.get(`/tournaments/${tournamentId}/get-tournament-income`);
+        if (response.status === 200) {
+          this.tournamentIncomes = response.data.map((item, index) => ({
+            id: index + 1,
+            description: item.description,
+            amount: item.amount
+          }));
+
+          //participantsByGenderChartData
+          this.paymentReportChartData = {
+            tooltip: { trigger: "item" },
+            legend: { top: "bottom" },
+            series: [
+              {
+                name: "Laporan Pembayaran",
+                type: "pie",
+                radius: "50%",
+                data: this.tournamentIncomes.map(item => ({
+                  name: item.description,
+                  value: item.amount
+                }))
+              }
+            ]
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    
+    async fetchRevenueProjection(tournamentId) {
+      this.loading = true;
+      try {
+        const response = await axios.get(`/tournaments/${tournamentId}/get-total-income`);
+        if (response.status === 200) {
+          this.RevenueProjection = response.data.map((item, index) => ({
+            id: index + 1,
+            description: item.description,
+            total_amount: item.total_amount
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchTotalRegistrance(tournamentId) {
+      this.loading = true;
+      try {
+        const response = await axios.get(`/tournaments/${tournamentId}/contingents-join-by-date`);
+        if (response.status === 200) {
+          this.totalRegistrance = response.data.map((item, index) => ({
+            id: index + 1,
+            join_date: item.join_date,
+            total_contingents: item.total_contingents
+          }));
+
+          this.ContingentRegistraionByDateChartData = {
+            tooltip: { trigger: "axis" },
+            xAxis: {
+              type: "category",
+              data: this.totalRegistrance.map(item => item.join_date),
+              axisLabel: { rotate: 45 } // Rotate labels if they are long
+            },
+            yAxis: {
+              type: "value",
+              name: "Total Contingents"
+            },
+            series: [
+              {
+                name: "Contingents",
+                type: "line",
+                data: this.totalRegistrance.map(item => item.total_contingents),
+                itemStyle: {
+                  color: "#91CC75" // Customize bar color
+                }
+              }
+            ]
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    
 
         
   },

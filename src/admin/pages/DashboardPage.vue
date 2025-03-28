@@ -31,7 +31,7 @@
               >
               Daftar
               </router-link>
-              <router-link
+              <router-link v-if="permissions && permissions.includes('view insight')"
               :to="{ name: 'tournament-insight', params: { id: tournament.id } }"
               class="button button-secondary"
               >
@@ -54,6 +54,7 @@
 <script>
 import axios from "axios";
 import API from "@/config/api"; // Import the API base URL configuration
+import { inject } from 'vue';
 
 // Set axios base URL (if needed)
 axios.defaults.baseURL = API.API_BASE_URL;
@@ -72,6 +73,11 @@ export default {
       nextPageUrl: null, // URL of the next page
       loading: false,
     };
+  },
+  setup() {
+    const permissions = inject('permissions', []); // Ensure permissions is always an array
+    
+    return { permissions };
   },
   mounted() {
     this.loadUserData(); // Call method to load user data when component is mounted

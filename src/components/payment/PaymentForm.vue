@@ -73,6 +73,7 @@
               />
               <div class="invalid-feedback">{{ errors.account_name }}</div>
             </div>
+            
 
             <!-- Notes -->
             <div class="mb-3">
@@ -204,7 +205,7 @@
           <div class="col-lg-12 text-center">
             <button type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
-              <span>{{ isEdit ? "Update Payment" : "Submit Payment" }}</span>
+              <span>{{ isEdit ? "Update Payment Data" : "Submit Payment Data" }}</span>
             </button>
           </div>
         </div>

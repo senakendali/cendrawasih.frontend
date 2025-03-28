@@ -80,6 +80,25 @@ a{
     color: #ffffff;
   }
 
+  .modal-header{
+    background-color: #1E2A57;
+    border-color: #1E2A57;
+    color: #ffffff;
+  }
+
+  .modal-header .modal-title{
+    font-family: "Figtree", sans-serif;
+    font-size: 16px;
+  }
+
+  .modal-header a{
+    color: #FFFFFF;
+  }
+
+  .modal-custom{
+    width: 400px;
+  }
+
 @keyframes spinner-border {
     to {
         transform: rotate(360deg);

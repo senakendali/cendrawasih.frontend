@@ -34,6 +34,8 @@ import ClasificationCreatePage from '@/admin/pages/match-clasification/Clasifica
 import ClasificationEditPage from '@/admin/pages/match-clasification/ClasificationEditPage.vue';
 import DrawingCreatePage from '@/admin/pages/drawing/DrawingCreatePage.vue';
 import DrawingEditPage from '@/admin/pages/drawing/DrawingEditPage.vue';
+import MatchPage from '@/admin/pages/drawing/MatchPage.vue';
+import MatchList from '@/admin/pages/drawing/MatchList.vue';
 import DrawingList from '@/admin/pages/drawing/DrawingList.vue';
 import MatchChartPage from '@/admin/pages/match-chart/MatchChartPage.vue';
 
@@ -326,6 +328,32 @@ const routes = [
     props: true, // Kirim parameter ID ke komponen sebagai props
     children: [
       { path: '', component: DrawingEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/drawing/match/:id',
+    name: "GenerateMatch",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { 
+        path: '', 
+        component: MatchPage 
+      }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/drawing/match/list/:id',
+    name: "ViewMatch",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { 
+        path: '', 
+        component: MatchList
+      }
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },

@@ -3,6 +3,23 @@
     <!-- Loader: Top Progress Bar -->
     <div v-if="loading" class="progress-bar" :style="{ width: progress + '%' }"></div>
 
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-custom">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">View Struk</h5>
+                    <a href="#" data-bs-dismiss="modal" aria-label="Close"><i class="bi bi-x-square"></i></a>
+                </div>
+                <div class="modal-body d-flex justify-content-center">
+                  <img :src="form.payment_document" class="img-fluid" alt="Payment Document">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
       <!-- Form Title -->
       <div class="mb-2 page-title">
@@ -114,23 +131,17 @@
             </div>
             
 
-            <div class="mb-3">
+            <div class="mb-3" v-if='!this.permissions.includes("confirm payment")'>
               <label for="payment_document" class="form-label">Payment Struk (Google Drive)</label>
               <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.payment_document }"
-                  id="payment_document"
-                  name="payment_document"
-                  v-model="form.payment_document"
-                /><a :href="form.payment_document" v-if="isConfirm" class="btn btn-outline-secondary" target="blank">View Struk</a>
+                  <input class="form-control" type="file" id="payment_document" @change="handleFileUpload">
               </div>
               <div class="invalid-feedback">{{ errors.payment_document }}</div>
-              <div id="passwordHelpBlock" class="form-text">
-                Upload your proof of payment on Google Drive, and enter the link here for us to validate.
-              </div> 
+              
             </div> 
+            <div class="mb-3">
+                <a href="#" v-if="form.payment_document" class="button button-primary"  @click="openModal"><i class="bi bi-file-earmark-post-fill"></i> View Struk</a>
+            </div>
             <div v-if="permissions && permissions.includes('confirm payment')" class="mb-3">
               <label for="status" class="form-label">Payment Status</label>
 
@@ -145,7 +156,17 @@
                 <option value="failed">Reject Payment</option>
                 
               </select>
-              <div class="invalid-feedback">{{ errors.championship_category_id }}</div>
+              <div class="invalid-feedback">{{ errors.status }}</div>
+            </div>
+            <div class="mb-3" v-if="form.status === 'failed'">
+              <label for="reject_reason" class="form-label">Reject Reason</label>
+              <textarea
+                class="form-control"
+                :class="{ 'is-invalid': errors.reject_reason }"
+                id="reject_reason"
+                v-model="form.reject_reason"
+              ></textarea>
+              <div class="invalid-feedback">{{ errors.reject_reason }}</div>
             </div>
           </div>
         </div>
@@ -202,6 +223,8 @@
 import axios from "axios";
 import { useToast } from "vue-toastification";
 import { inject } from 'vue';
+import { Modal } from 'bootstrap';
+
 
 export default {
   name: "PaymentConfirmationForm",
@@ -220,12 +243,14 @@ export default {
   },
   data() {
     return {
+      selectedFile: null,
       tournaments: [],
       members: [],
       unselectedMembers: [],
       selectedMembers: [], // This will hold the selected members' IDs
       form: {
         status: '', // Default to "Approve Payment"
+        reject_reason: '',
         payment_document: '', // File will be stored here
       },
       errors: {},
@@ -269,10 +294,17 @@ export default {
   },
 
   methods: {
-    handleFileUpload(event) {
-      const file = event.target.files[0]; // Get the uploaded file
-      this.form.payment_document = file; // Store it in the `form` object
+
+    openModal(event) {
+    event.preventDefault();
+        let modal = new Modal(document.getElementById('paymentModal'));
+        modal.show();
     },
+
+    handleFileUpload(event) {
+      this.form.payment_document = event.target.files[0];
+    },
+
     formatNumber(value) {
       if (value == null) return "-"; // Return a fallback for empty or null values
       return new Intl.NumberFormat("en-US", { 
@@ -362,42 +394,63 @@ export default {
       }
     },
 
-    
-
-    
     async submitForm() {
       this.loading = true;
+
+      let formData = new FormData();
+
+      if (this.permissions.includes("confirm payment")) {
+        formData.append("status", this.form.status);
+
+        // Hanya kirim reject_reason jika status = "failed"
+        if (this.form.status === "failed") {
+          formData.append("reject_reason", this.form.reject_reason || ""); 
+        }
+      } else {
+        if (this.form.payment_document) {
+          formData.append("payment_document", this.form.payment_document);
+        } else {
+          console.error("No file selected!");
+          this.toast.error("Please upload a valid payment document.");
+          this.loading = false;
+          return;
+        }
+      }
+
+      console.log("Submitting form with:", formData.get("payment_document"));
+
       try {
-        
-
-        const method = 'put'; // Since we're updating
-        //const endpoint = `/billings/${this.paymentId}/update-document`; // API endpoint for document update
+        const method = "post"; 
         const endpoint = this.permissions.includes("confirm payment")
-        ? `/billings/${this.paymentId}/confirm-payment`
-        : `/billings/${this.paymentId}/update-document`;
+          ? `/billings/${this.paymentId}/confirm-payment`
+          : `/billings/${this.paymentId}/update-document`;
 
-
-        // Make the request (no need to manually set Content-Type when using FormData)
-        const response = await axios[method](endpoint, this.form, {
+        await axios({
+          method: method,
+          url: endpoint,
+          data: formData,
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem("authToken")}`,
-            // Do not manually set 'Content-Type': 'multipart/form-data' when using FormData
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
           },
         });
 
-        // Using response here
-        if (response.data.message) {
-          this.toast.success(response.data.message);  // Use the message sent by backend
+        if (this.permissions.includes("confirm payment")) {
+          this.toast.success("Payment confirmed successfully.");
+        } else {
+          this.toast.success("Payment document submitted successfully.");
         }
-
-        this.$router.push("/admin/payment"); // Redirect after successful submission
+        
       } catch (error) {
-        this.toast.error("Error submitting document");
+        console.error("Error submitting form:", error);
+        this.toast.error(error.response?.data.message || "An error occurred while submitting the form.");
         this.errors = error.response?.data.errors || {};
       } finally {
         this.loading = false;
       }
-    },
+    }
+
+
+
 
     
 
@@ -436,6 +489,8 @@ export default {
   display: block;
   color: #dc3545;
 }
+
+
 
 /* Animasi garis loader */
 @keyframes loader-animation {

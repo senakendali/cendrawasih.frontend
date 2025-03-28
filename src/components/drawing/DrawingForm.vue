@@ -95,17 +95,29 @@
               <div class="invalid-feedback">{{ errors.category_class_id }}</div>
             </div>
 
-            <!--div class="mb-3">
-              <label for="name" class="form-label">Total Participant</label>
-              <input
-                type="text"
-                class="form-control"
-                id="name"
-                v-model="form.name"
-                :class="{ 'is-invalid': errors.name }"
-              />
-              <div class="invalid-feedback">{{ errors.name }}</div>
-            </div-->
+            <div class="mb-3">
+              <label for="match_chart" class="form-label">Match Chart</label>
+
+              <select
+                class="form-select"
+                id="match_chart"
+                name="match_chart"
+                v-model="form.match_chart"
+                :class="{ 'is-invalid': errors.match_chart  }"
+              > 
+                <option value="" disabled>Choose Match Chart</option>
+                <option value="2">Bagan 2</option>
+                <option value="4">Bagan 4</option>
+                <option value="6">Bagan 6</option>
+                <option value="8">Bagan 8</option>
+                <option value="16">Bagan 16</option>
+                <option value="full_prestasi">Full Prestasi</option>
+                
+              </select>
+              <div class="invalid-feedback">{{ errors.match_chart }}</div>
+            </div>
+
+           
           </div>
         </div>
 
@@ -115,7 +127,7 @@
           <div class="col-lg-12 text-center">
             <button type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
-              <span>{{ isEdit ? "Update Match Chart" : "Generate Match Chart" }}</span>
+              <span>{{ isEdit ? "Update Match" : "Generate Match" }}</span>
             </button>
           </div>
         </div>
@@ -137,20 +149,6 @@ export default {
     },
   },
 
-  watch: {
-    /*'form.match_category_id': 'updateClassificationName',
-    'form.age_category_id': 'updateClassificationName',*/
-  },
-
-  computed: {
-    /*maleClassesData() {
-      return this.categoryClasses.filter((item) => item.gender === "male");
-    },
-    femaleClassesData() {
-      return this.categoryClasses.filter((item) => item.gender === "female");
-    },*/
-  },
-
   setup() {
     const toast = useToast();
     return { toast };
@@ -165,6 +163,7 @@ export default {
         age_category_id: "",
         category_class_id: "",
         name: "",
+        match_chart:"",
       },
       maleClasses: [], // Move the data here
       femaleClasses: [], // Move the data here
@@ -222,38 +221,20 @@ export default {
       }
 
       try {
-        const response = await axios.get(`/fetch-available-class?age_category_id=${this.form.age_category_id}`);
+        //const response = await axios.get(`/fetch-available-class?age_category_id=${this.form.age_category_id}`);
+        const response = await axios.get(`/fetch-available-class`, {
+            params: {
+                age_category_id: this.form.age_category_id,
+                tournament_id: this.form.tournament_id, // Pastikan ini tersedia di form
+            }
+        });
         this.categoryClasses = response.data;
       } catch (error) {
         console.error("Error fetching districts:", error);
       }
       //await this.fetchData("/fetch-available-class", "categoryClasses");
     },
-    /*async fetchCategoryClasses() {
-      if (!this.form.age_category_id) return;
-
-      try {
-        const { data } = await axios.get(
-          `/category-classes/fetch-by-age-category/${this.form.age_category_id}`
-        );
-
-        // If there's no 'selected' in the response, add it here (set default to true)
-        this.categoryClasses = data;
-        
-        // Initialize 'selected' property for maleClasses and femaleClasses
-        this.maleClasses = data.male.map(item => ({
-          ...item,
-          selected: true // Set the default selection to true or false as per your logic
-        }));
-        
-        this.femaleClasses = data.female.map(item => ({
-          ...item,
-          selected: true // Set the default selection to true or false as per your logic
-        }));
-      } catch (error) {
-        this.toast.error("Failed to fetch category classes.");
-      }
-    },*/
+   
 
     async fetchData(url, targetKey) {
       try {
@@ -318,7 +299,7 @@ export default {
 
         // Submit the form data
         const method = this.isEdit ? "put" : "post";
-        const endpoint = this.isEdit ? `/drawings/${this.clasificationId}` : "/drawings";
+        const endpoint = this.isEdit ? `/drawings/${this.clasificationId}` : "/create-pools";
 
         await axios[method](
           endpoint,
