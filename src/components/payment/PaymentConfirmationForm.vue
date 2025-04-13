@@ -132,7 +132,7 @@
             
 
             <div class="mb-3" v-if='!this.permissions.includes("confirm payment")'>
-              <label for="payment_document" class="form-label">Payment Struk (Google Drive)</label>
+              <label for="payment_document" class="form-label">Payment Struk</label>
               <div class="input-group">
                   <input class="form-control" type="file" id="payment_document" @change="handleFileUpload">
               </div>

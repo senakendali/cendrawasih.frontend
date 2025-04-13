@@ -130,7 +130,19 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto; /* <-- enables vertical scroll */
+  z-index: 9999;     /* keeps it on top */
 }
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
 
 .pointer {
   cursor: pointer;

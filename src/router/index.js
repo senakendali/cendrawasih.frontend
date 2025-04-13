@@ -39,6 +39,14 @@ import MatchList from '@/admin/pages/drawing/MatchList.vue';
 import DrawingList from '@/admin/pages/drawing/DrawingList.vue';
 import MatchChartPage from '@/admin/pages/match-chart/MatchChartPage.vue';
 
+import TournamentList from '../admin/pages/tournament/TournamentList.vue';
+import TournamentCreatePage from "@/admin/pages/tournament/TournamentCreatePage.vue";
+import TournamentEditPage from "@/admin/pages/tournament/TournamentEditPage.vue";
+
+import TournamentActivity from '../admin/pages/tournament-activity/TournamentActivityList.vue';
+import TournamentActivityCreatePage from "@/admin/pages/tournament-activity/TournamentActivityCreatePage.vue";
+import TournamentActivityEditPage from "@/admin/pages/tournament-activity/TournamentActivityEditPage.vue";
+
 const routes = [
   {
     path: '/',
@@ -364,6 +372,62 @@ const routes = [
       { path: '', component: MatchChartPage }
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/tournament/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament/edit/:id',
+    name: 'EditTournament',
+    component: AdminLayout, // This should be the main layout component
+    props: true, // This makes the route parameters available as props to your component
+    children: [
+      {
+        path: '', // Empty path indicates this is the default child route
+        component: TournamentEditPage, // The component rendered inside the <router-view> in AdminLayout
+      }
+    ]
+  },
+  {
+    path: '/admin/tournament-activity',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentActivity }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/tournament-activity/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentActivityCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament-activity/edit/:id',
+    name: 'EditActivity',
+    component: AdminLayout, // This should be the main layout component
+    props: true, // This makes the route parameters available as props to your component
+    children: [
+      {
+        path: '', // Empty path indicates this is the default child route
+        component: TournamentActivityEditPage, // The component rendered inside the <router-view> in AdminLayout
+      }
+    ]
   },
 ];
 

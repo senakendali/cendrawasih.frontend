@@ -8,6 +8,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-vue": "^7.3.0",
     "@popperjs/core": "^2.11.8",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.0",
@@ -17,6 +19,7 @@
     "echarts": "^5.6.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+    "quill": "^2.0.3",
     "vue": "^3.2.13",
     "vue-bracket": "^0.0.5",
     "vue-carousel": "^0.18.0",
@@ -27,6 +30,7 @@
     "vue-router": "^4.0.13",
     "vue-toastification": "^2.0.0-rc.5",
     "vue-tournament-bracket": "^3.0.0",
+    "vue3-quill": "^0.3.1",
     "vuex": "^4.0.2"
   },
   "devDependencies": {

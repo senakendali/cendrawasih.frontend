@@ -20,7 +20,7 @@
                 >
                 Daftar
                 </router-link>
-                <button @click="downloadDocument(document)" class="btn btn-primary">Download</button>
+                <button @click="downloadDocument" class="btn btn-primary">Download</button>
               </div>
              
           </div>
@@ -50,7 +50,7 @@
   import TournamentInfo from '@/components/main/TournamentInfo.vue';
   import OurActivity from '@/components/main/OurActivity.vue';
   import axios from 'axios';
-  import API from '@/config/api';
+  //import API from '@/config/api';
 
   export default {
     name: 'GalleryDetail',
@@ -112,21 +112,27 @@
         }
       },
 
-      async downloadDocument(filename) {
+      async downloadDocument() {
         this.isLoading = true;
         try {
-          const response = await axios.get(
-            `${API.API_BASE_URL}/download-document/${filename}`,
-            { responseType: 'blob' }
-          );
+          const response = await axios.get('/download-document', {
+            params: {
+              filename: this.document, // Kirim full path: uploads/tournament_documents/xxx.pdf
+            },
+            responseType: 'blob',
+          });
 
-          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const blob = new Blob([response.data]);
+          const url = window.URL.createObjectURL(blob);
           const link = document.createElement('a');
+          const fileName = this.document?.split('/').pop() || 'document.pdf'; // fallback jika tidak ada nama
+
           link.href = url;
-          link.setAttribute('download', filename);
+          link.setAttribute('download', fileName);
           document.body.appendChild(link);
           link.click();
           link.remove();
+          window.URL.revokeObjectURL(url);
         } catch (error) {
           console.error('Error downloading the document:', error);
           alert('Failed to download the document. Please try again later.');
@@ -134,6 +140,7 @@
           this.isLoading = false;
         }
       },
+
     
 
     },
