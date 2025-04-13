@@ -11,7 +11,7 @@
       <!-- Form Title -->
       <div class="mb-2 page-title">
         <i class="bi bi-file-earmark-text"></i>
-        {{ isEdit ? "Edit Activity" : "Add Activity" }}
+        {{ isEdit ? "Edit Match Category" : "Add Match Category" }}
       </div>
 
       <!-- Form -->
@@ -38,58 +38,48 @@
               <div class="invalid-feedback">{{ errors.tournament_id }}</div>
             </div>
             <div class="mb-3">
-              <label for="name" class="form-label">Activity Name</label>
+              <label for="match_category_id" class="form-label">Match Category</label>
+              <select
+                class="form-select"
+                id="match_category_id"
+                v-model="form.match_category_id"
+                :class="{ 'is-invalid': errors.match_category_id }"
+              >
+                <option value="" disabled>Choose Match Category</option>
+                <option 
+                  v-for="matchCategory in matchCategories" 
+                  :key="matchCategory.id" 
+                  :value="matchCategory.id"
+                >
+                  {{ matchCategory.name }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.match_category_id }}</div>
+            </div>
+            <div class="mb-3">
+              <label for="registration_fee" class="form-label">Registration Fee</label>
               <input
                 type="text"
                 class="form-control"
-                :class="{ 'is-invalid': errors.name }"
-                id="name"
-                v-model="form.name"
+                :class="{ 'is-invalid': errors.registration_fee }"
+                id="registration_fee"
+                v-model="form.registration_fee"
+                 @input="onInputRegistrationFee"
               />
-              <div class="invalid-feedback">{{ errors.name }}</div>
+              <div class="invalid-feedback">{{ errors.registration_fee }}</div>
             </div>
           </div>
         </div>
-        <div class="mb-3">
-          <label for="description" class="form-label">Description</label>
-          <textarea
-            class="form-control"
-            :class="{ 'is-invalid': errors.address }"
-            id="description"
-            v-model="form.description"
-          ></textarea>
-          <div class="invalid-feedback">{{ errors.description }}</div>
-        </div>
-        <div class="mb-3">
-              <label for="start_date" class="form-label">Date Start</label>
-              <input
-                type="date"
-                class="form-control"
-                :class="{ 'is-invalid': errors.start_date }"
-                id="start_date"
-                v-model="form.start_date"
-              />
-              <div class="invalid-feedback">{{ errors.start_date }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="end_date" class="form-label">Date End</label>
-              <input
-                type="date"
-                class="form-control"
-                :class="{ 'is-invalid': errors.end_date }"
-                id="end_date"
-                v-model="form.end_date"
-              />
-              <div class="invalid-feedback">{{ errors.end_date }}</div>
-            </div>
+       
+        
+             
 
         <!-- Submit Button -->
         <div class="row">
           <div class="col-lg-12 text-center">
             <button type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
-              <span>{{ isEdit ? "Update Activity" : "Add Activity" }}</span>
+              <span>{{ isEdit ? "Update Match Category" : "Add Match Category" }}</span>
             </button>
           </div>
         </div>
@@ -103,7 +93,7 @@ import axios from "axios";
 import { useToast } from "vue-toastification";
 
 export default {
-  name: "ActivityForm",
+  name: "CategoryForm",
   props: {
     isEdit: {
       type: Boolean,
@@ -117,14 +107,12 @@ export default {
   data() {
     return {
       activityId: null,
-      ageCategories: [],
+      matchCategories: [],
       allTournaments: [],
       form: {
         tournament_id: "",
-        name: "",
-        description: "",
-        start_date: "",
-        end_date: "",
+        match_category_id: "",
+        registration_fee: ""
       },
       errors: {},
       loading: false,
@@ -135,6 +123,7 @@ export default {
   created() {
     this.classId = this.$route.params.id;
     this.fetchActiveTournaments();
+    this.fetchMatchCategories();
     if (this.isEdit && this.classId) {
       this.fetchActivityDetail(this.classId);
     }
@@ -163,18 +152,28 @@ export default {
   },
 
   methods: {
-    async fetchAgeCategories() {
-      try {
-        const response = await axios.get("/age-categories");
-        this.ageCategories = response.data;
-      } catch (error) {
-        console.error("Error fetching age-categories:", error);
-      }
-    },
-    
 
+    formatCurrency(value) {
+      const number = parseInt(value);
+      return new Intl.NumberFormat('id-ID', {
+        maximumFractionDigits: 0, // remove .00
+      }).format(number);
+    },
+    onInputRegistrationFee(e) {
+      const raw = e.target.value.replace(/\D/g, '');
+      this.form.registration_fee = this.formatCurrency(raw);
+    },
     async fetchActiveTournaments() {
       await this.fetchData("/tournaments/all", "allTournaments");
+    },
+
+    async fetchMatchCategories() {
+      try {
+        const response = await axios.get("/match-categories");
+        this.matchCategories = response.data;
+      } catch (error) {
+        console.error("Error fetching match-categories:", error);
+      }
     },
 
     async fetchData(url, targetKey) {
@@ -189,7 +188,7 @@ export default {
       this.loading = true;
       try {
         const response = await axios.get(
-          `/tournament-activities/${id}`,
+          `/tournament-match-categories/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('authToken')}`
@@ -200,10 +199,8 @@ export default {
           const detail = response.data.data;
           this.form = {
             tournament_id : detail.tournament_id || "",
-            name: detail.name || null,
-            description: detail.description || "",
-            start_date: detail.start_date || "",
-            end_date: detail.end_date || "",
+            match_category_id: detail.match_category_id || "",
+            registration_fee: this.formatCurrency(detail.registration_fee || 0),
           };
 
           
@@ -221,21 +218,30 @@ export default {
       this.loading = true;
 
       try {
-        const endpoint = this.isEdit ? `/tournament-activities/${this.memberId}` : "/tournament-activities";
+        const endpoint = this.isEdit
+          ? `/tournament-match-categories/${this.memberId}`
+          : "/tournament-match-categories";
         const method = this.isEdit ? "put" : "post";
 
-        await axios[method](
-          endpoint,
-          this.form,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add Authorization header
-            },
-          }
-        );
+        // Format registration_fee sebelum dikirim
+        const payload = {
+          tournament_id: this.form.tournament_id,
+          match_category_id: this.form.match_category_id,
+          registration_fee: parseInt(this.form.registration_fee.replace(/\./g, "")) || '',
+        };
 
-        this.toast.success(this.isEdit ? "Activity updated successfully!" : "Activity added successfully!");
-        this.$router.push("/admin/tournament-activity");
+        await axios[method](endpoint, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        this.toast.success(
+          this.isEdit
+            ? "Tournament Match Category updated successfully!"
+            : "Tournament Match Category added successfully!"
+        );
+        this.$router.push("/admin/tournament-category");
       } catch (error) {
         if (error.response && error.response.data.errors) {
           this.errors = error.response.data.errors;

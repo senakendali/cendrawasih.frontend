@@ -47,6 +47,10 @@ import TournamentActivity from '../admin/pages/tournament-activity/TournamentAct
 import TournamentActivityCreatePage from "@/admin/pages/tournament-activity/TournamentActivityCreatePage.vue";
 import TournamentActivityEditPage from "@/admin/pages/tournament-activity/TournamentActivityEditPage.vue";
 
+import TournamentCategoryCreatePage from '@/admin/pages/tournament-category/TournamentCategoryCreatePage.vue';
+import TournamentCategoryEditPage from '@/admin/pages/tournament-category/TournamentCategoryEditPage.vue';
+import TournamentCategoryList from '../admin/pages/tournament-category/TournamentCategoryList.vue';
+
 const routes = [
   {
     path: '/',
@@ -429,6 +433,35 @@ const routes = [
       }
     ]
   },
+  {
+    path: '/admin/tournament-category',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentCategoryList}
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/tournament-category/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentCategoryCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament-category/edit/:id',
+    name: 'EditCategory',
+    component: AdminLayout, // This should be the main layout component
+    props: true, // This makes the route parameters available as props to your component
+    children: [
+      {
+        path: '', // Empty path indicates this is the default child route
+        component: TournamentCategoryEditPage, // The component rendered inside the <router-view> in AdminLayout
+      }
+    ]
+  },
+  
 ];
 
 const router = createRouter({
