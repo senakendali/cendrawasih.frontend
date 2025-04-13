@@ -51,6 +51,10 @@ import TournamentCategoryCreatePage from '@/admin/pages/tournament-category/Tour
 import TournamentCategoryEditPage from '@/admin/pages/tournament-category/TournamentCategoryEditPage.vue';
 import TournamentCategoryList from '../admin/pages/tournament-category/TournamentCategoryList.vue';
 
+import TournamentArenaList from '@/admin/pages/tournament-arena/TournamentArenaList.vue';
+import TournamentArenaCreatePage from '@/admin/pages/tournament-arena/TournamentArenaCreatePage.vue';
+import TournamentArenaEditPage from '@/admin/pages/tournament-arena/TournamentArenaEditPage.vue';
+
 const routes = [
   {
     path: '/',
@@ -458,6 +462,34 @@ const routes = [
       {
         path: '', // Empty path indicates this is the default child route
         component: TournamentCategoryEditPage, // The component rendered inside the <router-view> in AdminLayout
+      }
+    ]
+  },
+  {
+    path: '/admin/tournament-arena',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentArenaList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/tournament-arena/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentArenaCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament-arena/edit/:id',
+    name: 'EditArena',
+    component: AdminLayout, // This should be the main layout component
+    props: true, // This makes the route parameters available as props to your component
+    children: [
+      {
+        path: '', // Empty path indicates this is the default child route
+        component: TournamentArenaEditPage, // The component rendered inside the <router-view> in AdminLayout
       }
     ]
   },
