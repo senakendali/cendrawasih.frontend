@@ -11,7 +11,7 @@
       <!-- Form Title -->
       <div class="mb-2 page-title">
         <i class="bi bi-file-earmark-text"></i>
-        {{ isEdit ? "Edit Arena" : "Add Arena" }}
+        {{ isEdit ? "Edit Contact Person" : "Add Contact Person" }}
       </div>
 
       <!-- Form -->
@@ -38,7 +38,7 @@
               <div class="invalid-feedback">{{ errors.tournament_id }}</div>
             </div>
             <div class="mb-3">
-              <label for="name" class="form-label">Arena Name</label>
+              <label for="name" class="form-label">Contact Person Name</label>
               <input
                 type="text"
                 class="form-control"
@@ -48,6 +48,40 @@
               />
               <div class="invalid-feedback">{{ errors.name }}</div>
             </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.description }"
+                id="name"
+                v-model="form.description"
+              />
+              <div class="invalid-feedback">{{ errors.description }}</div>
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.phone }"
+                id="phone"
+                v-model="form.phone"
+              />
+              <div class="invalid-feedback">{{ errors.phone }}</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors.email }"
+                id="email"
+                v-model="form.email"
+              />
+              <div class="invalid-feedback">{{ errors.email }}</div>
+            </div>
           </div>
         </div>
   
@@ -56,7 +90,7 @@
           <div class="col-lg-12 text-center">
             <button type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
-              <span>{{ isEdit ? "Update Arena" : "Add Arena" }}</span>
+              <span>{{ isEdit ? "Update Contact Person" : "Add Contact Person" }}</span>
             </button>
           </div>
         </div>
@@ -70,7 +104,7 @@ import axios from "axios";
 import { useToast } from "vue-toastification";
 
 export default {
-  name: "ArenaForm",
+  name: "ContactPersonForm",
   props: {
     isEdit: {
       type: Boolean,
@@ -83,11 +117,14 @@ export default {
   },
   data() {
     return {
-      arenaId: null,
+      contactPersonId: null,
       allTournaments: [],
       form: {
         tournament_id: "",
         name: "",
+        description: "",
+        phone: "",
+        email: "",
       },
       errors: {},
       loading: false,
@@ -96,17 +133,17 @@ export default {
   },
 
   created() {
-    this.arenaId = this.$route.params.id;
+    this.contactPersonId = this.$route.params.id;
     this.fetchActiveTournaments();
-    if (this.isEdit && this.arenaId) {
-      this.fetchArenaDetail(this.arenaId);
+    if (this.isEdit && this.contactPersonId) {
+      this.fetchContactPersonDetail(this.contactPersonId);
     }
   },
 
   beforeRouteUpdate(to, from, next) {
-    if (this.isEdit && to.params.id !== this.memberId) {
+    if (this.isEdit && to.params.id !== this.contactPersonId) {
       this.memberId = to.params.id;
-      this.fetchArenaDetail(this.arenaId);
+      this.fetchContactPersonDetail(this.memberId);
     }
     next();
   },
@@ -118,8 +155,8 @@ export default {
       handler(newId) {
         // Fetch contingent data when route param changes
         if (this.isEdit && newId) {
-          this.arenaId = newId;
-          this.fetchArenaDetail(newId); 
+          this.memberId = newId;
+          this.fetchContactPersonDetail(newId); 
         }
       },
     }
@@ -139,11 +176,11 @@ export default {
         this.toast.error(`Failed to fetch ${targetKey}`);
       }
     },
-    async fetchArenaDetail(id) {
+    async fetchContactPersonDetail(id) {
       this.loading = true;
       try {
         const response = await axios.get(
-          `/tournament-arenas/${id}`,
+          `/tournament-contact-persons/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('authToken')}`
@@ -155,6 +192,9 @@ export default {
           this.form = {
             tournament_id : detail.tournament_id || "",
             name: detail.name || null,
+            description: detail.description || "",
+            phone: detail.phone || null,
+            email: detail.email || null,
           };
 
           
@@ -172,7 +212,7 @@ export default {
       this.loading = true;
 
       try {
-        const endpoint = this.isEdit ? `/tournament-arenas/${this.arenaId}` : "/tournament-arenas";
+        const endpoint = this.isEdit ? `/tournament-contact-persons/${this.contactPersonId}` : "/tournament-contact-persons";
         const method = this.isEdit ? "put" : "post";
 
         await axios[method](
@@ -185,8 +225,8 @@ export default {
           }
         );
 
-        this.toast.success(this.isEdit ? "Arena updated successfully!" : "Arena added successfully!");
-        this.$router.push("/admin/tournament-arena");
+        this.toast.success(this.isEdit ? "Contact Person updated successfully!" : "Contact Person added successfully!");
+        this.$router.push("/admin/contact-person");
       } catch (error) {
         if (error.response && error.response.data.errors) {
           this.errors = error.response.data.errors;
