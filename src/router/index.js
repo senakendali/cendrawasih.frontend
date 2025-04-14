@@ -59,6 +59,10 @@ import ContactPersonList from '@/admin/pages/tournament-contact-person/ContactPe
 import ContactPersonCreatePage from '@/admin/pages/tournament-contact-person/ContactPersonCreatePage.vue';
 import ContactPersonEditPage from '@/admin/pages/tournament-contact-person/ContactPersonEditPage.vue';
 
+import TournamentScheduleList from '@/admin/pages/tournament-schedule/TournamentScheduleList.vue';
+import TournamentScheduleCreatePage from '@/admin/pages/tournament-schedule/TournamentScheduleCreatePage.vue';
+import TournamentScheduleEditPage from '@/admin/pages/tournament-schedule/TournamentScheduleEditPage.vue';
+
 const routes = [
   {
     path: '/',
@@ -522,6 +526,34 @@ const routes = [
       {
         path: '', // Empty path indicates this is the default child route
         component: ContactPersonEditPage, // The component rendered inside the <router-view> in AdminLayout
+      }
+    ]
+  },
+  {
+    path: '/admin/tournament-schedule',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentScheduleList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/tournament-schedule/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentScheduleCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament-schedule/edit/:id',
+    name: 'EditSchedule',
+    component: AdminLayout, // This should be the main layout component
+    props: true, // This makes the route parameters available as props to your component
+    children: [
+      {
+        path: '', // Empty path indicates this is the default child route
+        component: TournamentScheduleEditPage, // The component rendered inside the <router-view> in AdminLayout
       }
     ]
   },
