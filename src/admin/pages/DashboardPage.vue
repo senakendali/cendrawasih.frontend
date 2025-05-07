@@ -150,6 +150,9 @@ export default {
       console.log(this.loading);
       try {
         const response = await axios.get("/tournaments", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
+          },
           params: {
             page,
             perPage: this.perPage,

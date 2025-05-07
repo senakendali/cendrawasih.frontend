@@ -25,9 +25,23 @@
             <li class="nav-item">
               <router-link to="/about-us" class="nav-link" exact-active-class="active" @click="hideMenu">About Us</router-link>
             </li>
-            <!--li class="nav-item">
-              <router-link to="/schedule" class="nav-link" exact-active-class="active" @click="hideMenu">Schedule</router-link>
-            </li-->
+            <li class="nav-item dropdown" v-if="allTournaments.length">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Schedule
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" style="min-width: 250px; max-width: 300px;">
+                <li v-for="t in allTournaments" :key="t.id">
+                  <a 
+                    class="dropdown-item text-wrap" 
+                    href="#"
+                    @click.prevent="redirectToSchedule(t.id)"
+                  >
+                    {{ t.name }}
+                  </a>
+                </li>
+              </ul>
+            </li>
+
           </ul>
           <button class="btn btn-login" @click="navigateTo('/admin/login')">Login</button>
         </div>
@@ -37,6 +51,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { useRouter } from 'vue-router';
 
 export default {
@@ -46,9 +61,13 @@ export default {
       isScrolled: false,
       isLoading: false,
       menuOpen: false, // Add state to handle menu open/close
+      allTournaments: [], 
+      selectedTournament: '', 
     };
   },
+
   mounted() {
+    this.fetchActiveTournaments(); 
     document.title = 'Cenderawasih Juara Manajemen'; // Set your desired title here
     window.addEventListener('scroll', this.handleScroll);
     const router = useRouter();
@@ -64,6 +83,24 @@ export default {
     window.removeEventListener('scroll', this.handleScroll);
   },
   methods: {
+    async fetchActiveTournaments() {
+      try {
+        const response = await axios.get("/tournaments/active");
+        this.allTournaments = response.data;
+        // ✅ Set default turnamen aktif pertama
+        if (this.allTournaments.length) {
+          this.selectedTournament = this.allTournaments[0].id;
+          this.redirectToSchedule(this.selectedTournament);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tournaments:", error);
+      }
+    },
+    redirectToSchedule(tournamentId) {
+      this.$router.push({ path: '/schedule', query: { tournament_id: tournamentId } });
+      this.menuOpen = false;
+    },
+  
     handleScroll() {
       this.isScrolled = window.scrollY > 50; // Adjust the scroll position as needed
     },
