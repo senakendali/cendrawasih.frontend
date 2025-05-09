@@ -32,12 +32,21 @@ import ClassesEditPage from "@/admin/pages/classes/ClassEditPage.vue";
 import ClasificationList from '@/admin/pages/match-clasification/ClasificationList.vue';
 import ClasificationCreatePage from '@/admin/pages/match-clasification/ClasificationCreatePage.vue';
 import ClasificationEditPage from '@/admin/pages/match-clasification/ClasificationEditPage.vue';
+
 import DrawingCreatePage from '@/admin/pages/drawing/DrawingCreatePage.vue';
 import DrawingEditPage from '@/admin/pages/drawing/DrawingEditPage.vue';
 import MatchPage from '@/admin/pages/drawing/MatchPage.vue';
 import MatchList from '@/admin/pages/drawing/MatchList.vue';
 import DrawingList from '@/admin/pages/drawing/DrawingList.vue';
 import MatchChartPage from '@/admin/pages/match-chart/MatchChartPage.vue';
+
+import SeniMatchCreatePage from '@/admin/pages/seni/DrawingCreatePage.vue';
+import SeniMatchEditPage from '@/admin/pages/seni/DrawingEditPage.vue';
+import SeniMatchPage from '@/admin/pages/seni/MatchPage.vue';
+import SeniMatchList from '@/admin/pages/seni/DrawingList.vue';
+
+
+
 
 import TournamentList from '../admin/pages/tournament/TournamentList.vue';
 import TournamentCreatePage from "@/admin/pages/tournament/TournamentCreatePage.vue";
@@ -330,7 +339,7 @@ const routes = [
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
   {
-    path: '/admin/drawing',
+    path: '/admin/tanding',
     component: AdminLayout,
     children: [
       { path: '', component: DrawingList }
@@ -338,7 +347,7 @@ const routes = [
     //meta: { requiresAdmin: true }  // for admin-only route
   },
   {
-    path: '/admin/drawing/create',
+    path: '/admin/tanding/create',
     component: AdminLayout,
     children: [
       { path: '', component: DrawingCreatePage }
@@ -346,7 +355,7 @@ const routes = [
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
   {
-    path: '/admin/drawing/edit/:id',
+    path: '/admin/tanding/edit/:id',
     name: "EditDrawing",
     component: AdminLayout,
     props: true, // Kirim parameter ID ke komponen sebagai props
@@ -381,6 +390,62 @@ const routes = [
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
+
+  {
+    path: '/admin/seni',
+    component: AdminLayout,
+    children: [
+      { path: '', component: SeniMatchList }
+    ]
+    //meta: { requiresAdmin: true }  // for admin-only route
+  },
+  {
+    path: '/admin/seni/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: SeniMatchCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/seni/edit/:id',
+    name: "EditSeniMatch",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { path: '', component: SeniMatchEditPage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/seni/match/:id',
+    name: "GenerateMatch",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { 
+        path: '', 
+        component: SeniMatchPage 
+      }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/seni/match/list/:id',
+    name: "ViewMatch",
+    component: AdminLayout,
+    props: true, // Kirim parameter ID ke komponen sebagai props
+    children: [
+      { 
+        path: '', 
+        component: SeniMatchList
+      }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+
+
+
   {
     path: '/admin/match-chart',
     component: AdminLayout,

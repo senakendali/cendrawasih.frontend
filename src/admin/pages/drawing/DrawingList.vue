@@ -27,14 +27,14 @@
     ></div>
 
     <div class="mb-2 page-title">
-      <i class="bi bi-file-earmark-text"></i> Drawing
+      <i class="bi bi-file-earmark-text"></i> Tanding
     </div>
 
     <div class="mb-2 d-flex justify-content-end align-items-center">
       <!-- Search Bar -->
      
       <!-- Create Menu Button -->
-      <router-link to="/admin/drawing/create" class="button button-primary">
+      <router-link to="/admin/tanding/create" class="button button-primary">
         <i class="bi bi-plus-square"></i> Add New
       </router-link>
     </div>

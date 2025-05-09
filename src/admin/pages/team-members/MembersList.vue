@@ -121,13 +121,28 @@
           </button>
         </li>
         <li
-          v-for="page in totalPages"
+          v-for="page in paginationRange"
           :key="page"
           class="page-item"
-          :class="{ active: currentPage === page }"
+          :class="{ active: currentPage === page, disabled: page === '...'}"
         >
-          <button class="page-link" @click="changePage(page)">{{ page }}</button>
+          <button
+            v-if="page !== '...'"
+            class="page-link"
+            @click="changePage(page)"
+          >
+            {{ page }}
+          </button>
+          <button
+            v-else
+            class="page-link disabled"
+            disabled
+          >
+            ...
+          </button>
         </li>
+
+
         <li class="page-item" :class="{ disabled: !nextPageUrl }">
           <button
             class="page-link"
@@ -285,6 +300,26 @@ export default {
     },
   },
   computed: {
+    paginationRange() {
+      const delta = 2;
+      const range = [];
+      const left = Math.max(2, this.currentPage - delta);
+      const right = Math.min(this.totalPages - 1, this.currentPage + delta);
+
+      range.push(1); // Always show first page
+
+      if (left > 2) range.push('...');
+
+      for (let i = left; i <= right; i++) {
+        range.push(i);
+      }
+
+      if (right < this.totalPages - 1) range.push('...');
+
+      if (this.totalPages > 1) range.push(this.totalPages); // Always show last page
+
+      return range;
+    },
     prevPageExists() {
       return this.currentPage > 1;
     },

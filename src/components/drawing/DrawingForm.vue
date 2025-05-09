@@ -20,6 +20,7 @@
                 class="form-select"
                 id="tournament_id"
                 v-model="form.tournament_id"
+                @change="fetchCategoryClasses"
                 :class="{ 'is-invalid': errors.tournament_id }"
               >
                 <option value="" disabled>Choose Tournament</option>
@@ -40,16 +41,18 @@
                 class="form-select"
                 id="match_category_id"
                 v-model="form.match_category_id"
+                @change="fetchCategoryClasses"
                 :class="{ 'is-invalid': errors.match_category_id }"
               >
                 <option value="" disabled>Choose Match Category</option>
                 <option 
-                  v-for="category in matchCategories" 
+                  v-for="category in matchCategories.filter(c => [1].includes(c.id))" 
                   :key="category.id" 
                   :value="category.id"
                 >
                   {{ category.name }}
                 </option>
+                
               </select>
               <div class="invalid-feedback">{{ errors.match_category_id }}</div>
             </div>
@@ -216,23 +219,25 @@ export default {
     },
 
     async fetchCategoryClasses() {
-      if (!this.form.age_category_id){
+      // Reset jika belum lengkap datanya
+      if (!this.form.age_category_id || !this.form.tournament_id || !this.form.match_category_id) {
         this.categoryClasses = [];
+        return;
       }
 
       try {
-        //const response = await axios.get(`/fetch-available-class?age_category_id=${this.form.age_category_id}`);
         const response = await axios.get(`/fetch-available-class`, {
-            params: {
-                age_category_id: this.form.age_category_id,
-                tournament_id: this.form.tournament_id, // Pastikan ini tersedia di form
-            }
+          params: {
+            age_category_id: this.form.age_category_id,
+            tournament_id: this.form.tournament_id,
+            match_category_id: this.form.match_category_id // ✅ ini yang sebelumnya belum dikirim
+          }
         });
+
         this.categoryClasses = response.data;
       } catch (error) {
-        console.error("Error fetching districts:", error);
+        console.error("Error fetching category classes:", error);
       }
-      //await this.fetchData("/fetch-available-class", "categoryClasses");
     },
    
 
@@ -312,7 +317,7 @@ export default {
         );
         
         this.toast.success(`Match chart ${this.isEdit ? "updated" : "added"} successfully!`);
-        this.$router.push("/admin/drawing");
+        this.$router.push("/admin/tanding");
       } catch (error) {
         this.errors = error.response?.data?.errors || {};
         this.toast.error("Failed to save Match chart.");
