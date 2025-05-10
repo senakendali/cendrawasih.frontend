@@ -172,15 +172,8 @@
               </div>
             </div>
 
-
-
-
-
-
-
             <!-- Table to display navigation data -->
             <div v-for="categoryGroup in filteredMatchList" :key="categoryGroup.category + '-' + categoryGroup.gender">
-
 
               <!-- Judul Kategori dan Gender -->
               <h4 class="text-uppercase text-primary mb-3">
@@ -206,29 +199,14 @@
                       </th>
                     </tr>
                     <tr>
-                      <th colspan="6" class="text-start text-uppercase">
-                      
+                      <th colspan="6" class="table-header text-start text-uppercase">
                         {{ pool.matches[0]?.pool?.age_category?.name.toUpperCase() }}
                       </th>
                     </tr>
-
-                    <!-- Header Kolom Peserta -->
                     <tr class="table-sub-header">
                       <th>Match Number</th>
                       <th>Kontingen</th>
-
-                      <th v-if="pool.matches[0]?.match_type === 'seni_tunggal'">Peserta</th>
-
-                      <template v-else-if="pool.matches[0]?.match_type === 'seni_ganda'">
-                        <th>Peserta 1</th>
-                        <th>Peserta 2</th>
-                      </template>
-
-                      <template v-else-if="pool.matches[0]?.match_type === 'seni_regu'">
-                        <th>Peserta 1</th>
-                        <th>Peserta 2</th>
-                        <th>Peserta 3</th>
-                      </template>
+                      <th colspan="3">Peserta</th> <!-- Kolom dinamis, nanti isi di tbody -->
                     </tr>
                   </thead>
 
@@ -240,25 +218,27 @@
                       </td>
                       <td>{{ entry.contingent?.name || '-' }}</td>
 
-                      <!-- Tunggal -->
-                      <td v-if="entry.match_type === 'seni_tunggal'">{{ entry.team_member1?.name || '-' }}</td>
+                      <!-- Dinamis: render kolom peserta tergantung match_type -->
+                      <template v-if="entry.match_type === 'seni_tunggal'">
+                        <td>{{ entry.team_member1?.name || '-' }}</td>
+                        <td colspan="2">-</td>
+                      </template>
 
-                      <!-- Ganda -->
                       <template v-else-if="entry.match_type === 'seni_ganda'">
                         <td>{{ entry.team_member1?.name || '-' }}</td>
                         <td>{{ entry.team_member2?.name || '-' }}</td>
+                        <td>-</td>
                       </template>
 
-                      <!-- Regu -->
                       <template v-else-if="entry.match_type === 'seni_regu'">
                         <td>{{ entry.team_member1?.name || '-' }}</td>
                         <td>{{ entry.team_member2?.name || '-' }}</td>
                         <td>{{ entry.team_member3?.name || '-' }}</td>
                       </template>
                     </tr>
-
                   </tbody>
                 </table>
+
               </div>
             </div>
 
