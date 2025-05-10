@@ -40,73 +40,71 @@
     </div>
 
     <!-- Filter Section -->
-    <div class="row mb-4">
+    <div class="admin-form d-flex flex-column gap-3 mb-4">
       <!-- Match Category -->
-      <div class="col-md-3">
-        <label><strong>Match Category</strong></label><br />
-        <div>
-          <input
-            type="checkbox"
-            :checked="isAllChecked('match_category')"
-            @change="toggleAll('match_category', matchCategoryOptions)"
-          />
-          <strong> All</strong>
-        </div>
-        <div v-for="opt in matchCategoryOptions" :key="opt.value">
-          <input type="checkbox" :value="opt.value" v-model="filters.match_category" /> {{ opt.label }}
+      <div>
+        <label class="form-label d-block mb-1"><strong>Match Category</strong></label>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="form-check" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" id="match-all" :checked="isAllChecked('match_category')" @change="toggleAll('match_category', matchCategoryOptions)" />
+            <label class="form-check-label" for="match-all">All</label>
+          </div>
+          <div class="form-check" v-for="opt in matchCategoryOptions" :key="opt.value" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" :id="'match-' + opt.value" :value="opt.value" v-model="filters.match_category" />
+            <label class="form-check-label" :for="'match-' + opt.value">{{ opt.label }}</label>
+          </div>
         </div>
       </div>
 
       <!-- Gender -->
-      <div class="col-md-3">
-        <label><strong>Gender</strong></label><br />
-        <div>
-          <input
-            type="checkbox"
-            :checked="isAllChecked('gender')"
-            @change="toggleAll('gender', genderOptions)"
-          />
-          <strong> All</strong>
-        </div>
-        <div v-for="opt in genderOptions" :key="opt.value">
-          <input type="checkbox" :value="opt.value" v-model="filters.gender" /> {{ opt.label }}
+      <div>
+        <label class="form-label d-block mb-1"><strong>Gender</strong></label>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="form-check" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" id="gender-all" :checked="isAllChecked('gender')" @change="toggleAll('gender', genderOptions)" />
+            <label class="form-check-label" for="gender-all">All</label>
+          </div>
+          <div class="form-check" v-for="opt in genderOptions" :key="opt.value" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" :id="'gender-' + opt.value" :value="opt.value" v-model="filters.gender" />
+            <label class="form-check-label" :for="'gender-' + opt.value">{{ opt.label }}</label>
+          </div>
         </div>
       </div>
 
       <!-- Age Category -->
-      <div class="col-md-3">
-        <label><strong>Age Category</strong></label><br />
-        <div>
-          <input
-            type="checkbox"
-            :checked="isAllChecked('age_category')"
-            @change="toggleAll('age_category', ageCategoryOptions)"
-          />
-          <strong> All</strong>
+      <div>
+        <label class="form-label d-block mb-1"><strong>Age Category</strong></label>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="form-check" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" id="age-all" :checked="isAllChecked('age_category')" @change="toggleAll('age_category', ageCategoryOptions)" />
+            <label class="form-check-label" for="age-all">All</label>
+          </div>
+          <div class="form-check" v-for="age in ageCategoryOptions" :key="age.id" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" :id="'age-' + age.id" :value="age.id" v-model="filters.age_category" />
+            <label class="form-check-label" :for="'age-' + age.id">{{ age.name }}</label>
+          </div>
         </div>
-        <div v-for="age in ageCategoryOptions" :key="age.id">
-          <input type="checkbox" :value="age.id" v-model="filters.age_category" /> {{ age.name }}
-        </div>
-
       </div>
 
       <!-- Pool -->
-      <div class="col-md-3">
-        <label><strong>Pool</strong></label><br />
-        <div>
-          <input
-            type="checkbox"
-            :checked="isAllChecked('pool')"
-            @change="toggleAll('pool', poolOptions)"
-          />
-          <strong> All</strong>
+      <div>
+        <label class="form-label d-block mb-1"><strong>Pool</strong></label>
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="form-check" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" id="pool-all" :checked="isAllChecked('pool')" @change="toggleAll('pool', poolOptions)" />
+            <label class="form-check-label" for="pool-all">All</label>
+          </div>
+          <div class="form-check" v-for="pool in poolOptions" :key="pool" style="min-width: 100px;">
+            <input type="checkbox" class="form-check-input" :id="'pool-' + pool" :value="pool" v-model="filters.pool" />
+            <label class="form-check-label" :for="'pool-' + pool">{{ pool }}</label>
+          </div>
         </div>
-        <div v-for="pool in poolOptions" :key="pool">
-          <input type="checkbox" :value="pool" v-model="filters.pool" /> {{ pool }}
-        </div>
-
       </div>
     </div>
+
+
+
+
 
 
 
@@ -233,33 +231,45 @@ export default {
       return this.allPools.filter(pool => this.shouldShowPool(pool));
     },
     filteredMatchList() {
-      const data = Array.isArray(this.matchList) ? this.matchList : Object.values(this.matchList);
+      const data = Array.isArray(this.matchList)
+        ? this.matchList
+        : Object.values(this.matchList);
 
-      return data.filter(item => {
-        const matchType = item.pools[0]?.matches[0]?.match_type;
-        const gender = item.gender;
+      return data
+        .map(item => {
+          const matchType = item.pools[0]?.matches[0]?.match_type;
+          const gender = item.gender;
 
-        const matchCategoryMatch =
-          this.filters.match_category.length === 0 ||
-          this.filters.match_category.includes(matchType);
+          const matchCategoryMatch =
+            this.filters.match_category.length > 0 &&
+            this.isMatchByFilter(matchType, this.filters.match_category);
 
-        const genderMatch =
-          this.filters.gender.length === 0 ||
-          this.filters.gender.includes(gender);
+          const genderMatch =
+            this.filters.gender.length > 0 &&
+            this.isMatchByFilter(gender, this.filters.gender);
 
-        const ageCategoryMatch =
-          this.filters.age_category.length === 0 ||
-          item.pools.some(pool =>
-            pool.matches[0]?.pool?.age_category &&
-            this.filters.age_category.includes(pool.matches[0].pool.age_category.id)
+          const ageCategoryMatch =
+            this.filters.age_category.length > 0 &&
+            item.pools.some(pool =>
+              pool.matches[0]?.pool?.age_category &&
+              this.isMatchByFilter(pool.matches[0].pool.age_category.id, this.filters.age_category)
+            );
+
+          const filteredPools = item.pools.filter(pool =>
+            this.filters.pool.length > 0 &&
+            this.isMatchByFilter(pool.name, this.filters.pool)
           );
 
-        const poolMatch =
-          this.filters.pool.length === 0 ||
-          item.pools.some(pool => this.filters.pool.includes(pool.name));
+          if (matchCategoryMatch && genderMatch && ageCategoryMatch && filteredPools.length > 0) {
+            return {
+              ...item,
+              pools: filteredPools,
+            };
+          }
 
-        return matchCategoryMatch && genderMatch && ageCategoryMatch && poolMatch;
-      });
+          return null;
+        })
+        .filter(Boolean);
     },
   },
 
@@ -275,6 +285,16 @@ export default {
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    isMatchByFilter(value, filterArray) {
+      return filterArray.includes(value);
+    },
+
+    isMatchByFilterInsensitive(value, filterArray) {
+      return filterArray
+        .map(f => f?.toString().trim().toLowerCase())
+        .includes(value?.toString().trim().toLowerCase());
+    },
+
     isAllChecked(type) {
       if (type === 'match_category') {
         return this.filters.match_category.length === this.matchCategoryOptions.length;
@@ -287,6 +307,19 @@ export default {
       }
       return false;
     },
+
+    /*isAllChecked(type) {
+      if (type === 'match_category') {
+        return this.filters.match_category.length === this.matchCategoryOptions.length;
+      } else if (type === 'gender') {
+        return this.filters.gender.length === this.genderOptions.length;
+      } else if (type === 'age_category') {
+        return this.filters.age_category.length === this.ageCategoryOptions.length;
+      } else if (type === 'pool') {
+        return this.filters.pool.length === this.poolOptions.length;
+      }
+      return false;
+    },*/
     toggleAll(type) {
       if (type === 'match_category') {
         this.filters.match_category = this.isAllChecked(type)
@@ -299,11 +332,11 @@ export default {
       } else if (type === 'age_category') {
         this.filters.age_category = this.isAllChecked(type)
           ? []
-          : this.ageCategoryOptions.map(o => o.value);
+          : this.ageCategoryOptions.map(o => o.id); // ✅ pakai id, bukan value
       } else if (type === 'pool') {
         this.filters.pool = this.isAllChecked(type)
           ? []
-          : this.poolOptions.map(o => o.value);
+          : this.poolOptions.slice(); // <- bikin salinan array pool (karena poolOptions isinya string)
       }
     },
     groupByClassAndPool() {
@@ -336,9 +369,13 @@ export default {
         // Pool list (unique)
         const poolNames = [...new Set(response.data.flatMap(g => g.pools.map(p => p.name)))];
         this.poolOptions = poolNames;
-        this.filters.pool = poolNames;
 
-        // Age Category list (pakai ID & name)
+        // ❌ Jangan langsung set filter.pool kalau user sudah pernah ubah
+        if (this.filters.pool.length === 0) {
+          this.filters.pool = poolNames;
+        }
+
+        // Age Category list
         const ageMap = new Map();
         response.data.flatMap(g => g.pools).forEach(pool => {
           const age = pool.matches[0]?.pool?.age_category;
@@ -346,9 +383,12 @@ export default {
             ageMap.set(age.id, age.name);
           }
         });
-
         this.ageCategoryOptions = Array.from(ageMap.entries()).map(([id, name]) => ({ id, name }));
-        this.filters.age_category = this.ageCategoryOptions.map(item => item.id);
+
+        // ❌ Sama, jangan override jika user sudah ubah
+        if (this.filters.age_category.length === 0) {
+          this.filters.age_category = this.ageCategoryOptions.map(item => item.id);
+        }
 
       } catch (error) {
         console.error("Error loading seni match list:", error);

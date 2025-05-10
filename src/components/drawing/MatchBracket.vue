@@ -10,7 +10,7 @@
         
           <!-- Create Menu Button -->
           
-          <router-link :to="'/admin/drawing/match/list/' + poolId" class="button button-primary">
+          <router-link :to="'/admin/tanding/match/list/' + poolId" class="button button-primary">
             <i class="bi bi-table"></i> View Match List
           </router-link>
           <button @click="exportBracketToPNG" class="button button-primary"><i class="bi bi-filetype-png"></i> Export as PNG</button>

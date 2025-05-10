@@ -11,7 +11,7 @@
       <!-- Form Title -->
       <div class="mb-2 page-title">
         <i class="bi bi-file-earmark-text"></i>
-        {{ isEdit ? "Edit Schedule (Tanding)" : "Add Schedule (Tanding)" }}
+        {{ isEdit ? "Edit Schedule (Seni)" : "Add Schedule (Seni)" }}
       </div>
 
       <!-- Form -->
@@ -38,25 +38,7 @@
               <div class="invalid-feedback">{{ errors.tournament_id }}</div>
             </div>
 
-            <div class="mb-3">
-                <label for="match_category_id" class="form-label">Match Category</label>
-              <select
-                class="form-select"
-                id="match_category_id"
-                v-model="form.match_category_id"
-                :class="{ 'is-invalid': errors.match_category_id }"
-              >
-                <option value="" disabled>Choose Match Category</option>
-                <option 
-                  v-for="category in matchCategories" 
-                  :key="category.id" 
-                  :value="category.id"
-                >
-                  {{ category.name }}
-                </option>
-              </select>
-              <div class="invalid-feedback">{{ errors.match_category_id }}</div>
-            </div>
+            
 
             
             
@@ -128,146 +110,162 @@
               ></textarea>
             </div>
 
-            <div class="filter">
-              <div class="alert alert-info mb-3">
-                Filter data pertandingan.
-              </div>
-              
-
-              <div class="mb-3">
-                <label for="age_category_id" class="form-label">Age Category</label>
-                <select
-                  class="form-select"
-                  id="age_category_id"
-                  v-model="form.age_category_id"
-                  @change="fetchCategoryClasses"
-                  :class="{ 'is-invalid': errors.age_category_id }"
-                >
-                  <option value="" disabled>Choose Age Category</option>
-                  <option 
-                    v-for="ageCategory in ageCategories" 
-                    :key="ageCategory.id" 
-                    :value="ageCategory.id"
-                  >
-                    {{ ageCategory.name }}
-                  </option>
-                </select>
-                <div class="invalid-feedback">{{ errors.age_category_id }}</div>
-              </div>
-
-              <div class="mb-3">
-                <label for="category_class_id" class="form-label">Class</label>
-                <select
-                  class="form-select"
-                  id="category_class_id"
-                  v-model="form.category_class_id"
-                  :class="{ 'is-invalid': errors.category_class_id }"
-                >
-                  <option value="" disabled>Choose Class</option>
-                  <option 
-                    v-for="categoryClass in categoryClasses" 
-                    :key="categoryClass.class_id" 
-                    :value="categoryClass.class_id"
-                  >
-                    {{ categoryClass.gender }} Class {{ categoryClass.class_name }},  ( {{  categoryClass.weight_min }} KG - {{  categoryClass.weight_max }} KG ). Total Participant: {{ categoryClass.team_member_count }}
-                  </option>
-                </select>
-                <div class="invalid-feedback">{{ errors.category_class_id }}</div>
-              </div>
-
-              <div class="mb-3">
-                <label for="round" class="form-label">Babak</label>
-                <select
-                  class="form-select"
-                  id="round"
-                  v-model="selectedRound"
-                >
-                  <option value="">Semua Babak</option>
-                  <option 
-                    v-for="round in roundOptions" 
-                    :key="round.value" 
-                    :value="round.value"
-                  >
-                    {{ round.label }}
-                  </option>
-                </select>
-              </div>
-
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-lg-12">
-                <div class="table-responsive">
-                  <div class="mb-3">
-                    <label>
-                      <label>
-                        <input type="checkbox" :checked="selectAll" @change="onSelectAllChange($event)" />
-                        {{ selectAll ? 'Unselect All' : 'Select All' }}
-                      </label>
-                    </label>
+            <div class="admin-form d-flex flex-column gap-3 mb-4">
+              <!-- Match Category -->
+              <div>
+                <label class="form-label d-block mb-1"><strong>Match Category</strong></label>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  <div class="form-check" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" id="match-all" :checked="isAllChecked('match_category')" @change="toggleAll('match_category', matchCategoryOptions)" />
+                    <label class="form-check-label" for="match-all">All</label>
                   </div>
-
-
-                  <div v-for="pool in filteredMatchesByPool" :key="pool.pool_id" class="mb-5">
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th colspan="5" class="table-header text-uppercase">
-                            {{ pool.pool_name }}
-                          </th>
-                        </tr>
-                        <tr>
-                          <th colspan="5" class="table-header text-uppercase">
-                           {{ pool.age_category_name }} {{ pool.gender }} - KELAS {{ pool.class_name }} 
-                          </th>
-                        </tr>
-                        <tr>
-                          <th>#</th>
-                          <th>Participant One</th>
-                          <th>Participant Two</th>
-                          <th>Match Order</th>
-                          <th>Match Time</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <template v-for="round in pool.rounds" :key="round.round">
-                          <!-- Tampilkan hanya jika ada match -->
-                          <template v-if="round.matches.length > 0">
-                            <!-- Babak separator -->
-                            <tr class="round-separator">
-                              <td colspan="5">{{ round.round_label }}</td>
-                            </tr>
-
-                            <tr v-if="round.matches.length === 0">
-                              <td colspan="5" class="text-muted text-center">Tidak ada pertandingan di babak ini</td>
-                            </tr>
-                            <!-- List match -->
-                            <tr v-for="match in round.matches" :key="match.id">
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  :checked="match.selected"
-                                  @change="(e) => {
-                                    match.selected = e.target.checked;
-                                    onMatchCheckChanged();
-                                  }"
-                                />
-                              </td>
-                              <td>{{ match.participant_one?.name || 'No Name' }} ({{ match.participant_one?.contingent?.name || 'No contingent' }})</td>
-                              <td>{{ match.participant_two?.name || 'No Name' }} ({{ match.participant_two?.contingent?.name || 'No contingent' }})</td>
-                              <td><input type="text" class="form-control" v-model="match.match_order" readonly /></td>
-                              <td><input type="time" class="form-control" v-model="match.match_time" /></td>
-                            </tr>
-                          </template>
-                        </template>
-                      </tbody>
-
-                    </table>
+                  <div class="form-check" v-for="opt in matchCategoryOptions" :key="opt.value" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" :id="'match-' + opt.value" :value="opt.value" v-model="filters.match_category" />
+                    <label class="form-check-label" :for="'match-' + opt.value">{{ opt.label }}</label>
                   </div>
+                </div>
+              </div>
 
+              <!-- Gender -->
+              <div>
+                <label class="form-label d-block mb-1"><strong>Gender</strong></label>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  <div class="form-check" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" id="gender-all" :checked="isAllChecked('gender')" @change="toggleAll('gender', genderOptions)" />
+                    <label class="form-check-label" for="gender-all">All</label>
+                  </div>
+                  <div class="form-check" v-for="opt in genderOptions" :key="opt.value" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" :id="'gender-' + opt.value" :value="opt.value" v-model="filters.gender" />
+                    <label class="form-check-label" :for="'gender-' + opt.value">{{ opt.label }}</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Age Category -->
+              <div>
+                <label class="form-label d-block mb-1"><strong>Age Category</strong></label>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  <div class="form-check" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" id="age-all" :checked="isAllChecked('age_category')" @change="toggleAll('age_category', ageCategoryOptions)" />
+                    <label class="form-check-label" for="age-all">All</label>
+                  </div>
+                  <div class="form-check" v-for="age in ageCategoryOptions" :key="age.id" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" :id="'age-' + age.id" :value="age.id" v-model="filters.age_category" />
+                    <label class="form-check-label" :for="'age-' + age.id">{{ age.name }}</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pool -->
+              <div>
+                <label class="form-label d-block mb-1"><strong>Pool</strong></label>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  <div class="form-check" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" id="pool-all" :checked="isAllChecked('pool')" @change="toggleAll('pool', poolOptions)" />
+                    <label class="form-check-label" for="pool-all">All</label>
+                  </div>
+                  <div class="form-check" v-for="pool in poolOptions" :key="pool" style="min-width: 100px;">
+                    <input type="checkbox" class="form-check-input" :id="'pool-' + pool" :value="pool" v-model="filters.pool" />
+                    <label class="form-check-label" :for="'pool-' + pool">{{ pool }}</label>
+                  </div>
                 </div>
               </div>
             </div>
+
+
+
+
+
+
+
+            <!-- Table to display navigation data -->
+            <div v-for="categoryGroup in filteredMatchList" :key="categoryGroup.category + '-' + categoryGroup.gender">
+
+
+              <!-- Judul Kategori dan Gender -->
+              <h4 class="text-uppercase text-primary mb-3">
+                {{ categoryGroup.category }} - {{ categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI' }}
+              </h4>
+
+              <!-- Loop per Pool -->
+              <div v-for="pool in categoryGroup.pools" :key="pool.name" class="mb-5">
+                <div>
+                  <button class="btn btn-sm btn-outline-primary me-2" type="button" @click="selectAllInPool(pool)">
+                    Select All
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" @click="unselectAllInPool(pool)">
+                    Unselect All
+                  </button>
+                </div>
+                <table class="table mt-4">
+                  <thead>
+                    <!-- Header Informasi Pool -->
+                    <tr>
+                      <th colspan="6" class="table-header text-start text-uppercase">
+                        {{ pool.name }}
+                      </th>
+                    </tr>
+                    <tr>
+                      <th colspan="6" class="text-start text-uppercase">
+                      
+                        {{ pool.matches[0]?.pool?.age_category?.name.toUpperCase() }}
+                      </th>
+                    </tr>
+
+                    <!-- Header Kolom Peserta -->
+                    <tr class="table-sub-header">
+                      <th>Match Number</th>
+                      <th>Kontingen</th>
+
+                      <th v-if="pool.matches[0]?.match_type === 'seni_tunggal'">Peserta</th>
+
+                      <template v-else-if="pool.matches[0]?.match_type === 'seni_ganda'">
+                        <th>Peserta 1</th>
+                        <th>Peserta 2</th>
+                      </template>
+
+                      <template v-else-if="pool.matches[0]?.match_type === 'seni_regu'">
+                        <th>Peserta 1</th>
+                        <th>Peserta 2</th>
+                        <th>Peserta 3</th>
+                      </template>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr v-for="entry in pool.matches" :key="entry.id">
+                      <td>
+                        <input type="checkbox" v-model="entry.selected" />
+                        {{ entry.match_order }}
+                      </td>
+                      <td>{{ entry.contingent?.name || '-' }}</td>
+
+                      <!-- Tunggal -->
+                      <td v-if="entry.match_type === 'seni_tunggal'">{{ entry.team_member1?.name || '-' }}</td>
+
+                      <!-- Ganda -->
+                      <template v-else-if="entry.match_type === 'seni_ganda'">
+                        <td>{{ entry.team_member1?.name || '-' }}</td>
+                        <td>{{ entry.team_member2?.name || '-' }}</td>
+                      </template>
+
+                      <!-- Regu -->
+                      <template v-else-if="entry.match_type === 'seni_regu'">
+                        <td>{{ entry.team_member1?.name || '-' }}</td>
+                        <td>{{ entry.team_member2?.name || '-' }}</td>
+                        <td>{{ entry.team_member3?.name || '-' }}</td>
+                      </template>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            
+
+
+
           </div>
         </div>
   
@@ -316,6 +314,24 @@ export default {
       allMatchesByPool : [],
       selectAll: false,
       scheduledMap: {},
+      matchList: {}, // <- ini
+      filters: {
+        match_category: ['seni_tunggal', 'seni_ganda', 'seni_regu'],
+        gender: ['male', 'female'],
+        age_category: [], // diisi setelah load
+        pool: [] // diisi setelah load
+      },
+      matchCategoryOptions: [
+        { label: 'Tunggal', value: 'seni_tunggal' },
+        { label: 'Ganda', value: 'seni_ganda' },
+        { label: 'Regu', value: 'seni_regu' },
+      ],
+      genderOptions: [
+        { label: 'Putra', value: 'male' },
+        { label: 'Putri', value: 'female' },
+      ],
+      ageCategoryOptions: [], // diisi saat loadPools
+      poolOptions: [], // diisi saat loadPools
       form: {
         tournament_id: "",
         match_category_id: "",
@@ -343,6 +359,50 @@ export default {
   },
 
   computed: {
+    filteredPools() {
+      return this.allPools.filter(pool => this.shouldShowPool(pool));
+    },
+    filteredMatchList() {
+      const data = Array.isArray(this.matchList)
+        ? this.matchList
+        : Object.values(this.matchList);
+
+      return data
+        .map(item => {
+          const matchType = item.pools[0]?.matches[0]?.match_type;
+          const gender = item.gender;
+
+          const matchCategoryMatch =
+            this.filters.match_category.length > 0 &&
+            this.isMatchByFilter(matchType, this.filters.match_category);
+
+          const genderMatch =
+            this.filters.gender.length > 0 &&
+            this.isMatchByFilter(gender, this.filters.gender);
+
+          const ageCategoryMatch =
+            this.filters.age_category.length > 0 &&
+            item.pools.some(pool =>
+              pool.matches[0]?.pool?.age_category &&
+              this.isMatchByFilter(pool.matches[0].pool.age_category.id, this.filters.age_category)
+            );
+
+          const filteredPools = item.pools.filter(pool =>
+            this.filters.pool.length > 0 &&
+            this.isMatchByFilter(pool.name, this.filters.pool)
+          );
+
+          if (matchCategoryMatch && genderMatch && ageCategoryMatch && filteredPools.length > 0) {
+            return {
+              ...item,
+              pools: filteredPools,
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+    },
     filteredMatchesByPool() {
       return this.allMatchesByPool.map(pool => {
         return {
@@ -401,6 +461,7 @@ export default {
           await this.fetchRounds(newId); // ⬅️ tunggu roundOptions siap
           this.fetchMatchList(newId);    // ⬅️ baru fetch match pakai round label yang bener
           this.form.tournament_arena_id = "";
+          this.fetchMatchList();
           
         } else {
           this.allArenas = [];
@@ -413,6 +474,81 @@ export default {
   },
 
   methods: {
+    selectAllInPool(pool) {
+      pool.matches.forEach(match => match.selected = true);
+    },
+    unselectAllInPool(pool) {
+      pool.matches.forEach(match => match.selected = false);
+    },
+    getSelectedMatches() {
+      return this.matchList.flatMap(group =>
+        group.pools.flatMap(pool =>
+          pool.matches.filter(entry => entry.selected)
+        )
+      );
+    },
+    isMatchByFilter(value, filterArray) {
+      return filterArray.includes(value);
+    },
+
+    isMatchByFilterInsensitive(value, filterArray) {
+      return filterArray
+        .map(f => f?.toString().trim().toLowerCase())
+        .includes(value?.toString().trim().toLowerCase());
+    },
+
+    isAllChecked(type) {
+      if (type === 'match_category') {
+        return this.filters.match_category.length === this.matchCategoryOptions.length;
+      } else if (type === 'gender') {
+        return this.filters.gender.length === this.genderOptions.length;
+      } else if (type === 'age_category') {
+        return this.filters.age_category.length === this.ageCategoryOptions.length;
+      } else if (type === 'pool') {
+        return this.filters.pool.length === this.poolOptions.length;
+      }
+      return false;
+    },
+
+    toggleAll(type) {
+      if (type === 'match_category') {
+        this.filters.match_category = this.isAllChecked(type)
+          ? []
+          : this.matchCategoryOptions.map(o => o.value);
+      } else if (type === 'gender') {
+        this.filters.gender = this.isAllChecked(type)
+          ? []
+          : this.genderOptions.map(o => o.value);
+      } else if (type === 'age_category') {
+        this.filters.age_category = this.isAllChecked(type)
+          ? []
+          : this.ageCategoryOptions.map(o => o.id); // ✅ pakai id, bukan value
+      } else if (type === 'pool') {
+        this.filters.pool = this.isAllChecked(type)
+          ? []
+          : this.poolOptions.slice(); // <- bikin salinan array pool (karena poolOptions isinya string)
+      }
+    },
+    groupByClassAndPool() {
+      const grouped = {};
+      for (const pool of this.pools) {
+        const className = `${pool.category_class.gender} - ${pool.category_class.name} (${pool.category_class.weight_min} - ${pool.category_class.weight_max} KG)`;
+        if (!grouped[className]) grouped[className] = {};
+        if (!grouped[className][pool.name]) grouped[className][pool.name] = [];
+        grouped[className][pool.name].push(pool);
+      }
+      this.groupedPools = grouped;
+    },
+
+
+
+
+    shouldShowPool(poolName) {
+      return this.matchList.some(group =>
+        group.pools.some(pool => pool.name === poolName)
+      );
+    },
+
 
     
 
@@ -517,10 +653,6 @@ export default {
     const checked = event.target.checked;
     this.selectAll = checked;
 
-    
-    
-    
-
     // Tandai match yang terpilih
     this.allMatchesByPool.forEach(pool => {
       pool.rounds.forEach(round => {
@@ -608,58 +740,52 @@ export default {
   },
 
 
-  async fetchMatchList(tournamentId) {
+  async fetchMatchList() {
+    this.loading = true;
     try {
-      const params = {};
+      const params = {
+        tournament_id: this.form.tournament_id,
+      };
+
       if (this.isEdit) {
-        params.include_scheduled = true;
+        params.include_scheduled = true; // ✅ hanya kalau edit
       }
 
-      const response = await axios.get(`/tournaments/${tournamentId}/matches`, { params });
-      const pools = response.data.data;
+      const response = await axios.get("/seni/match-list", {
+        params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
 
-      if (Array.isArray(pools)) {
-        // ⬇️ Ambil round label dari roundOptions
-        const roundLabelMap = {};
-        this.roundOptions.forEach(opt => {
-          roundLabelMap[parseInt(opt.value)] = opt.label;
-        });
+      this.matchList = response.data;
 
-        this.allMatchesByPool = pools.map(pool => ({
-          pool_id: pool.pool_id,
-          pool_name: pool.pool_name,
-          class_name: pool.class_name,
-          age_category_name: pool.age_category_name,
-          gender: pool.gender ? 'PUTRA' : 'PUTRI',
-          rounds: pool.rounds.map(round => ({
-            round: round.round,
-            round_label: roundLabelMap[round.round] || `Babak ${round.round}`, // ✅ Gunakan label dari roundOptions
-            matches: round.matches.map(match => ({
-              ...match,
-              match_category_id: match.pool?.category_class?.match_category_id || null,
-              age_category_id: match.pool?.category_class?.age_category_id || null,
-              category_class_id: match.pool?.category_class?.id || null,
-              selected: this.isEdit ? false : true,
-              match_order: '',
-              match_time: '08:00',
-              pool: match.pool || {},
-              participant_one: match.participant_one || { name: 'No Name', contingent: { name: 'No contingent' } },
-              participant_two: match.participant_two || { name: 'No Name', contingent: { name: 'No contingent' } }
-            }))
-          }))
-        }));
+      // Pool list (unique)
+      const poolNames = [...new Set(response.data.flatMap(g => g.pools.map(p => p.name)))];
+      this.poolOptions = poolNames;
 
-        this.$nextTick(() => {
-          this.updateMatchOrder();
-        });
-
-      } else {
-        console.error("Expected array from API, got:", pools);
-        this.toast.error("Invalid match data format.");
+      if (this.filters.pool.length === 0) {
+        this.filters.pool = poolNames;
       }
+
+      // Age Category list
+      const ageMap = new Map();
+      response.data.flatMap(g => g.pools).forEach(pool => {
+        const age = pool.matches[0]?.pool?.age_category;
+        if (age && !ageMap.has(age.id)) {
+          ageMap.set(age.id, age.name);
+        }
+      });
+      this.ageCategoryOptions = Array.from(ageMap.entries()).map(([id, name]) => ({ id, name }));
+
+      if (this.filters.age_category.length === 0) {
+        this.filters.age_category = this.ageCategoryOptions.map(item => item.id);
+      }
+
     } catch (error) {
-      console.error('Failed to fetch matches:', error);
-      this.toast.error("Failed to fetch matches");
+      console.error("Error loading seni match list:", error);
+    } finally {
+      this.loading = false;
     }
   },
 
@@ -691,12 +817,12 @@ export default {
         const detail = response.data?.data;
         if (!detail) throw new Error('Invalid schedule data structure');
 
-        // Set ID dulu supaya watcher jalan dengan benar
+        // Set ID supaya trigger watcher
         this.form.tournament_id = detail.tournament_id;
 
-        // Tunggu match list diambil berdasarkan tournament ID
+        // Tunggu match list dari tournament ini
         await this.fetchMatchList(detail.tournament_id);
-        console.log("✅ Match list fetched", this.allMatchesByPool);
+        console.log("✅ Match list fetched", this.matchList);
 
         // Set nilai form lainnya
         this.form = {
@@ -708,44 +834,24 @@ export default {
           note: detail.note || ''
         };
 
-        // Tandai match yang sudah dijadwalkan
+        // Tandai match yang sudah dijadwalkan (khusus seni)
         this.scheduledMap = {};
-
         (detail.details || []).forEach(scheduled => {
-          if (!scheduled.tournament_match) return;
-
-         
-        this.scheduledMap[scheduled.tournament_match_id] = {
-            match_order: scheduled.order || '',
-            match_time: scheduled.start_time ? scheduled.start_time.substring(0, 5) : ''
-          };
+          if (scheduled.seni_match_id) {
+            this.scheduledMap[scheduled.seni_match_id] = true;
+          }
         });
 
-        // Tandai match yang terpilih
-        this.allMatchesByPool.forEach(pool => {
-          pool.rounds.forEach(round => {
-            round.matches.forEach(match => {
-              if (this.scheduledMap[match.id]) {
-                match.selected = true;
-                match.match_order = this.scheduledMap[match.id].match_order;
-                match.match_time = this.scheduledMap[match.id].match_time;
-              }
+        // Checklist match yang dijadwalkan
+        this.matchList.forEach(group => {
+          group.pools.forEach(pool => {
+            pool.matches.forEach(match => {
+              match.selected = !!this.scheduledMap[match.id];
             });
           });
         });
 
-        this.selectAll = this.allMatchesByPool.every(pool =>
-          pool.rounds.every(round =>
-            round.matches
-              .filter(match => this.scheduledMap[match.id]) // hanya match yang dijadwalkan
-              .every(match => match.selected)
-          )
-        );
-
-
-        this.updateMatchOrder();
         this.progress = 100;
-
       } catch (error) {
         this.progress = 100;
         const errorMessage = error.response?.data?.message ||
@@ -762,7 +868,6 @@ export default {
             this.$router.push("/admin/match-schedules");
           }, 2000);
         }
-
       } finally {
         this.loading = false;
       }
@@ -773,29 +878,21 @@ export default {
       this.loading = true;
       this.progress = 30;
 
-      const selectedMatches = this.allMatchesByPool.flatMap(pool =>
-        pool.rounds
-          .filter(round => !this.selectedRound || round.round == this.selectedRound)
-          .flatMap(round =>
-            round.matches
-              .filter(match => match.selected)
-              .map(match => {
-                const base = {
-                  order: match.match_order,
-                  start_time: match.match_time,
-                  note: `Match between ${match.participant_one?.name || 'Unknown'} vs ${match.participant_two?.name || 'Unknown'}`
-                };
-
-                // 🧠 Deteksi apakah ini pertandingan seni atau tanding
-                if (match.seni_match_id) {
-                  return { ...base, seni_match_id: match.seni_match_id };
-                } else {
-                  return { ...base, tournament_match_id: match.id };
-                }
-              })
-          )
+      // Ambil match yang dipilih
+      const selectedMatches = (this.matchList || []).flatMap(group =>
+        group.pools.flatMap(pool =>
+          pool.matches
+            .filter(m => m.selected)
+            .map(m => ({
+              seni_match_id: m.id,
+              order: m.order || null,
+              start_time: m.start_time || null,
+              note: m.note || `Seni Match in ${pool.name}`
+            }))
+        )
       );
 
+      // Validasi minimal 1 match dipilih
       if (selectedMatches.length === 0) {
         this.toast.error("Please select at least one match");
         this.loading = false;
@@ -803,15 +900,7 @@ export default {
         return;
       }
 
-      const invalidMatch = selectedMatches.find(m => !m.order || !m.start_time);
-      if (invalidMatch) {
-        this.toast.error("Match order and time must be filled in all selected matches.");
-        this.loading = false;
-        this.progress = 100;
-        return;
-      }
-
-      const isTanding = selectedMatches.some(m => m.tournament_match_id);
+     
 
       const payload = {
         tournament_id: this.form.tournament_id,
@@ -820,8 +909,7 @@ export default {
         start_time: this.form.start_time,
         end_time: this.form.end_time,
         note: this.form.note,
-        matches: selectedMatches,
-        ...(isTanding && { match_category_id: this.form.match_category_id }) // kirim hanya untuk tanding
+        matches: selectedMatches
       };
 
       try {
@@ -861,6 +949,7 @@ export default {
         this.loading = false;
       }
     }
+
 
 
   }

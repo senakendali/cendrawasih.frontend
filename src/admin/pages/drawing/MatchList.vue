@@ -13,7 +13,7 @@
     <div class="mb-2 d-flex justify-content-end align-items-center">
       <!-- Search Bar -->
      
-      <router-link :to="'/admin/drawing/match/' + poolId" class="button button-primary">
+      <router-link :to="'/admin/tanding/match/' + poolId" class="button button-primary">
         <i class="bi bi-diagram-3"></i> View Bracket
       </router-link>
     </div>

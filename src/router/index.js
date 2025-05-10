@@ -72,6 +72,10 @@ import TournamentScheduleList from '@/admin/pages/tournament-schedule/Tournament
 import TournamentScheduleCreatePage from '@/admin/pages/tournament-schedule/TournamentScheduleCreatePage.vue';
 import TournamentScheduleEditPage from '@/admin/pages/tournament-schedule/TournamentScheduleEditPage.vue';
 
+
+import TournamentScheduleSeniCreatePage from '@/admin/pages/tournament-schedule/TournamentScheduleSeniCreatePage.vue';
+import TournamentScheduleSeniEditPage from '@/admin/pages/tournament-schedule/TournamentScheduleSeniEditPage.vue';
+
 const routes = [
   {
     path: '/',
@@ -365,7 +369,7 @@ const routes = [
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
   {
-    path: '/admin/drawing/match/:id',
+    path: '/admin/tanding/match/:id',
     name: "GenerateMatch",
     component: AdminLayout,
     props: true, // Kirim parameter ID ke komponen sebagai props
@@ -378,7 +382,7 @@ const routes = [
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
   {
-    path: '/admin/drawing/match/list/:id',
+    path: '/admin/tanding/match/list/:id',
     name: "ViewMatch",
     component: AdminLayout,
     props: true, // Kirim parameter ID ke komponen sebagai props
@@ -419,7 +423,7 @@ const routes = [
   },
   {
     path: '/admin/seni/match/:id',
-    name: "GenerateMatch",
+    name: "GenerateSeniMatch",
     component: AdminLayout,
     props: true, // Kirim parameter ID ke komponen sebagai props
     children: [
@@ -432,7 +436,7 @@ const routes = [
   },
   {
     path: '/admin/seni/match/list/:id',
-    name: "ViewMatch",
+    name: "ViewSeniMatch",
     component: AdminLayout,
     props: true, // Kirim parameter ID ke komponen sebagai props
     children: [
@@ -603,7 +607,7 @@ const routes = [
     //meta: { requiresAdmin: true }  // for admin-only route
   },
   {
-    path: '/admin/tournament-schedule/create',
+    path: '/admin/tournament-schedule/tanding/create',
     component: AdminLayout,
     children: [
       { path: '', component: TournamentScheduleCreatePage }
@@ -611,14 +615,35 @@ const routes = [
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
   {
-    path: '/admin/tournament-schedule/edit/:id',
-    name: 'EditSchedule',
+    path: '/admin/tournament-schedule/tanding/edit/:id',
+    name: 'EditScheduleTanding',
     component: AdminLayout, // This should be the main layout component
     props: true, // This makes the route parameters available as props to your component
     children: [
       {
         path: '', // Empty path indicates this is the default child route
         component: TournamentScheduleEditPage, // The component rendered inside the <router-view> in AdminLayout
+      }
+    ]
+  },
+
+  {
+    path: '/admin/tournament-schedule/seni/create',
+    component: AdminLayout,
+    children: [
+      { path: '', component: TournamentScheduleSeniCreatePage }
+    ]
+    //meta: { requiresAdmin: true }  // admin-only form for menu
+  },
+  {
+    path: '/admin/tournament-schedule/seni/edit/:id',
+    name: 'EditScheduleSeni',
+    component: AdminLayout, // This should be the main layout component
+    props: true, // This makes the route parameters available as props to your component
+    children: [
+      {
+        path: '', // Empty path indicates this is the default child route
+        component: TournamentScheduleSeniEditPage, // The component rendered inside the <router-view> in AdminLayout
       }
     ]
   },

@@ -20,9 +20,15 @@
       /-->
 
       <!-- Create Menu Button -->
-      <router-link to="/admin/tournament-schedule/create" class="button button-primary">
-        <i class="bi bi-plus-square"></i> Add New
-      </router-link>
+       <div class="d-flex gap-2">
+        <router-link to="/admin/tournament-schedule/tanding/create" class="button button-primary">
+          <i class="bi bi-plus-square"></i> Add New Schedule (Tanding)
+        </router-link>
+        <router-link to="/admin/tournament-schedule/seni/create" class="button button-primary">
+          <i class="bi bi-plus-square"></i> Add New Schedule (Seni)
+        </router-link>
+       </div>
+     
     </div>
 
     <!-- Table to display navigation data -->
@@ -31,6 +37,7 @@
         <tr>
           <th>ID</th>
           <th>Tournament</th>
+          <th>Match Category</th>
           <th>Arena Name</th>
           <th>Match Date</th>
           <th>Start Time</th>
@@ -43,6 +50,15 @@
         <tr v-for="(tournamentSchedule, index) in tournamentSchedules" :key="tournamentSchedule.id">
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
           <td>{{ tournamentSchedule.tournament.name }}</td>
+          <td>
+            {{
+              tournamentSchedule.details?.[0]?.seni_match?.match_category?.name ||
+              tournamentSchedule.details?.[0]?.tournament_match?.pool?.match_category?.name ||
+              '-'
+            }}
+          </td>
+
+          
           <td>{{ tournamentSchedule.arena.name }}</td>
           <td>{{ tournamentSchedule.scheduled_date }}</td>
           <td>{{ tournamentSchedule.start_time }}</td>
@@ -181,9 +197,27 @@ export default {
       this.loadTournamentArenas();
     },
 
-    async EditSchedule(id) {
+    /*async EditSchedule(id) {
       this.$router.push({ name: "EditSchedule", params: { id } });
+    },*/
+
+    EditSchedule(id) {
+      const schedule = this.tournamentSchedules.find(item => item.id === id);
+
+      if (!schedule) {
+        this.toast.error("Schedule not found");
+        return;
+      }
+
+      const isSeni = !!schedule.details?.[0]?.seni_match;
+
+      const route = isSeni
+        ? `/admin/tournament-schedule/seni/edit/${id}`
+        : `/admin/tournament-schedule/tanding/edit/${id}`;
+
+      this.$router.push(route);
     },
+
 
     deleteMenu(id) {
       console.log("Delete menu with ID:", id);
