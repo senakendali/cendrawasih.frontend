@@ -25,22 +25,73 @@
             <li class="nav-item">
               <router-link to="/about-us" class="nav-link" exact-active-class="active" @click="hideMenu">About Us</router-link>
             </li>
-            <li class="nav-item dropdown" v-if="allTournaments.length">
+           
+
+            <li class="nav-item dropdown position-static" v-if="allTournaments.length">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                 Schedule
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" style="min-width: 250px; max-width: 300px;">
-                <li v-for="t in allTournaments" :key="t.id">
-                  <a 
-                    class="dropdown-item text-wrap" 
-                    href="#"
-                    @click.prevent="redirectToSchedule(t.id)"
-                  >
-                    {{ t.name }}
-                  </a>
-                </li>
-              </ul>
+
+              <div class="dropdown-menu w-100 mega-dropdown" style="left: 0; right: 0;">
+                <div class="container-fluid py-3">
+                  <div class="row">
+                    <div class="col-md-4 mb-3" v-for="t in allTournaments" :key="t.id">
+                      <div class="fw-bold text-uppercase small mb-2">{{ t.name }}</div>
+
+                      <div class="row">
+                        <!-- Preview Column -->
+                        <div class="col-6">
+                          <div class="fw-semibold text-muted small">Preview</div>
+                          <ul class="list-unstyled mb-2">
+                            <li>
+                              <router-link
+                                class="dropdown-item px-0 py-1"
+                                :to="`/schedule/${t.slug}/tanding`"
+                                @click="menuOpen = false"
+                              >Tanding</router-link>
+                            </li>
+                            <li>
+                              <router-link
+                                class="dropdown-item px-0 py-1"
+                                :to="`/schedule/${t.slug}/seni`"
+                                @click="menuOpen = false"
+                              >Seni</router-link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <!-- Live Column -->
+                        <div class="col-6">
+                          <div class="fw-semibold text-muted small">Live</div>
+                          <ul class="list-unstyled">
+                            <li>
+                              <router-link
+                                class="dropdown-item px-0 py-1"
+                                :to="`/schedule/live/${t.slug}/tanding`"
+                                @click="menuOpen = false"
+                              >Tanding</router-link>
+                            </li>
+                            <li>
+                              <router-link
+                                class="dropdown-item px-0 py-1"
+                                :to="`/schedule/live/${t.slug}/seni`"
+                                @click="menuOpen = false"
+                              >Seni</router-link>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
             </li>
+
+
+
+
+
 
           </ul>
           <button class="btn btn-login" @click="navigateTo('/admin/login')">Login</button>
@@ -90,16 +141,24 @@ export default {
         // ✅ Set default turnamen aktif pertama
         if (this.allTournaments.length) {
           this.selectedTournament = this.allTournaments[0].id;
-          this.redirectToSchedule(this.selectedTournament);
+          //this.redirectToSchedule(this.selectedTournament);
         }
       } catch (error) {
         console.error("Failed to fetch tournaments:", error);
       }
     },
-    redirectToSchedule(tournamentId) {
+    /*redirectToSchedule(tournamentId) {
       this.$router.push({ path: '/schedule', query: { tournament_id: tournamentId } });
       this.menuOpen = false;
+    },*/
+
+    redirectToSchedule(tournamentSlug, category = 'tanding', isLive = false) {
+      const basePath = isLive ? '/schedule/live' : '/schedule';
+      const path = `${basePath}/${tournamentSlug}/${category}`;
+      this.$router.push({ path });
+      this.menuOpen = false;
     },
+
   
     handleScroll() {
       this.isScrolled = window.scrollY > 50; // Adjust the scroll position as needed
@@ -173,11 +232,61 @@ export default {
   transition: 0.3s ease;
 }
 
+.position-static {
+  position: static !important;
+}
+.mega-dropdown {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw;
+  border-top: 2px solid #0d6efd;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+
 /* Active link styling */
 .my-navbar .navbar-nav .nav-link.active {
   color: #D32F2F; /* Change active link color */
   font-weight: bold; /* Optional: Make active link text bold */
 }
+
+
+.mega-dropdown .dropdown-item {
+  font-size: 0.9rem;
+  white-space: normal;
+}
+
+
+.position-static {
+  position: static !important;
+}
+
+.mega-dropdown {
+  left: 0 !important;
+  right: 0 !important;
+  border-top: 3px solid #D32F2F;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .dropdown-menu.mega-dropdown {
+    width: 100vw;
+    max-width: none;
+    border-radius: 0;
+  }
+}
+
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+  top: 0;
+  left: 100%;
+  margin-left: 0.1rem;
+}
+.dropdown-submenu {
+  position: relative;
+}
+
 
 .btn-login {
   background-color: #D32F2F;

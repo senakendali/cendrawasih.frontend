@@ -647,6 +647,60 @@ const routes = [
       }
     ]
   },
+
+  {
+    path: '/schedule/:slug/tanding',
+    component: MainLayout,
+    props: true,
+    children: [
+      {
+        path: '',
+        name: 'ScheduleTanding',
+        component: () => import('@/main/pages/ScheduleTandingPage.vue'),
+        props: true
+      }
+    ]
+  },
+  {
+    path: '/schedule/:slug/seni',
+    component: MainLayout,
+    props: true,
+    children: [
+      {
+        path: '',
+        name: 'ScheduleSeni',
+        component: () => import('@/main/pages/ScheduleSeniPage.vue'),
+        props: true
+      }
+    ]
+  },
+  {
+    path: '/schedule/live/:slug/tanding',
+    component: MainLayout,
+    props: true,
+    children: [
+      {
+        path: '',
+        name: 'ScheduleLiveTanding',
+        component: () => import('@/main/pages/ScheduleLiveTandingPage.vue'),
+        props: true
+      }
+    ]
+  },
+  {
+    path: '/schedule/live/:slug/seni',
+    component: MainLayout,
+    props: true,
+    children: [
+      {
+        path: '',
+        name: 'ScheduleLiveSeni',
+        component: () => import('@/main/pages/ScheduleLiveSeniPage.vue'),
+        props: true
+      }
+    ]
+  }
+
   
 ];
 

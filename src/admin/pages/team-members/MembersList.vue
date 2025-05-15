@@ -57,8 +57,17 @@
     <!-- Table to display navigation data -->
     <table class="table mt-4">
       <thead>
+        <tr class="table-header">
+          <th colspan="7" class="header">
+            <select v-model="selectedTournament" @change="loadTeamMembers" class="form-select w-auto">
+              <option value="">All Tournaments</option>
+              <option v-for="t in tournaments" :key="t.id" :value="t.id">{{ t.name }}</option>
+            </select>
+          </th>
+        </tr>
         <tr>
           <th>ID</th>
+          <th>Tournament Name</th>
           <th>Contingent Name</th>
           <th>Name</th>
           <th>Category</th>
@@ -71,6 +80,7 @@
         
         <tr v-for="(member, index) in members" :key="member.id">
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
+          <td>{{ member.tournament_name }}</td> <!-- ✅ Yang benar -->
           <td>{{ member.contingent.name }}</td>
           <td>{{ member.name }}</td>
           <td>{{ member.championship_category.name }}</td>
@@ -101,7 +111,7 @@
       <!-- Fallback message when there is no data -->
       <tbody v-else>
         <tr>
-          <td colspan="4" class="text-center">No members found.</td>
+          <td colspan="7" class="text-center">No members found.</td>
         </tr>
       </tbody>
 
@@ -174,6 +184,7 @@ export default {
   data() {
     return {
       memberId: null,
+      selectedTournament: '', // Untuk filter
       deleteModal: null,
       members: [], // Array to hold paginated team members
       searchQuery: "", // User's search input
@@ -193,35 +204,49 @@ export default {
     
     return { toast, permissions };
   },
-  mounted() {
+  async mounted() {
+    await this.loadTournaments();       // Pastikan daftar turnamen udah ready
     this.loadTeamMembers(); // Load menu data when the component is mounted
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
-    async exportToExcel() {
+    async loadTournaments() {
       try {
-        const response = await axios.get("/team-members/export", {
+        const res = await axios.get("/tournaments/active", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
-          responseType: "blob", // Agar response berupa file
         });
-
-        // Buat URL dari blob response
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "team_members.xlsx"); // Nama file saat diunduh
-        document.body.appendChild(link);
-        link.click();
-
-        // Hapus elemen setelah digunakan
-        link.remove();
-      } catch (error) {
-        console.error("Gagal mengekspor:", error);
-        this.toast.error("Gagal mengekspor data!");
+        this.tournaments = res.data;
+      } catch (err) {
+        console.error("Gagal load tournament:", err);
       }
     },
+   async exportToExcel() {
+    try {
+      const response = await axios.get("/team-members/export", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        params: {
+          search: this.searchQuery.trim(),
+          tournament_id: this.selectedTournament,
+        },
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "team_members.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Gagal mengekspor:", error);
+      this.toast.error("Gagal mengekspor data!");
+    }
+  },
 
     confirmDelete(id) {
       this.memberId = id;
@@ -238,6 +263,7 @@ export default {
             page,
             perPage: this.perPage,
             search: this.searchQuery.trim(),
+            tournament_id: this.selectedTournament || undefined, // 🆕 dikirim kalau ada
           },
         });
         const {

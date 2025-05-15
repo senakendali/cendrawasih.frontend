@@ -46,11 +46,23 @@
       </router-link>
     </div>
 
+    
+
+
     <!-- Table to display navigation data -->
     <table class="table mt-4">
       <thead>
+        <tr class="table-header">
+          <th colspan="8" class="header">
+            <select v-model="selectedTournament" @change="loadContingent" class="form-select w-auto">
+              <option value="">All Tournaments</option>
+              <option v-for="t in tournaments" :key="t.id" :value="t.id">{{ t.name }}</option>
+            </select>
+          </th>
+        </tr>
         <tr>
           <th>ID</th>
+          <th>Tournament Name</th>
           <th>Contingent Name</th>
           <th>PIC Name</th>
           <th>PIC Phone</th>
@@ -62,7 +74,7 @@
       <tbody v-if="contingents.length > 0">
         <tr v-for="(contingent, index) in contingents" :key="contingent.id">
         <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
-       
+          <td>{{ contingent.tournament_name }}</td>
           <td>{{ contingent.name }}</td>
           <td>{{ contingent.pic_name }}</td>
           <td>{{ contingent.pic_phone }}</td>
@@ -87,7 +99,7 @@
       </tbody>
       <tbody v-else>
         <tr>
-          <td colspan="6" class="text-center">No data found.</td>
+          <td colspan="8" class="text-center">No data found.</td>
         </tr>
       </tbody>
     </table>
@@ -140,6 +152,7 @@ export default {
   data() {
     return {
       contingentId: null,
+      selectedTournament: '', // Untuk filter
       deleteModal: null,
       contingents: [],
       searchQuery: "", // User's search input
@@ -159,11 +172,26 @@ export default {
     
     return { toast, permissions };
   },
-  mounted() {
+  async mounted() {
+    
+    await this.loadTournaments();       // Pastikan daftar turnamen udah ready
     this.loadContingent(); // Corrected the method name
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    async loadTournaments() {
+      try {
+        const res = await axios.get("/tournaments/active", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.tournaments = res.data;
+      } catch (err) {
+        console.error("Gagal load tournament:", err);
+      }
+    },
+
     confirmDelete(id) {
       this.contingentId = id;
       this.deleteModal.show();
@@ -183,6 +211,7 @@ export default {
             page,
             perPage: this.perPage,
             search: this.searchQuery.trim(),
+            tournament_id: this.selectedTournament || undefined, // 🆕 dikirim kalau ada
           },
         });
         const {
