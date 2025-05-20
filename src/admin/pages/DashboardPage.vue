@@ -121,29 +121,34 @@ export default {
       }
     },
 
-    async downloadDocument(filename) {
-      this.isLoading = true; // Show loader
-      try {
-        const response = await axios.get(
-          `/download-document/${filename}`,
-          { responseType: 'blob' } // Ensure the file is treated as binary data
-        );
+    async downloadDocument(documentName) {
+        this.isLoading = true;
+        try {
+          const response = await axios.get('/download-document', {
+            params: {
+              filename: documentName, // Kirim full path: uploads/tournament_documents/xxx.pdf
+            },
+            responseType: 'blob',
+          });
 
-        // Create a link element and trigger a download
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', filename); // Set the downloaded file name
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } catch (error) {
-        console.error('Error downloading the document:', error);
-        alert('Failed to download the document. Please try again later.');
-      } finally {
-        this.isLoading = false; // Hide loader
-      }
-    },
+          const blob = new Blob([response.data]);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const fileName = documentName?.split('/').pop() || 'document.pdf'; // fallback jika tidak ada nama
+
+          link.href = url;
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error downloading the document:', error);
+          alert('Failed to download the document. Please try again later.');
+        } finally {
+          this.isLoading = false;
+        }
+      },
     // Sample method to load tournament data
     async loadTournamentData(page = 1) {
       this.loading = true;

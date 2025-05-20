@@ -223,31 +223,44 @@ export default {
       }
     },
    async exportToExcel() {
-    try {
-      const response = await axios.get("/team-members/export", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        params: {
-          search: this.searchQuery.trim(),
-          tournament_id: this.selectedTournament,
-        },
-        responseType: "blob",
-      });
+      try {
+        this.loading = true;
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "team_members.csv");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error("Gagal mengekspor:", error);
-      this.toast.error("Gagal mengekspor data!");
-    }
-  },
+        const response = await axios.get("/team-members/export", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          params: {
+            search: this.searchQuery.trim(),
+            tournament_id: this.selectedTournament,
+          },
+          responseType: "blob",
+        });
 
+        let filename = "download.xlsx";
+        const disposition = response.headers["content-disposition"];
+        if (disposition && disposition.includes("filename=")) {
+          const match = disposition.match(/filename="?([^"]+)"?/);
+          if (match && match[1]) {
+            filename = match[1];
+          }
+        }
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        this.loading = false;
+      } catch (error) {
+        console.error("Gagal mengekspor:", error);
+        this.toast.error("Gagal mengekspor data!");
+        this.loading = false;
+      }
+    },
     confirmDelete(id) {
       this.memberId = id;
       this.deleteModal.show();
