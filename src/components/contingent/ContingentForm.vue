@@ -16,7 +16,58 @@
 
       <!-- Form -->
       <form @submit.prevent="submitForm" class="admin-form mt-4">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div v-if="!isEdit" class="mb-3">
+              <label for="tournament_id" class="form-label">Pilih Tournament</label>
+              <select
+                class="form-select"
+                id="tournament_id"
+                v-model="form.tournament_id"
+                :class="{ 'is-invalid': errors.tournament_id }"
+              >
+                <option value="" disabled>Pilih Tournament</option>
+                <option
+                  v-for="tournament in allTournaments"
+                  :key="tournament.id"
+                  :value="tournament.id"
+                >
+                  {{ tournament.name }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.tournament_id }}</div>
+              <div class="form-text">
+                Pilih Tournament yang akan diikuti. Anda bisa mengikuti lebih dari satu turnamen di kemudian hari melalui halaman dashboard.
+              </div>
+            </div>
+            <div v-else class="mb-3">
+              <label class="form-label">Tournament yang Diikuti</label>
+              <div
+                v-for="tournament in allTournaments"
+                :key="tournament.id"
+                class="form-check"
+              >
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  :id="'tournament-' + tournament.id"
+                  :value="tournament.id"
+                  v-model="form.tournament_ids"
+                />
+                <label class="form-check-label" :for="'tournament-' + tournament.id">
+                  {{ tournament.name }}
+                </label>
+              </div>
+              <div class="form-text">
+                Jika terjadi kesalahan pemilihan tournament, Anda bisa uncheck di sini dan pilih turnamen lain.
+              </div>
+            </div>
+
+
+          </div>
+        </div>
         <div class="row">
+          
           <!-- Contingent Name -->
           <div class="col-lg-6">
             <div class="mb-3">
@@ -203,12 +254,16 @@ export default {
   data() {
     return {
       contingentId: null,
+      allTournaments: [],
+      tournament_ids: [], // <- array untuk multi select
       countries: [],
       provinces: [],
       districts: [],
       sub_districts: [],
       wards: [],
       form: {
+        tournament_id: '',       // untuk create
+        tournament_ids: [],      // untuk edit
         name: "",
         pic_email: "",
         pic_name: "",
@@ -228,6 +283,7 @@ export default {
 
   created() {
     this.contingentId = this.$route.params.id;
+    this.fetchActiveTournaments();
     this.fetchCountries();
     this.fetchProvinces();
     if (this.isEdit && this.contingentId) {
@@ -258,6 +314,19 @@ export default {
   },
 
   methods: {
+
+    async fetchActiveTournaments() {
+      await this.fetchData("/tournaments/all", "allTournaments");
+    },
+
+    async fetchData(url, targetKey) {
+      try {
+        const response = await axios.get(url);
+        this[targetKey] = response.data;
+      } catch (error) {
+        this.toast.error(`Failed to fetch ${targetKey}`);
+      }
+    },
     async fetchCountries() {
       try {
         const response = await axios.get("/countries");
@@ -330,18 +399,22 @@ export default {
             }
           }
         );
-        if (response.data) {
+
+        if (response.data && response.data.data) {
+          const data = response.data.data;
+
           this.form = {
-            name: response.data.name,
-            pic_email: response.data.pic_email,
-            pic_name: response.data.pic_name,
-            pic_phone: response.data.pic_phone,
-            country_id: response.data.country_id,
-            province_id: response.data.province_id,
-            district_id: response.data.district_id,
-            subdistrict_id: response.data.subdistrict_id,
-            ward_id: response.data.ward_id,
-            address: response.data.address,
+            name: data.name,
+            pic_email: data.pic_email,
+            pic_name: data.pic_name,
+            pic_phone: data.pic_phone,
+            country_id: data.country_id,
+            province_id: data.province_id,
+            district_id: data.district_id,
+            subdistrict_id: data.subdistrict_id,
+            ward_id: data.ward_id,
+            address: data.address,
+            tournament_ids: data.tournaments.map(t => t.id), // ✅ ini tambahan penting
           };
 
           if (this.form.province_id) {
