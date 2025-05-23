@@ -16,8 +16,34 @@
     <!-- Table -->
     <table class="table mt-4">
       <thead>
+        <tr class="table-header">
+          <th colspan="7" class="header">
+            <div class="d-flex gap-2 w-100">
+              <select class="form-select w-auto" v-model="selectedTournamentId" @change="loadBillings(1)">
+                <option value="">All Tournaments</option>
+                <option
+                  v-for="tournament in allTournaments"
+                  :key="tournament.id"
+                  :value="tournament.id"
+                >
+                  {{ tournament.name }}
+                </option>
+              </select>
+              <select class="form-select w-auto" v-model="selectedStatus" @change="loadBillings(1)">
+                <option value="">All Payment Status</option>
+                <option value="waiting for payment">Waiting for Payment</option>
+                <option value="waiting for confirmation">Waiting for Confirmation</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            
+          </th>
+        </tr>
         <tr>
           <th>ID</th>
+          <th>Tournament</th> 
           <th>Invoice Number</th>
           <th>Bank</th>
           <th>Amount</th>
@@ -28,6 +54,8 @@
       <tbody v-if="billings.length > 0">
         <tr v-for="(billing, index) in billings" :key="billing.id">
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
+          <td>{{ billing.tournament?.name || '-' }}</td>
+
           <td>{{ billing.invoice_number }}</td>
           <td>{{ billing.bank_name }}</td>
           <td>{{ formatNumber(billing.amount) }}</td>
@@ -103,6 +131,7 @@ export default {
   data() {
     return {
       billings: [],
+      allTournaments: [],
       searchQuery: "",
       currentPage: 1,
       perPage: 10,
@@ -111,6 +140,8 @@ export default {
       nextPageUrl: null,
       loading: false,
       progress: 0,
+      selectedStatus: "", 
+      selectedTournamentId: "", 
     };
   },
 
@@ -120,6 +151,7 @@ export default {
   },
 
   mounted() {
+    this.fetchAllTournaments();
     this.loadBillings();
   },
 
@@ -135,6 +167,8 @@ export default {
             page,
             perPage: this.perPage,
             search: this.searchQuery.trim(),
+            status: this.selectedStatus,
+            tournament_id: this.selectedTournamentId, 
           },
         });
 
@@ -150,6 +184,20 @@ export default {
         this.loading = false;
       }
     },
+
+    async fetchAllTournaments() {
+      try {
+        const response = await axios.get("/tournaments/all", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.allTournaments = response.data;
+      } catch (error) {
+        console.error("Failed to fetch tournaments:", error);
+      }
+    },
+
 
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) {
