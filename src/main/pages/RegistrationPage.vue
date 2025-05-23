@@ -4,10 +4,7 @@
       <div class="row">
         <div class="col-lg-12">
           <h1>Pendaftaran</h1>
-          <p>
-            Pendaftaran Telah Dibuka! Jangan Lewatkan Kesempatan untuk Bertanding dengan Atlet-Atlet Berbakat Lainnya. 
-            
-          </p>
+          
           <p>
             Untuk mengikuti kejuaraan ini, Anda harus memiliki akun terlebih dahulu untuk mendaftarkan kontingen Anda. Jika sudah memiliki akun, silahkan login dan mulai mendaftarkan kontingen dan atlit Anda untuk mengikuti kejuaraan ini.
           </p>
@@ -162,6 +159,8 @@ export default {
   max-width: 100%;
   height: auto;
   border-left: 5px solid #D32F2F;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 /* Loader Styles */

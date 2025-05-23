@@ -66,7 +66,7 @@
           <div v-if="contingents && contingents.length > 0">
             <!-- Loop through each contingent -->
             <div 
-              v-for="(contingent, index) in contingents" 
+              v-for="(contingent, index) in paginatedContingents" 
               :key="index" 
               class="input-group mt-3"
             >
@@ -101,7 +101,7 @@
               class="button button-primary" 
               :disabled="loading"
             >
-              <i class="bi bi-check-square-fill"></i>
+              <i class="bi bi-floppy"></i>
               <span>Daftar</span>
             </button>
           </div>
@@ -111,6 +111,26 @@
             </router-link>
           </div>
         </form>
+        <div class="d-flex justify-content-start mt-3" v-if="totalPages > 1">
+          <button 
+            class="btn btn-sm btn-outline-primary me-2"
+            :disabled="currentPage === 1"
+            @click="currentPage--"
+          >
+            Prev
+          </button>
+
+          <span class="align-self-center">Page {{ currentPage }} of {{ totalPages }}</span>
+
+          <button 
+            class="btn btn-sm btn-outline-primary ms-2"
+            :disabled="currentPage === totalPages"
+            @click="currentPage++"
+          >
+            Next
+          </button>
+        </div>
+
 
 
 
@@ -145,6 +165,9 @@ export default {
       ageCategories: [],
       activities: [],
       contingents: [],
+      contingentList: [],
+      currentPage: 1,          // ✅ halaman saat ini
+      itemsPerPage: 5,         // ✅ jumlah kontingen per halaman
       formData: {
         person_responsible: '',
         email: '',
@@ -156,6 +179,24 @@ export default {
       progress: 0,
     };
   },
+
+  computed: {
+    paginatedContingents() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.contingentList.slice(start, start + this.itemsPerPage);
+    },
+
+    totalPages() {
+      return Math.ceil(this.contingentList.length / this.itemsPerPage);
+    }
+  },
+
+  watch: {
+    contingentList() {
+      this.currentPage = 1;
+    }
+  },
+
   created() {
     this.loadContingent(this.$route.params.id);
     this.fetchTournamentDetail(this.$route.params.id);
@@ -227,6 +268,8 @@ export default {
         } = response;
 
         this.contingents = data; // Assign team members
+        this.contingentList = data;
+         this.currentPage = 1;         // reset ke halaman 1
         this.loading = false;
       } catch (error) {
         console.error("Error loading members:", error);
