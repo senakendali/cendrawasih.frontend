@@ -49,6 +49,7 @@
           <th>Age Category</th>
           <th>Class Category</th>
           <th>Bracket Type</th>
+          <th>Drawing Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -62,13 +63,18 @@
           <td>{{ pool.age_category }}</td>
           <td>{{ pool.category_class.gender }} - {{ pool.category_class.name }} ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)</td>
           <td class="text-center">{{ pool.match_chart }}</td>
+          <td>
+            <span v-if="pool.matches_count > 0" class="badge bg-success p-2">Generated</span>
+            <span v-else class="badge bg-warning text-dark p-2">Not Generated</span>
+          </td>
+
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-card-checklist"></i> Action
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" @click="GenerateMatch(pool.pool_id)"><i class="bi bi-diagram-3"></i> View Bracket</a></li>
+                <li><a class="dropdown-item" href="#" @click="GenerateMatch(pool.pool_id)"><i class="bi bi-diagram-3"></i> Generate Bracket</a></li>
                 <li><a class="dropdown-item" href="#" @click="ViewMatch(pool.pool_id)"><i class="bi bi-eye"></i> View Match</a></li>
                 
               </ul>

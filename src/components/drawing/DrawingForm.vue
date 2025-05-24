@@ -120,6 +120,31 @@
               <div class="invalid-feedback">{{ errors.match_chart }}</div>
             </div>
 
+           <div class="mb-3">
+            <label for="match_duration" class="form-label">Match Duration</label>
+            <select
+              class="form-select"
+              id="match_duration"
+              name="match_duration"
+              v-model="form.match_duration"
+              :class="{ 'is-invalid': errors.match_duration }"
+            >
+              <option value="" disabled>Pilih durasi pertandingan</option>
+              <option value="60">1 Menit</option>
+              <option value="90">1.5 Menit</option>
+              <option value="120">2 Menit</option>
+              <option value="150">2.5 Menit</option>
+              <option value="180">3 Menit</option>
+              <option value="210">3.5 Menit</option>
+              <option value="240">4 Menit</option>
+              <option value="270">4.5 Menit</option>
+              <option value="300">5 Menit</option>
+            </select>
+            <div class="invalid-feedback">{{ errors.match_duration }}</div>
+          </div>
+
+
+
            
           </div>
         </div>
@@ -167,6 +192,7 @@ export default {
         category_class_id: "",
         name: "",
         match_chart:"",
+        match_duration: 180, // default ke 3 Menit (180 detik)
       },
       maleClasses: [], // Move the data here
       femaleClasses: [], // Move the data here
