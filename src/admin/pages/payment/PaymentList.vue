@@ -76,11 +76,14 @@
                     <i class="bi bi-pencil-square"></i> Edit
                   </a>
                 </li>
-                <li v-if="permissions && permissions.includes('upload payment struk')">
-                  <a class="dropdown-item" href="#" @click="ConfirmPayment(billing.id)">
-                    <i class="bi bi-credit-card-2-back"></i> Upload Payment Struk
-                  </a>
-                </li>
+                <li
+                    v-if="permissions && permissions.includes('upload payment struk') && billing.status !== 'waiting for confirmation'"
+                  >
+                    <a class="dropdown-item" href="#" @click="ConfirmPayment(billing.id)">
+                      <i class="bi bi-credit-card-2-back"></i> Upload Payment Struk
+                    </a>
+                  </li>
+
                 <li v-if="permissions && permissions.includes('confirm payment')">
                   <a class="dropdown-item" href="#" @click="ConfirmPayment(billing.id)">
                     <i class="bi bi-credit-card-2-back"></i> Confirm Payment

@@ -201,10 +201,20 @@
         <!-- Submit Button -->
         <div class="row">
           <div class="col-lg-12 text-center">
-            <button v-if="permissions && permissions.includes('upload payment struk')" type="submit" class="button button-primary" :disabled="loading">
+            <!--button v-if="permissions && permissions.includes('upload payment struk')" type="submit" class="button button-primary" :disabled="loading">
+              <i class="bi bi-floppy"></i>
+              <span>{{ isConfirm ? "Send Payment Struk" : "Submit Payment" }}</span>
+            </button-->
+            <button
+              v-if="permissions && permissions.includes('upload payment struk') && form.status !== 'waiting for confirmation'"
+              type="submit"
+              class="button button-primary"
+              :disabled="loading"
+            >
               <i class="bi bi-floppy"></i>
               <span>{{ isConfirm ? "Send Payment Struk" : "Submit Payment" }}</span>
             </button>
+
 
             <button v-if="permissions && permissions.includes('confirm payment')" type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
