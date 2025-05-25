@@ -39,11 +39,15 @@
         placeholder="Search" 
         @input="searchContingent" 
       >
-
-      <!-- Create Menu Button -->
-      <router-link to="/admin/contingent/create" class="button button-primary">
-        <i class="bi bi-plus-square"></i> Add New
-      </router-link>
+      <div class="tool-bar d-flex gap-2">
+        <button class="button button-primary" @click="exportToExcel">
+          <i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel
+        </button>
+        <!-- Create Menu Button -->
+        <router-link to="/admin/contingent/create" class="button button-primary">
+          <i class="bi bi-plus-square"></i> Add New
+        </router-link>
+      </div>
     </div>
 
     
@@ -195,6 +199,46 @@ export default {
     confirmDelete(id) {
       this.contingentId = id;
       this.deleteModal.show();
+    },
+
+    async exportToExcel() {
+      try {
+        this.loading = true;
+
+        const response = await axios.get("/contingents/export", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          params: {
+            search: this.searchQuery.trim(),
+            tournament_id: this.selectedTournament,
+          },
+          responseType: "blob",
+        });
+
+        let filename = "download.xlsx";
+        const disposition = response.headers["content-disposition"];
+        if (disposition && disposition.includes("filename=")) {
+          const match = disposition.match(/filename="?([^"]+)"?/);
+          if (match && match[1]) {
+            filename = match[1];
+          }
+        }
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        this.loading = false;
+      } catch (error) {
+        console.error("Gagal mengekspor:", error);
+        this.toast.error("Gagal mengekspor data!");
+        this.loading = false;
+      }
     },
     
     async loadContingent(page = 1) {
