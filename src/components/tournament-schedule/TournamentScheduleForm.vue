@@ -479,12 +479,13 @@ export default {
     },
 
     async fetchCategoryClasses() {
-      if (!this.form.age_category_id || !this.form.tournament_id) return;
+      if (!this.form.age_category_id || !this.form.tournament_id || !this.form.match_category_id) return;
       try {
         const response = await axios.get(`/fetch-available-class`, {
           params: {
             age_category_id: this.form.age_category_id,
             tournament_id: this.form.tournament_id,
+            match_category_id: this.form.match_category_id
           }
         });
         this.categoryClasses = response.data;

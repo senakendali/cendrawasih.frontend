@@ -289,6 +289,7 @@ export default {
   ::v-deep(.vtb-item-players .defeated.highlight) {
     width: 200px;
     background-color: #f0f0f0;
+    color: #1E2A57 ;
   }
 
   
@@ -300,22 +301,22 @@ export default {
   
   ::v-deep(.vtb-player1) {
     font-size: 12px;
-    color: #1E2A57;
+    color: #FFFFFF;
     width: 100%;
     height: 50px;
     padding: 12px;
-    border-left: 5px solid #388E3C;
-    border-top: 1px solid #388E3C;
+    border-left: 5px solid #002FB9;
+    border-top: 1px solid #002FB9;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    border-right: 1px solid #388E3C;
-    background: #ffffff;
+    border-right: 1px solid #002FB9;
+    background: #002FB9;
   }
   
   ::v-deep(.vtb-player1)::after {
     width: 100%;
     height: 0.5px;
-    background-color: #388E3C;
+    background-color: #002FB9;
     display: block;
     content: "";
     position: absolute;
@@ -325,22 +326,22 @@ export default {
   
   ::v-deep(.vtb-player2) {
     font-size: 12px;
-    color: #1E2A57;
+    color: #FFFFFF;
     width: 100%;
     height: 50px;
     padding: 12px;
-    border-left: 5px solid #858585;
+    border-left: 5px solid #F80000;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
-    border-bottom: 1px solid #858585;
-    border-right: 1px solid #858585;
-    background: #ffffff;
+    border-bottom: 1px solid #F80000;
+    border-right: 1px solid #F80000;
+    background: #F80000;
   }
   
   ::v-deep(.vtb-item-child:after, .vtb-item-child:before) {
     content: "";
     position: absolute;
-    background-color: #388E3C;
+    background-color: gray;
     top: 50%;
   }
   
