@@ -61,7 +61,13 @@
           <td>{{ pool.name }}</td>
           <td>{{ pool.match_category }}</td>
           <td>{{ pool.age_category }}</td>
-          <td>{{ pool.category_class.gender }} - {{ pool.category_class.name }} ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)</td>
+          <td v-if="pool.category_class">
+            {{ pool.category_class.gender }} - {{ pool.category_class.name }}
+            ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)
+          </td>
+          <td v-else class="text-muted">-</td>
+
+          
           <td class="text-center">{{ pool.match_chart }}</td>
           <td>
             <span v-if="pool.matches_count > 0" class="badge bg-success p-2">Generated</span>

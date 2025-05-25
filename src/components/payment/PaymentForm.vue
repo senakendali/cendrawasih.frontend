@@ -153,6 +153,16 @@
         <!-- Members Table -->
         <table class="table">
           <thead>
+            <tr class="table-header">
+              <th colspan="7" class="header">
+                  <select id="filterContingent" v-model="selectedContingent" class="form-select">
+                  <option value="">-- All Contingents --</option>
+                  <option v-for="c in contingents" :key="c.id" :value="c.id">
+                    {{ c.name }}
+                  </option>
+                </select>
+              </th>
+            </tr>
             <tr>
               <th>#</th>
               <th>Contingent</th>
@@ -164,7 +174,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(member, index) in members" :key="member.id">
+            <tr v-for="(member, index) in filteredMembers" :key="member.id">
+
               <td>{{ index + 1 }}</td>
               <td>{{ member.contingent.name }}</td>
               <td>{{ member.name }}</td>
@@ -238,6 +249,8 @@ export default {
       members: [],
       unselectedMembers: [],
       selectedMembers: [], // This will hold the selected members' IDs
+      selectedContingent: '',
+      contingents: [],
       form: {
         tournament_id: null,
         bank_name: "",
@@ -251,6 +264,23 @@ export default {
       paymentId: null, // Define paymentId for update mode
       showPopup: false, // Control the pop-up visibility
     };
+  },
+
+  computed: {
+    filteredMembers() {
+      if (!this.selectedContingent) {
+        return this.members;
+      }
+
+      return this.members.filter(m =>
+        m.contingent && m.contingent.id == this.selectedContingent
+      );
+    }
+  },
+
+  mounted() {
+
+    this.fetchContingents();
   },
 
   created() {
@@ -272,6 +302,14 @@ export default {
   },
 
   watch: {
+    'form.tournament_id': function (newVal) {
+      if (newVal) {
+        this.fetchContingents();
+      } else {
+        this.contingents = [];
+        this.selectedContingent = '';
+      }
+    },
     // Watch for changes to the paymentId from the route params
     '$route.params.id': {
       immediate: true,
@@ -286,6 +324,28 @@ export default {
   },
 
   methods: {
+    async fetchContingents() {
+      if (!this.form.tournament_id) {
+        this.contingents = [];
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `/contingents/by-tournament/${this.form.tournament_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
+        this.contingents = response.data;
+      } catch (error) {
+        console.error("Error fetching contingents:", error);
+        this.contingents = [];
+      }
+    },
+
     togglePopup() {
       this.showPopup = !this.showPopup; // Toggle the pop-up visibility
     },

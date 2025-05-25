@@ -21,8 +21,8 @@
         <div id="tournament-bracket">
           <div v-if="bracketType === 2" class="match-bracket">
             <div v-for="(game, index) in games" :key="index" class="match-container">
-              <div class="player-1">{{ game.player1.name }}</div>
-              <div class="player-2">{{ game.player2.name }}</div>
+              <div class="player-1">{{ game.player1.name }} / {{ game.player1.contingent }} </div>
+              <div class="player-2">{{ game.player2.name }} / {{ game.player2.contingent }}</div>
             </div>
           </div>
           <div v-else>
@@ -255,34 +255,34 @@ export default {
 
   .match-container .player-1 {
     font-size: 12px;
-    color: #1E2A57;
+    color: #FFFFFF;
     width: 100%;
-    height: 50px;
+    height:70px;
     padding: 12px;
-    border-left: 5px solid #388E3C;
-    border-top: 1px solid #388E3C;
-    border-bottom: 1px solid #388E3C;
+    border-left: 5px solid #002FB9;
+    border-top: 1px solid #002FB9;
+    border-bottom: 1px solid #002FB9;
 
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    border-right: 1px solid #388E3C;
-    background: #ffffff;
+    border-right: 1px solid #002FB9;
+    background: #002FB9;
   }
 
   
 
   .match-container .player-2 {
     font-size: 12px;
-    color: #1E2A57;
+    color: #FFFFFF;
     width: 100%;
-    height: 50px;
+    height: 70px;
     padding: 12px;
-    border-left: 5px solid #858585;
+    border-left: 5px solid #F80000;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
-    border-bottom: 1px solid #858585;
-    border-right: 1px solid #858585;
-    background: #ffffff;
+    border-bottom: 1px solid #F80000;
+    border-right: 1px solid #F80000;
+    background: #F80000;
   }
 
 
