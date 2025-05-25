@@ -29,21 +29,49 @@
       <i class="bi bi-file-earmark-text"></i> Team Member List
     </div>
 
+    <div class="row mb-3 admin-form">
+      <div class="col-md-12 mb-3">
+        
+           <select v-model="form.tournament_id" @change="() => { fetchMatchCategories(); loadTeamMembers(); }" class="form-select">
+            <option value="">All Tournaments</option>
+            <option v-for="t in tournaments" :key="t.id" :value="t.id">{{ t.name }}</option>
+          </select>
+        
+      </div>
+      <div class="col-md-12 mb-3">
+  
+        <select v-model="form.match_category_id" @change="() => { fetchAgeCategories(); loadTeamMembers(); }" class="form-select">
+          <option value="">All Match Category</option>
+          <option v-for="cat in matchCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-12 mb-3">
+       
+        <select v-model="form.age_category_id" @change="() => { fetchCategoryClasses(); loadTeamMembers(); }" class="form-select">
+          <option value="">All Age Category</option>
+          <option v-for="cat in ageCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-12">
+        <select class="form-select" v-model="form.category_class_id" @change="loadTeamMembers">
+          <option value="">All Class</option>
+          <option v-for="cc in categoryClasses" :key="cc.id" :value="cc.id">
+            {{ cc.gender }} Class {{ cc.name }} ({{ cc.weight_min }}–{{ cc.weight_max }} KG)
+          </option>
+        </select>
+      </div>
+    </div>
+
+
     <div class="mb-2 d-flex justify-content-between align-items-center">
       <!-- Search Bar -->
        <div class="search">
-            <input 
-            v-model="searchQuery" 
-            type="text" 
-            class="form-control w-auto" 
-            placeholder="Search" 
-            @input="searchMembers" 
-          />
+            
        </div>
       
 
       <div class="tool-bar d-flex gap-2">
-        <button class="button button-primary" @click="exportToExcel">
+        <button v-if="permissions && permissions.includes('export member')" class="button button-primary" @click="exportToExcel">
           <i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel
         </button>
 
@@ -59,15 +87,18 @@
       <thead>
         <tr class="table-header">
           <th colspan="7" class="header">
-            <select v-model="selectedTournament" @change="loadTeamMembers" class="form-select w-auto">
-              <option value="">All Tournaments</option>
-              <option v-for="t in tournaments" :key="t.id" :value="t.id">{{ t.name }}</option>
-            </select>
+              <input 
+                v-model="searchQuery" 
+                type="text" 
+                class="form-control w-auto" 
+                placeholder="Search" 
+                @input="searchMembers" 
+              />
           </th>
         </tr>
         <tr>
           <th>ID</th>
-          <th>Tournament Name</th>
+          <th width="25%">Tournament Name</th>
           <th>Contingent Name</th>
           <th>Name</th>
           <th>Category</th>
@@ -80,7 +111,15 @@
         
         <tr v-for="(member, index) in members" :key="member.id">
           <td>{{ index + 1 + (currentPage - 1) * perPage }}</td>
-          <td>{{ member.tournament_name }}</td> <!-- ✅ Yang benar -->
+         <td>
+          {{
+            member.contingent?.tournament_contingents
+              ?.map(tc => tc.tournament?.name)
+              .filter(Boolean)
+              .join(', ')
+          }}
+        </td>
+
           <td>{{ member.contingent.name }}</td>
           <td>{{ member.name }}</td>
           <td>{{ member.championship_category.name }}</td>
@@ -183,8 +222,17 @@ export default {
   name: "MembersList",
   data() {
     return {
+      form: {
+        tournament_id: '',
+        match_category_id: '',
+        age_category_id: '',
+        category_class_id: '',
+      },
       memberId: null,
-      selectedTournament: '', // Untuk filter
+      matchCategories: [],
+      ageCategories: [],
+      categoryClasses: [],
+
       deleteModal: null,
       members: [], // Array to hold paginated team members
       searchQuery: "", // User's search input
@@ -208,8 +256,64 @@ export default {
     await this.loadTournaments();       // Pastikan daftar turnamen udah ready
     this.loadTeamMembers(); // Load menu data when the component is mounted
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
+    
   },
   methods: {
+    async fetchMatchCategories() {
+      if (!this.form.tournament_id) return;
+
+      try {
+        const response = await axios.get(`/fetch-match-categories?tournament_id=${this.form.tournament_id}`);
+        this.matchCategories = response.data;
+
+        // Reset dan clear turunan dropdown
+        this.form.match_category_id = '';
+        this.form.age_category_id = '';
+        this.form.category_class_id = '';
+        this.ageCategories = [];
+        this.categoryClasses = [];
+
+        this.loadTeamMembers(); // ✅ trigger refresh list
+      } catch (error) {
+        console.error("Gagal fetch match categories:", error);
+      }
+    },
+
+    async fetchAgeCategories() {
+      if (!this.form.match_category_id) return;
+
+      try {
+        const response = await axios.get(`/fetch-age-categories?match_category_id=${this.form.match_category_id}`);
+        this.ageCategories = response.data;
+
+        // Reset dan clear turunan dropdown
+        this.form.age_category_id = '';
+        this.form.category_class_id = '';
+        this.categoryClasses = [];
+
+        this.loadTeamMembers(); // ✅ trigger refresh list
+      } catch (error) {
+        console.error("Gagal fetch age categories:", error);
+      }
+    },
+
+    async fetchCategoryClasses() {
+      if (!this.form.age_category_id) return;
+
+      try {
+        const response = await axios.get(`/fetch-category-classes?age_category_id=${this.form.age_category_id}`);
+        this.categoryClasses = response.data;
+
+        // Reset selected class
+        this.form.category_class_id = '';
+
+        this.loadTeamMembers(); // ✅ trigger refresh list
+      } catch (error) {
+        console.error("Gagal fetch class:", error);
+      }
+    },
+
+
     async loadTournaments() {
       try {
         const res = await axios.get("/tournaments/active", {
@@ -232,7 +336,10 @@ export default {
           },
           params: {
             search: this.searchQuery.trim(),
-            tournament_id: this.selectedTournament,
+            tournament_id: this.form.tournament_id || undefined,
+            match_category_id: this.form.match_category_id || undefined,
+            age_category_id: this.form.age_category_id || undefined,
+            category_class_id: this.form.category_class_id || undefined,
           },
           responseType: "blob",
         });
@@ -276,7 +383,10 @@ export default {
             page,
             perPage: this.perPage,
             search: this.searchQuery.trim(),
-            tournament_id: this.selectedTournament || undefined, // 🆕 dikirim kalau ada
+            tournament_id: this.form.tournament_id || undefined, // 🆕 dikirim kalau ada
+            match_category_id: this.form.match_category_id || undefined,
+            age_category_id: this.form.age_category_id  || undefined,
+            category_class_id: this.form.category_class_id  || undefined,
           },
         });
         const {

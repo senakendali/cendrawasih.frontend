@@ -40,7 +40,7 @@
         @input="searchContingent" 
       >
       <div class="tool-bar d-flex gap-2">
-        <button class="button button-primary" @click="exportToExcel">
+        <button v-if="permissions && permissions.includes('export contingent')" class="button button-primary" @click="exportToExcel">
           <i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel
         </button>
         <!-- Create Menu Button -->
