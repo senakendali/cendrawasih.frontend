@@ -144,7 +144,7 @@
             <div class="mb-3">
                 <a href="#" v-if="form.payment_document" class="button button-primary"  @click="openModal"><i class="bi bi-file-earmark-post-fill"></i> View Struk</a>
             </div>
-            <div v-if="permissions && permissions.includes('confirm payment')" class="mb-3">
+            <div v-if="permissions && permissions.includes('confirm payment') && form.status !== 'waiting for payment'" class="mb-3">
               <label for="status" class="form-label">Payment Status</label>
 
               <select
@@ -186,7 +186,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(member, index) in members" :key="member.id">
+            <tr v-for="(member, index) in validMembers" :key="member.id">
               <td>{{ index + 1 }}</td>
               <td>{{ member.contingent.name }}</td>
               <td>{{ member.name }}</td>
@@ -273,6 +273,12 @@ export default {
     };
   },
 
+  computed: {
+    validMembers() {
+      return this.members.filter(m => m && m.match_category && m.championship_category);
+    }
+  },
+
   created() {
     this.paymentId = this.$route.params.id;
     this.fetchActiveTournaments();
@@ -343,7 +349,8 @@ export default {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        this.members = response.data || []; // Ensure it assigns an array even if data is empty
+        //this.members = response.data || []; // Ensure it assigns an array even if data is empty
+        this.members = response.data?.data ?? []; 
         this.unselectedMembers = response.data || [];
       } catch (error) {
         console.error("Error loading members:", error);
@@ -407,11 +414,12 @@ export default {
     },
 
     async submitForm() {
+      
       this.loading = true;
 
       let formData = new FormData();
 
-      if (this.permissions.includes("confirm payment")) {
+      if (this.permissions.includes("confirm payment") && this.form.status === 'waiting for confirmation') {
         formData.append("status", this.form.status);
 
         // Hanya kirim reject_reason jika status = "failed"
@@ -433,9 +441,11 @@ export default {
 
       try {
         const method = "post"; 
-        const endpoint = this.permissions.includes("confirm payment")
-          ? `/billings/${this.paymentId}/confirm-payment`
-          : `/billings/${this.paymentId}/update-document`;
+        
+        const endpoint = this.permissions.includes("confirm payment") && this.form.status === 'waiting for confirmation'
+        ? `/billings/${this.paymentId}/confirm-payment`
+        : `/billings/${this.paymentId}/update-document`;
+
 
         await axios({
           method: method,
@@ -446,7 +456,7 @@ export default {
           },
         });
 
-        if (this.permissions.includes("confirm payment")) {
+        if (this.permissions.includes("confirm payment") && this.form.status === 'waiting for confirmation') {
           this.toast.success("Payment confirmed successfully.");
         } else {
           this.toast.success("Payment document submitted successfully.");
