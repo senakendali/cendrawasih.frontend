@@ -112,6 +112,8 @@
                     <th>Name</th>
                     <th>Championship Category</th>
                     <th>Match Category</th>
+                    <th>Age Category</th> 
+                    <th>Class</th>
                     <th>Registration Fee</th>
                     <th class="text-center">Select</th>
                   </tr>
@@ -123,6 +125,17 @@
                     <td>{{ member.name }}</td>
                     <td>{{ member.championship_category.name }}</td>
                     <td>{{ member.match_category.name }}</td>
+                    <td>{{ member.age_category?.name || '-' }}</td> <!-- Tambahan -->
+                    <td>
+                      <div v-if="member.category_class">
+                        {{ member.category_class.name }}<br />
+                        <small class="text-muted">
+                          {{ member.category_class.weight_min }} - {{ member.category_class.weight_max }} kg
+                        </small>
+                      </div>
+                      <div v-else>-</div>
+                    </td>
+
                     <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
                     <td v-if="isEdit" class="action-column text-center">
                       <button 
@@ -141,7 +154,7 @@
                     
                   </tr>
                   <tr v-if="members.length === 0">
-                    <td colspan="5" class="text-center">No members found.</td>
+                    <td colspan="9" class="text-center">No members found.</td>
                   </tr>
                 </tbody>
               </table>
@@ -154,7 +167,7 @@
         <table class="table">
           <thead>
             <tr class="table-header">
-              <th colspan="7" class="header">
+              <th colspan="9" class="header">
                   <select id="filterContingent" v-model="selectedContingent" class="form-select">
                   <option value="">-- All Contingents --</option>
                   <option v-for="c in contingents" :key="c.id" :value="c.id">
@@ -169,6 +182,8 @@
               <th>Name</th>
               <th>Championship Category</th>
               <th>Match Category</th>
+              <th>Age Category</th> 
+              <th>Class</th>
               <th>Registration Fee</th>
               <th class="text-center">Select</th>
             </tr>
@@ -181,6 +196,16 @@
               <td>{{ member.name }}</td>
               <td>{{ member.championship_category.name }}</td>
               <td>{{ member.match_category.name }}</td>
+              <td>{{ member.age_category?.name || '-' }}</td> <!-- Tambahan -->
+              <td>
+                <div v-if="member.category_class">
+                  {{ member.category_class.name }}<br />
+                  <small class="text-muted">
+                    {{ member.category_class.weight_min }} - {{ member.category_class.weight_max }} kg
+                  </small>
+                </div>
+                <div v-else>-</div>
+              </td>
               <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
               <td v-if="isEdit" class="action-column text-center">
                 <input v-if="member.exists_in_billing_details"
@@ -206,7 +231,7 @@
               </td>
             </tr>
             <tr v-if="members.length === 0">
-              <td colspan="5" class="text-center">No members found.</td>
+              <td colspan="7" class="text-center">No members found.</td>
             </tr>
           </tbody>
         </table>

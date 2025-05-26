@@ -86,7 +86,7 @@
     <table class="table mt-4">
       <thead>
         <tr class="table-header">
-          <th colspan="7" class="header">
+          <th colspan="9" class="header">
               <input 
                 v-model="searchQuery" 
                 type="text" 
@@ -102,6 +102,8 @@
           <th>Contingent Name</th>
           <th>Name</th>
           <th>Category</th>
+          <th>Age Category</th> 
+          <th>Class</th>        
           <th>Registration Status</th>
           <th>Actions</th>
         </tr>
@@ -123,6 +125,17 @@
           <td>{{ member.contingent.name }}</td>
           <td>{{ member.name }}</td>
           <td>{{ member.championship_category.name }}</td>
+          <td>{{ member.age_category?.name || '-' }}</td> <!-- Tambahan -->
+          <td>
+            <div v-if="member.category_class">
+              {{ member.category_class.name }}<br />
+              <small class="text-muted">
+                {{ member.category_class.weight_min }} - {{ member.category_class.weight_max }} kg
+              </small>
+            </div>
+            <div v-else>-</div>
+          </td>
+
           <td>
             <i class="bi bi-check-square"></i> Registered
           </td>
@@ -150,7 +163,7 @@
       <!-- Fallback message when there is no data -->
       <tbody v-else>
         <tr>
-          <td colspan="7" class="text-center">No members found.</td>
+          <td colspan="9" class="text-center">No members found.</td>
         </tr>
       </tbody>
 
