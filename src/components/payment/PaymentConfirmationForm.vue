@@ -338,7 +338,7 @@ export default {
     async loadTeamMembers() {
       this.loading = true;
       try {
-        const response = await axios.get("/team-members?fetch_all=true&is_payment_confirmation=true", {
+        const response = await axios.get("/team-members?fetch_all=false&is_payment_confirmation=true", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
