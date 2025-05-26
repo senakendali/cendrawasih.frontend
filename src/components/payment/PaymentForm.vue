@@ -168,14 +168,32 @@
           <thead>
             <tr class="table-header">
               <th colspan="9" class="header">
-                  <select id="filterContingent" v-model="selectedContingent" class="form-select">
-                  <option value="">-- All Contingents --</option>
-                  <option v-for="c in contingents" :key="c.id" :value="c.id">
-                    {{ c.name }}
-                  </option>
-                </select>
+                <div class="w-100 d-flex gap-2">
+                    <!-- Filter Contingent -->
+                  <select v-model="selectedContingent" class="form-select w-auto">
+                    <option value="">-- All Contingents --</option>
+                    <option v-for="c in contingents" :key="c.id" :value="c.id">{{ c.name }}</option>
+                  </select>
+
+                  <!-- Filter Age Category -->
+                  <select v-model="selectedAgeCategory" @change="fetchCategoryClasses" class="form-select w-auto">
+                    <option value="">-- All Age Categories --</option>
+                    <option v-for="age in ageCategories" :key="age.id" :value="age.id">{{ age.name }}</option>
+                  </select>
+
+
+                  <!-- Filter Category Class -->
+                  <select v-model="selectedCategoryClass" class="form-select w-auto">
+                    <option value="">-- All Classes --</option>
+                    <option v-for="cls in categoryClasses" :key="cls.id" :value="cls.id">
+                      {{ cls.name }} ({{ cls.weight_min }} - {{ cls.weight_max }} kg)
+                    </option>
+                  </select>
+                </div>
+                
               </th>
             </tr>
+
             <tr>
               <th>#</th>
               <th>Contingent</th>
@@ -275,7 +293,12 @@ export default {
       unselectedMembers: [],
       selectedMembers: [], // This will hold the selected members' IDs
       selectedContingent: '',
+      selectedAgeCategory: '',
+      selectedCategoryClass: '',
       contingents: [],
+      ageCategories: [],
+      categoryClasses: [],
+      age_category_id: '',
       form: {
         tournament_id: null,
         bank_name: "",
@@ -292,7 +315,7 @@ export default {
   },
 
   computed: {
-    filteredMembers() {
+    /*filteredMembers() {
       if (!this.selectedContingent) {
         return this.members;
       }
@@ -300,12 +323,23 @@ export default {
       return this.members.filter(m =>
         m.contingent && m.contingent.id == this.selectedContingent
       );
+    }*/
+
+    filteredMembers() {
+      return this.members.filter((member) => {
+        const matchContingent = this.selectedContingent ? member.contingent_id === this.selectedContingent : true;
+        const matchAgeCategory = this.selectedAgeCategory ? member.age_category_id === this.selectedAgeCategory : true;
+        const matchCategoryClass = this.selectedCategoryClass ? member.category_class_id === this.selectedCategoryClass : true;
+        return matchContingent && matchAgeCategory && matchCategoryClass;
+      });
     }
   },
 
   mounted() {
 
     this.fetchContingents();
+     this.fetchAgeCategories();
+    this.fetchCategoryClasses();
   },
 
   created() {
@@ -327,6 +361,9 @@ export default {
   },
 
   watch: {
+    selectedAgeCategory() {
+      this.selectedCategoryClass = '';
+    },
     'form.tournament_id': function (newVal) {
       if (newVal) {
         this.fetchContingents();
@@ -349,6 +386,26 @@ export default {
   },
 
   methods: {
+
+    fetchAgeCategories() {
+    axios.get('fetch-age-categories').then(res => {
+        this.ageCategories = res.data;
+      });
+    },
+    fetchCategoryClasses() {
+      if (!this.selectedAgeCategory) {
+        this.categoryClasses = [];
+        this.selectedCategoryClass = ''; // reset selected
+        return;
+      }
+
+      axios.get(`/fetch-category-classes?age_category_id=${this.selectedAgeCategory}`)
+        .then(res => {
+          this.categoryClasses = res.data;
+          this.selectedCategoryClass = ''; // reset pilihan class biar ga ke-lock ke class lama
+        });
+    },
+
     async fetchContingents() {
       if (!this.form.tournament_id) {
         this.contingents = [];
