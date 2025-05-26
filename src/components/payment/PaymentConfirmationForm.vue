@@ -131,7 +131,9 @@
             </div>
             
 
-            <div class="mb-3" v-if='!this.permissions.includes("confirm payment")'>
+            <div class="mb-3"  v-if="permissions && permissions.includes('upload payment struk') && form.status !== 'waiting for confirmation'">
+    
+              
               <label for="payment_document" class="form-label">Payment Struk</label>
               <div class="input-group">
                   <input class="form-control" type="file" id="payment_document" @change="handleFileUpload">
@@ -216,7 +218,7 @@
             </button>
 
 
-            <button v-if="permissions && permissions.includes('confirm payment')" type="submit" class="button button-primary" :disabled="loading">
+            <button v-if="permissions && permissions.includes('confirm payment') && form.status === 'waiting for confirmation'" type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
               <span>{{ isConfirm ? "Confirm Payment" : "Submit Payment" }}</span>
             </button>
