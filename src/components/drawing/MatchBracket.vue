@@ -205,7 +205,23 @@ export default {
 
       try {
         await axios.get(`/pools/${this.poolId}/regenerate-bracket`);
-        await this.fetchRounds();
+
+        //TAMBAHAN
+        try {
+          const response = await axios.get(`/pools/${this.poolId}/matches`);
+         if (response.data.status === 'ongoing') {
+            console.log("Bracket sudah ada, langsung fetch data.");
+          } else {
+            console.log("Membuat bracket baru...");
+            await axios.get(`/pools/${this.poolId}/generate-bracket`);
+          }
+          await this.fetchRounds();
+        } catch (error) {
+          console.error("Error generating bracket:", error);
+          this.errorMessage = "Gagal memuat bracket. Silakan coba lagi.";
+        }
+
+        //await this.fetchRounds();
       } catch (error) {
         console.error("Error generating bracket:", error);
         this.errorMessage = "Gagal memuat bracket. Silakan coba lagi.";
