@@ -131,16 +131,16 @@
             </div>
             
 
-            <div class="mb-3"  v-if="permissions && permissions.includes('upload payment struk') && form.status !== 'waiting for confirmation'">
-    
-              
-              <label for="payment_document" class="form-label">Payment Struk</label>
-              <div class="input-group">
-                  <input class="form-control" type="file" id="payment_document" @change="handleFileUpload">
-              </div>
-              <div class="invalid-feedback">{{ errors.payment_document }}</div>
-              
-            </div> 
+            <!-- ✅ FIX FINAL: hanya tampil jika BUKAN sedang confirm payment dengan status 'waiting for confirmation' -->
+<div class="mb-3" v-if="showUploadStruk">
+  <label for="payment_document" class="form-label">Payment Struk</label>
+  <div class="input-group">
+    <input class="form-control" type="file" id="payment_document" @change="handleFileUpload">
+  </div>
+  <div class="invalid-feedback">{{ errors.payment_document }}</div>
+</div>
+
+
             <div class="mb-3">
                 <a href="#" v-if="form.payment_document" class="button button-primary"  @click="openModal"><i class="bi bi-file-earmark-post-fill"></i> View Struk</a>
             </div>
@@ -208,7 +208,7 @@
               <span>{{ isConfirm ? "Send Payment Struk" : "Submit Payment" }}</span>
             </button-->
             <button
-              v-if="permissions && permissions.includes('upload payment struk') && form.status !== 'waiting for confirmation'"
+              v-if="permissions && permissions.includes('upload payment struk') && form.status === 'waiting for payment'"
               type="submit"
               class="button button-primary"
               :disabled="loading"
@@ -217,8 +217,8 @@
               <span>{{ isConfirm ? "Send Payment Struk" : "Submit Payment" }}</span>
             </button>
 
-
-            <button v-if="permissions && permissions.includes('confirm payment') && form.status === 'waiting for confirmation'" type="submit" class="button button-primary" :disabled="loading">
+            <p>{{ form.status }}</p>
+            <button v-if="permissions && permissions.includes('confirm payment') && (form.status === 'waiting for confirmation' || form.status === 'paid')" type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
               <span>{{ isConfirm ? "Confirm Payment" : "Submit Payment" }}</span>
             </button>
@@ -274,6 +274,10 @@ export default {
   },
 
   computed: {
+    showUploadStruk() {
+    return this.permissions.includes('upload payment struk') &&
+           (!this.permissions.includes('confirm payment') || this.form.status !== 'waiting for confirmation');
+  },
     validMembers() {
       return this.members.filter(m => m && m.match_category && m.championship_category);
     }
@@ -419,7 +423,7 @@ export default {
 
       let formData = new FormData();
 
-      if (this.permissions.includes("confirm payment") && this.form.status === 'waiting for confirmation') {
+      if (this.permissions.includes("confirm payment") && (this.form.status === 'waiting for confirmation' || this.form.status === 'paid')) {
         formData.append("status", this.form.status);
 
         // Hanya kirim reject_reason jika status = "failed"
@@ -442,7 +446,7 @@ export default {
       try {
         const method = "post"; 
         
-        const endpoint = this.permissions.includes("confirm payment") && this.form.status === 'waiting for confirmation'
+        const endpoint = this.permissions.includes("confirm payment") && (this.form.status === 'waiting for confirmation' || this.form.status === 'paid')
         ? `/billings/${this.paymentId}/confirm-payment`
         : `/billings/${this.paymentId}/update-document`;
 
@@ -456,7 +460,7 @@ export default {
           },
         });
 
-        if (this.permissions.includes("confirm payment") && this.form.status === 'waiting for confirmation') {
+        if (this.permissions.includes("confirm payment") && (this.form.status === 'waiting for confirmation' || this.form.status === 'paid')) {
           this.toast.success("Payment confirmed successfully.");
         } else {
           this.toast.success("Payment document submitted successfully.");
