@@ -301,6 +301,18 @@ export default {
     background: #F80000;
   }
 
+  ::v-deep(.vtb-item-players .vtb-player.vtb-player1.defeated) {
+    width: 200px;
+    background-color: #002FB9;
+    color: #FFFFFF;
+  }
+
+  ::v-deep(.vtb-item-players .vtb-player.vtb-player2.defeated) {
+    width: 200px;
+    background-color: #F80000;
+    color: #FFFFFF;
+  }
+
 
   ::v-deep(.vtb-item-players .defeated.highlight) {
     width: 200px;
