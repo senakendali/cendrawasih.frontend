@@ -62,13 +62,21 @@
           <td>{{ pool.match_category }}</td>
           <td>{{ pool.age_category }}</td>
           <td v-if="pool.category_class">
-            {{ pool.category_class.gender }} - {{ pool.category_class.name }}
-            ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)
+            <div class="text-success">
+               {{ pool.category_class.gender }} - {{ pool.category_class.name }}
+               ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)
+            </div>
+           
+            <small class="text-muted">
+              Total Athlete: {{ pool.category_class.available_athletes }}
+            </small>
           </td>
           <td v-else class="text-muted">-</td>
 
-          
-          <td class="text-center">{{ pool.match_chart }}</td>
+          <td class="text-center">
+            {{ pool.match_chart === 0 ? 'Full Prestasi' : pool.match_chart }}
+          </td>
+
           <td>
             <span v-if="pool.matches_count > 0" class="badge bg-success p-2">Generated</span>
             <span v-else class="badge bg-warning text-dark p-2">Not Generated</span>
@@ -80,7 +88,12 @@
                 <i class="bi bi-card-checklist"></i> Action
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" @click="GenerateMatch(pool.pool_id)"><i class="bi bi-diagram-3"></i> Generate Bracket</a></li>
+                <li>
+                  <a class="dropdown-item" href="#" @click="GenerateMatch(pool.pool_id)"><i class="bi bi-diagram-3"></i> 
+                      <span v-if="pool.matches_count > 0"> View Bracket</span>
+                      <span v-else> Generate Bracket</span>
+                  </a>
+                </li>
                 <li><a class="dropdown-item" href="#" @click="ViewMatch(pool.pool_id)"><i class="bi bi-eye"></i> View Match</a></li>
                 
               </ul>
@@ -161,6 +174,11 @@ export default {
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    formatMatchCount(count) {
+      const matchLabel = count === 1 ? 'Match' : 'Matches';
+      const athleteLabel = count * 2 === 1 ? 'Athlete' : 'Athletes';
+      return `${count} ${matchLabel} (${count * 2} ${athleteLabel})`;
+    },
     confirmDelete(id) {
       this.poolId = id;
       this.deleteModal.show();
