@@ -61,17 +61,27 @@
           <td>{{ pool.name }}</td>
           <td>{{ pool.match_category }}</td>
           <td>{{ pool.age_category }}</td>
-          <td v-if="pool.category_class">
-            <div class="text-success">
-               {{ pool.category_class.gender }} - {{ pool.category_class.name }}
-               ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)
-            </div>
-           
-            <small class="text-muted">
-              Total Athlete: {{ pool.category_class.available_athletes }}
-            </small>
+         <td>
+            <template v-if="pool.category_class && pool.category_class.name">
+              <div class="text-success">
+                {{ pool.category_class.gender }} - {{ pool.category_class.name }}
+                ({{ pool.category_class.weight_min }} KG - {{ pool.category_class.weight_max }} KG)
+              </div>
+              <small class="text-muted">
+                Total Athlete: {{ pool.category_class.available_athletes }}
+              </small>
+            </template>
+
+            <template v-else>
+              <div class="text-success">
+                <i>Gabungan Kelas</i>
+              </div>
+              <small class="text-muted">
+                Total Athlete: {{ pool.category_class.available_athletes }}
+              </small>
+            </template>
           </td>
-          <td v-else class="text-muted">-</td>
+
 
           <td class="text-center">
             {{ pool.match_chart === 0 ? 'Full Prestasi' : pool.match_chart }}

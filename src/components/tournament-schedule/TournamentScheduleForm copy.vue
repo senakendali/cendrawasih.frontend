@@ -440,8 +440,6 @@ export default {
         });
       });
 
-       this.updateMatchOrder();
-
       // Setelah reset, update berdasarkan filter baru
       this.$nextTick(() => {
         this.updateMatchOrder();
@@ -614,47 +612,38 @@ export default {
   console.log('✅ Updated Match Order after filtering');
 },
 
-  updateMatchOrder() {
-    let order = 1;
-    let currentTime = new Date(`1970-01-01T${this.form.start_time || "08:00"}:00`);
+updateMatchOrder() {
+  let order = 1;
+  let currentTime = new Date(`1970-01-01T${this.form.start_time || "08:00"}:00`);
 
-    this.allMatchesByPool.forEach(pool => {
-      pool.rounds.forEach(round => {
-        // Lewati ronde kalau lagi difilter dan bukan ronde terpilih
-        if (this.selectedRound && round.round != this.selectedRound) return;
+  this.filteredMatchesByPool.forEach(pool => {
+    pool.rounds.forEach(round => {
+      // Skip round jika tidak sesuai filter (udah dicek sebelumnya sih)
+      if (this.selectedRound && round.round != this.selectedRound) return;
 
-        round.matches.forEach(match => {
-          // Cek apakah match ini sesuai filter
-          const matchCategoryMatch = !this.form.match_category_id || match.pool?.match_category_id == this.form.match_category_id;
-          const ageCategoryMatch = !this.form.age_category_id || match.age_category_id == this.form.age_category_id;
-          const classMatch = !this.form.category_class_id || match.category_class_id == this.form.category_class_id;
-          const roundMatch = !this.selectedRound || round.round == this.selectedRound;
-
-          const passedFilter = matchCategoryMatch && ageCategoryMatch && classMatch && roundMatch;
-
-          if (passedFilter) {
-            match.selected = true;
-            match.match_order = order++;
-            match.match_time = currentTime.toTimeString().substring(0, 5);
-            currentTime.setMinutes(currentTime.getMinutes() + 5);
-          } else {
-            match.selected = false;
-            match.match_order = '';
-            match.match_time = '';
-          }
-        });
+      round.matches.forEach(match => {
+        if (match.selected) {
+          match.match_order = order++;
+          match.match_time = currentTime.toTimeString().substring(0, 5);
+          currentTime.setMinutes(currentTime.getMinutes() + 5);
+        } else {
+          match.match_order = '';
+          match.match_time = '';
+        }
       });
     });
+  });
 
-    // Update status selectAll
-    this.selectAll = this.allMatchesByPool.every(pool =>
-      pool.rounds.every(round =>
-        round.matches.every(match => match.selected)
-      )
-    );
+  // Optional: update selectAll state
+  this.selectAll = this.filteredMatchesByPool.every(pool =>
+    pool.rounds.every(round =>
+      (!this.selectedRound || round.round == this.selectedRound) &&
+      round.matches.every(match => match.selected)
+    )
+  );
 
-    console.log("✅ Match order dan time diupdate berdasarkan filter");
-  },
+  console.log("✅ match_order & match_time updated based on filter");
+},
 
 
   onMatchCheckChanged() {
