@@ -22,7 +22,10 @@
           <div v-if="bracketType === 2" class="match-bracket">
             <div v-for="(game, index) in games" :key="index" class="match-container">
               <div class="player-1">{{ game.player1.name }} / {{ game.player1.contingent }} </div>
-              <div class="player-2">{{ game.player2.name }} / {{ game.player2.contingent }}</div>
+              <div class="player-2">
+                {{ game.player2.name === 'BYE' ? 'TBD' : game.player2.name + ' / ' + game.player2.contingent }}
+              </div>
+
             </div>
           </div>
           <div v-else>

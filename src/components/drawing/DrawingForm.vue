@@ -256,7 +256,8 @@ export default {
           params: {
             age_category_id: this.form.age_category_id,
             tournament_id: this.form.tournament_id,
-            match_category_id: this.form.match_category_id // ✅ ini yang sebelumnya belum dikirim
+            match_category_id: this.form.match_category_id, // ✅ ini yang sebelumnya belum dikirim
+            filter_for: 'drawing'
           }
         });
 

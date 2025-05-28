@@ -243,7 +243,12 @@ export default {
     getPoolSizeOptions(totalContingents) {
       const options = [];
 
-      if (totalContingents < 2) return [];
+      if (totalContingents < 1) return [];
+
+      // ✅ Tambahkan pool size 1 jika hanya 1 peserta
+      if (totalContingents === 1) {
+        return [1];
+      }
 
       for (let size = 2; size <= totalContingents; size++) {
         const remainder = totalContingents % size;
@@ -256,6 +261,7 @@ export default {
 
       return options;
     },
+
     async fetchGenderParticipants() {
       if (!this.form.tournament_id || !this.form.age_category_id || !this.form.match_category_id) {
         this.genderOptions = this.genderOptions.map(g => ({ ...g, count: 0 }));
