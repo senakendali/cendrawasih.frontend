@@ -175,8 +175,8 @@
                       </tr>
                       <tr class="table-sub-header">
                         <th>#</th> 
-                        <th class="text-uppercase">Peserta 1</th>
-                        <th class="text-uppercase">Peserta 2</th>
+                        <th class="text-uppercase blue">Peserta 1</th>
+                        <th class="text-uppercase red">Peserta 2</th>
                         <th class="text-uppercase">Waktu</th>  
                       </tr>
                     </thead>
@@ -367,6 +367,14 @@ export default {
 </script>
 
 <style scoped>
+.blue{
+  background-color: #002FB9;
+}
+
+.red{
+  background-color: #F80000;
+}
+
 .filter {
   background-color: #343a40;
   color: #ffffff;

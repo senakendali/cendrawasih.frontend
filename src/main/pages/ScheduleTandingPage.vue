@@ -175,9 +175,10 @@
                       </tr>
                       <tr class="table-sub-header">
                         <th>#</th> 
-                        <th class="text-uppercase">Peserta 1</th>
-                        <th class="text-uppercase">Peserta 2</th>
-                        <th class="text-uppercase">Waktu</th>  
+                        <th class="text-uppercase blue">Peserta 1</th>
+                        <th class="text-uppercase text-center">Kelas</th>
+                        <th class="text-uppercase red">Peserta 2</th>
+                       
                       </tr>
                     </thead>
                     <tbody>
@@ -191,8 +192,9 @@
                         <tr v-for="(match, i) in round.matches" :key="i">
                           <td>{{ match.match_order }}</td> 
                           <td>{{ match.participant_one }} ({{ match.contingent_one || '-' }})</td>
+                          <td>{{ match.class_name || '-' }}</td>
                           <td>{{ match.participant_two }} ({{ match.contingent_two || '-' }})</td>
-                          <td>{{ match.match_time }}</td>
+                          <!--td>{{ match.match_time }}</td-->
                         </tr>
                       </template>
                     </tbody>
@@ -364,6 +366,15 @@ export default {
 </script>
 
 <style scoped>
+
+.blue{
+  background-color: #002FB9 !important;
+}
+
+.red{
+  background-color: #F80000 !important;
+}
+
 .filter {
   background-color: #343a40;
   color: #ffffff;
