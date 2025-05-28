@@ -168,32 +168,50 @@
 
                   <table class="table table-striped">
                     <thead>
-                      <tr>
+                      <!--tr>
                         <th colspan="4" class="table-header text-uppercase">
                           {{ pool.pool_name }}
                         </th>
-                      </tr>
+                      </tr-->
                       <tr class="table-sub-header">
-                        <th>#</th> 
-                        <th class="text-uppercase blue">Peserta 1</th>
+                        <th>Partai</th> 
+                        <th>Babak</th>
                         <th class="text-uppercase text-center">Kelas</th>
-                        <th class="text-uppercase red">Peserta 2</th>
+                        <th>Pool</th>
+                        
+                        <th class="text-uppercase blue">Sudut Biru</th>
+                        
+                        <th class="text-uppercase red">Sudut Merah</th>
+                        <th colspan="2" class="text-center">Score</th>
+                        
                        
                       </tr>
+                      <tr class="round-separator d-none">
+                        <td colspan="6"></td>
+                        <td class="text-uppercase text-white"></td>
+                        <td class="text-uppercase text-white"></td>
+                      </tr>
+
                     </thead>
                     <tbody>
                       <template 
                         v-for="round in pool.rounds.filter(r => selectedRoundFilters.includes(r.round_label))"
                         :key="round.round_label"
                       >
-                        <tr class="round-separator">
+                        <!--tr class="round-separator">
                           <td colspan="4" class="fw-bold">{{ round.round_label }}</td>
-                        </tr>
+                        </tr-->
                         <tr v-for="(match, i) in round.matches" :key="i">
                           <td>{{ match.match_order }}</td> 
+                          <td>{{ round.round_label }}</td>
+                           <td>{{ match.class_name || '-' }}</td>
+                          <td>{{ pool.pool_name }}</td>
+                         
                           <td>{{ match.participant_one }} ({{ match.contingent_one || '-' }})</td>
-                          <td>{{ match.class_name || '-' }}</td>
+                          
                           <td>{{ match.participant_two }} ({{ match.contingent_two || '-' }})</td>
+                          <td class="score-blue"> - </td>
+                          <td class="score-red"> - </td>
                           <!--td>{{ match.match_time }}</td-->
                         </tr>
                       </template>
@@ -366,6 +384,11 @@ export default {
 </script>
 
 <style scoped>
+
+.score-blue, .score-red {
+    width: 60px;
+    text-align: center;
+  }
 
 .blue{
   background-color: #002FB9 !important;

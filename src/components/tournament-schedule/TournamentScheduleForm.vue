@@ -319,7 +319,7 @@ export default {
         match_category_id: "",
         tournament_arena_id: "",
         scheduled_date: "",
-        start_time: "08:00",
+        start_time: "07:30",
         end_time: "17:00",
         note: ""
       },
@@ -585,7 +585,7 @@ export default {
   let order = 1;
 
   // Start dari waktu yang ditentukan
-  let currentTime = new Date(`1970-01-01T${this.form.start_time || "08:00"}:00`);
+  let currentTime = new Date(`1970-01-01T${this.form.start_time || "07:30"}:00`);
 
   this.allMatchesByPool.forEach(pool => {
     pool.rounds.forEach(round => {
@@ -616,7 +616,7 @@ export default {
 
   updateMatchOrder() {
     let order = 1;
-    let currentTime = new Date(`1970-01-01T${this.form.start_time || "08:00"}:00`);
+    let currentTime = new Date(`1970-01-01T${this.form.start_time || "07:30"}:00`);
 
     this.allMatchesByPool.forEach(pool => {
       pool.rounds.forEach(round => {
@@ -718,7 +718,7 @@ export default {
               category_class_id: match.pool?.category_class?.id || null,
               selected: this.isEdit ? false : true,
               match_order: '',
-              match_time: '08:00',
+              match_time: '07:30',
               pool: match.pool || {},
               participant_one: match.participant_one || { name: 'No Name', contingent: { name: 'No contingent' } },
               participant_two: match.participant_two || { name: 'No Name', contingent: { name: 'No contingent' } }
