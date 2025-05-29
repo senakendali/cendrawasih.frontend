@@ -10,8 +10,10 @@
       <i class="bi bi-file-earmark-text"></i> Match List
     </div>
 
-    <div class="mb-2 d-flex justify-content-end align-items-center">
+    <div class="mb-2 d-flex gap-2 justify-content-end align-items-center">
       <!-- Search Bar -->
+      
+
      
       <router-link :to="'/admin/tanding/match/' + poolId" class="button button-primary">
         <i class="bi bi-diagram-3"></i> View Bracket
@@ -25,6 +27,7 @@
           <th rowspan="2">Round</th>
           <th colspan="2" class="text-center blue-side">Blue</th>
           <th colspan="2" class="text-center red-side">Red</th>
+          <th></th>
         </tr>
         <tr>
           
@@ -32,6 +35,7 @@
           <th class="blue-side text-center">Participant</th>
           <th class="red-side text-center">Contingent</th>
           <th class="red-side text-center">Participant</th>
+          <th style="width: 200px;"></th>
         </tr>
       </thead>
       <tbody v-if="matchList.length > 0">
@@ -41,6 +45,18 @@
           <td class="blue">{{ match.participant_one ?? '-' }}</td>
           <td class="red">{{ match.participant_two_contingent ?? '-' }}</td>
           <td class="red">{{ match.participant_two ?? '-' }}</td>
+          <td>
+          <button
+            type="button"
+            class="button button-primary"
+            :disabled="loading"
+            @click="createOpponent(match.match_id)"
+          >
+            <span><i class="bi bi-clipboard-check"></i> Create Opponent</span>
+          </button>
+        </td>
+
+
         </tr>
       </tbody>
       <tbody v-else>
@@ -133,6 +149,22 @@ export default {
   },
   
   methods: {
+    async createOpponent(matchId) {
+      this.loading = true;
+      try {
+        const response = await axios.post(`/matches/${matchId}/create-dummy`);
+        this.toast.success('Peserta dummy berhasil dibuat!');
+        console.log(response.data.message);
+        await this.loadMatchList(); // refresh list
+      } catch (error) {
+        console.error('Gagal membuat dummy:', error);
+        this.toast.error(
+          error.response?.data?.message || 'Gagal membuat dummy peserta'
+        );
+      } finally {
+        this.loading = false;
+      }
+    },
     async generateBracket() {
       this.loading = true;
       this.errorMessage = null;

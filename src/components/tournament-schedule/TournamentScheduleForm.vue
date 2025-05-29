@@ -219,7 +219,7 @@
                       <table class="table">
                         <thead>
                           <tr>
-                            <th colspan="5" class="table-header text-uppercase">
+                            <th colspan="3" class="table-header text-uppercase">
                               {{ pool.pool_name }}
                             </th>
                           </tr>
@@ -227,8 +227,8 @@
                             <th>#</th>
                             <th>Participant One</th>
                             <th>Participant Two</th>
-                            <th>Match Order</th>
-                            <th>Match Time</th>
+                            <th class="d-none">Match Order</th>
+                            <th class="d-none">Match Time</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -250,8 +250,8 @@
                                 </td>
                                 <td>{{ match.participant_one?.name || 'No Name' }} ({{ match.participant_one?.contingent?.name || 'No contingent' }})</td>
                                 <td>{{ match.participant_two?.name || 'No Name' }} ({{ match.participant_two?.contingent?.name || 'No contingent' }})</td>
-                                <td><input type="text" class="form-control" v-model="match.match_order" readonly /></td>
-                                <td><input type="time" class="form-control" v-model="match.match_time" /></td>
+                                <td class="d-none"><input type="text" class="form-control" v-model="match.match_order" readonly /></td>
+                                <td class="d-none"><input type="time" class="form-control" v-model="match.match_time" /></td>
                               </tr>
                             </template>
                           </template>
