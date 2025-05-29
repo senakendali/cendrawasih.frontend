@@ -145,6 +145,7 @@
                 <div class="col-3 text-start">
                   <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
                 </div>
+                
                 <div class="col-6 text-center">
                   <h4 class="text-dark mb-2 text-uppercase fw-bold">JADWAL {{ arena.arena_name }} {{ arena.age_category_name }}</h4>
                   <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
@@ -152,7 +153,14 @@
                     {{ formatLongDate(arena.scheduled_date) }}
                   </div>
                 </div>
-                <div class="col-3"></div>
+                <div class="col-3 text-end">
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    @click="downloadSchedule(arena)"
+                  >
+                    <i class="bi bi-download me-1"></i> Download Schedule
+                  </button>
+                </div>
               </div>
 
               <!-- Jadwal Tabel -->
@@ -210,6 +218,7 @@
 
 <script>
 import axios from "axios";
+import API from "@/config/api";
 import html2pdf from "html2pdf.js";
 
 export default {
@@ -257,6 +266,17 @@ export default {
   },
 
   methods: {
+    downloadSchedule(arena) {
+      // Misalnya lu redirect ke API atau generate PDF
+      const params = new URLSearchParams({
+        arena_name: arena.arena_name,
+        age_category_id: arena.age_category_id,
+        scheduled_date: arena.scheduled_date,
+      });
+
+      const url = `${API.API_BASE_URL}/tanding/export-schedule?${params.toString()}`;
+      window.open(url, '_blank');
+    },
     toggleAllDates() {
       if (this.selectedDateFilters.length === this.allDates.length) {
         this.selectedDateFilters = [];
