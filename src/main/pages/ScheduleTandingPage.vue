@@ -146,7 +146,7 @@
                   <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
                 </div>
                 <div class="col-6 text-center">
-                  <h4 class="text-dark mb-2 text-uppercase fw-bold">JADWAL {{ arena.arena_name }}</h4>
+                  <h4 class="text-dark mb-2 text-uppercase fw-bold">JADWAL {{ arena.arena_name }} {{ arena.age_category_name }}</h4>
                   <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
                   <div class="text-dark text-uppercase fw-bold">
                     {{ formatLongDate(arena.scheduled_date) }}

@@ -189,52 +189,54 @@
 
                 <!-- ✅ Loop per kategori -->
                 <div v-for="categoryGroup in groupList" :key="categoryGroup.category + '-' + categoryGroup.gender">
-                  <h4 class="text-uppercase text-primary mb-3">
-                    {{ categoryGroup.category }} - {{ categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI' }}
-                  </h4>
-
+                  
                   <!-- ✅ Loop per Pool -->
                   <div v-for="pool in categoryGroup.pools" :key="pool.name" class="mb-5">
                     <table class="table mt-4">
                       <thead>
-                        <tr>
-                          <th colspan="6" class="table-header text-start text-uppercase">
-                            {{ pool.name }}
-                          </th>
-                        </tr>
-                        <tr>
-                          <th colspan="6" class="table-header text-start text-uppercase">
-                            {{ pool.matches[0]?.pool?.age_category?.name.toUpperCase() }}
-                          </th>
-                        </tr>
                         <tr class="table-sub-header">
-                          <th>Match</th>
+                          <th>PARTAI</th>
                           <th>Kontingen</th>
-                          <th colspan="3">Peserta</th>
+                          <th colspan="3">Nama Atlet</th>
+                          <th>Waktu</th>
+                          <th>Score</th>
                         </tr>
+                        <tr>  
+                          <th colspan="8" class="table-header text-start text-uppercase text-center">
+                            {{ categoryGroup.category }} {{ categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI' }} {{ pool.matches[0]?.pool?.age_category?.name.toUpperCase() }}  {{ pool.name }}
+                          </th>
+                        </tr>
+                       
                       </thead>
-                      <tbody>
-                        <tr v-for="entry in pool.matches" :key="entry.id">
-                          <td>{{ entry.match_order }}</td>
-                          <td>{{ entry.contingent?.name || '-' }}</td>
+                     <tbody>
+  <tr v-for="entry in pool.matches" :key="entry.id">
+    <td>{{ entry.match_order }}</td>
+    <td>{{ entry.contingent?.name || '-' }}</td>
 
-                          <!-- ✅ Peserta sesuai tipe pertandingan -->
-                          <template v-if="entry.match_type === 'seni_tunggal'">
-                            <td>{{ entry.team_member1?.name || '-' }}</td>
-                            <td colspan="2">-</td>
-                          </template>
-                          <template v-else-if="entry.match_type === 'seni_ganda'">
-                            <td>{{ entry.team_member1?.name || '-' }}</td>
-                            <td>{{ entry.team_member2?.name || '-' }}</td>
-                            <td>-</td>
-                          </template>
-                          <template v-else-if="entry.match_type === 'seni_regu'">
-                            <td>{{ entry.team_member1?.name || '-' }}</td>
-                            <td>{{ entry.team_member2?.name || '-' }}</td>
-                            <td>{{ entry.team_member3?.name || '-' }}</td>
-                          </template>
-                        </tr>
-                      </tbody>
+    <!-- ✅ Peserta sesuai tipe pertandingan -->
+    <template v-if="entry.match_type === 'seni_tunggal'">
+      <td>{{ entry.team_member1?.name || '-' }}</td>
+      <td colspan="2">-</td>
+    </template>
+
+    <template v-else-if="entry.match_type === 'seni_ganda'">
+      <td>{{ entry.team_member1?.name || '-' }}</td>
+      <td>{{ entry.team_member2?.name || '-' }}</td>
+      <td>-</td>
+    </template>
+
+    <template v-else-if="entry.match_type === 'seni_regu'">
+      <td>{{ entry.team_member1?.name || '-' }}</td>
+      <td>{{ entry.team_member2?.name || '-' }}</td>
+      <td>{{ entry.team_member3?.name || '-' }}</td>
+    </template>
+
+    <!-- ✅ Tambahan Kolom Waktu dan Score -->
+    <td>{{ entry.match_time || '-' }}</td>
+    <td>{{ entry.final_score || '-' }}</td>
+  </tr>
+</tbody>
+
                     </table>
                   </div>
                 </div>
