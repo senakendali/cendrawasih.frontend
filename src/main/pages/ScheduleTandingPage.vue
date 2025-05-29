@@ -134,14 +134,13 @@
             <div v-if="filteredScheduleData.length === 0" class="text-center text-muted my-5">
               <h5>Belum ada jadwal pertandingan yang tersedia.</h5>
             </div>
+
             <!-- Arena Loop -->
             <div 
               v-for="arena in filteredScheduleData"
               :key="arena.arena_name"
             >
-
-
-              <!-- Logo + Header -->
+              <!-- Header -->
               <div class="row align-items-center mb-4">
                 <div class="col-3 text-start">
                   <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
@@ -156,76 +155,54 @@
                 <div class="col-3"></div>
               </div>
 
-              <!-- Pool Loop -->
+              <!-- Jadwal Tabel -->
               <div class="mb-4">
-                <div 
-                  v-for="pool in arena.pools"
-                  :key="pool.pool_name"
-                  class="mb-3"
-                >
+                <table class="table table-striped">
+                  <thead>
+                    <tr class="table-sub-header">
+                      <th>Partai</th>
+                      <th>Babak</th>
+                      <th class="text-uppercase text-center">Kelas</th>
+                      <th>Pool</th>
+                      <th class="text-uppercase text-center blue">Sudut Biru</th>
+                      <th class="text-uppercase text-center red">Sudut Merah</th>
+                      <th colspan="2" class="text-center">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr 
+                      v-for="(match, i) in arena.matches" 
+                      :key="i"
+                    >
+                      <td>{{ match.match_number }}</td>
+                      <td>{{ match.round_label }}</td>
+                      <td>{{ match.class_name || '-' }}</td>
+                      <td>{{ match.pool_name || '-' }}</td>
+                      <td class="text-center">
+                        <div class="text-center font-blue">{{ match.participant_one }}</div>
+                        <div class="text-center text-success">{{ match.contingent_one || '-'  }}</div>
+                      </td>
+                       <td class="text-center">
+                        <div class="text-center font-red">{{ match.participant_two }}</div>
+                        <div class="text-center text-success">{{ match.contingent_two || '-'  }}</div>
+                      </td>
+                      
+                      <td class="score-blue"> - </td>
+                      <td class="score-red"> - </td>
+                    </tr>
+                  </tbody>
 
 
 
-                  <table class="table table-striped">
-                    <thead>
-                      <!--tr>
-                        <th colspan="4" class="table-header text-uppercase">
-                          {{ pool.pool_name }}
-                        </th>
-                      </tr-->
-                      <tr class="table-sub-header">
-                        <th>Partai</th> 
-                        <th>Babak</th>
-                        <th class="text-uppercase text-center">Kelas</th>
-                        <th>Pool</th>
-                        
-                        <th class="text-uppercase blue">Sudut Biru</th>
-                        
-                        <th class="text-uppercase red">Sudut Merah</th>
-                        <th colspan="2" class="text-center">Score</th>
-                        
-                       
-                      </tr>
-                      <tr class="round-separator d-none">
-                        <td colspan="6"></td>
-                        <td class="text-uppercase text-white"></td>
-                        <td class="text-uppercase text-white"></td>
-                      </tr>
 
-                    </thead>
-                    <tbody>
-                      <template 
-                        v-for="round in pool.rounds.filter(r => selectedRoundFilters.includes(r.round_label))"
-                        :key="round.round_label"
-                      >
-                        <!--tr class="round-separator">
-                          <td colspan="4" class="fw-bold">{{ round.round_label }}</td>
-                        </tr-->
-                        <tr v-for="(match, i) in round.matches" :key="i">
-                          <td>{{ match.match_order }}</td> 
-                          <td>{{ round.round_label }}</td>
-                           <td>{{ match.class_name || '-' }}</td>
-                          <td>{{ pool.pool_name }}</td>
-                         
-                          <td>{{ match.participant_one }} ({{ match.contingent_one || '-' }})</td>
-                          
-                          <td>{{ match.participant_two }} ({{ match.contingent_two || '-' }})</td>
-                          <td class="score-blue"> - </td>
-                          <td class="score-red"> - </td>
-                          <!--td>{{ match.match_time }}</td-->
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
-                </div>
+
+                </table>
               </div>
             </div>
-
           </div>
-          
-
         </div>
       </div>
+
     
     </div>
   </div>
@@ -259,28 +236,19 @@ export default {
       return this.scheduleData
         .filter(arena =>
           this.selectedArenaFilters.includes(arena.arena_name) &&
-          this.selectedDateFilters.includes(arena.scheduled_date) // ⬅️ Tambahan filter tanggal
+          this.selectedDateFilters.includes(arena.scheduled_date)
         )
         .map(arena => {
-          const filteredPools = arena.pools
-            .filter(pool => this.selectedPoolFilters.includes(pool.pool_name))
-            .map(pool => {
-              const filteredRounds = pool.rounds
-                .filter(round =>
-                  this.selectedRoundFilters.includes(round.round_label) &&
-                  round.matches.length > 0
-                );
-              return { ...pool, rounds: filteredRounds };
-            })
-            .filter(pool => pool.rounds.length > 0); // hanya pool dengan round yang valid
-
-          return {
-            ...arena,
-            pools: filteredPools
-          };
+          const filteredMatches = arena.matches.filter(match =>
+            this.selectedPoolFilters.includes(match.pool_name) &&
+            this.selectedRoundFilters.includes(match.round_label)
+          );
+          return { ...arena, matches: filteredMatches };
         })
-        .filter(arena => arena.pools.length > 0); // hanya arena dengan pool valid
+        .filter(arena => arena.matches.length > 0);
     }
+
+
 
   },
 
@@ -343,11 +311,9 @@ export default {
         const allRounds = [];
 
         this.scheduleData.forEach(item => {
-          item.pools.forEach(pool => {
-            allPools.push(pool.pool_name);
-            pool.rounds.forEach(round => {
-              allRounds.push(round.round_label);
-            });
+          item.matches.forEach(match => {
+            allPools.push(match.pool_name);
+            allRounds.push(match.round_label);
           });
         });
 
@@ -389,6 +355,14 @@ export default {
     width: 60px;
     text-align: center;
   }
+
+.font-blue{
+  color: #002FB9;
+}
+
+.font-red{
+  color: #F80000;
+}
 
 .blue{
   background-color: #002FB9 !important;
