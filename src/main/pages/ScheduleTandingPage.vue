@@ -309,7 +309,6 @@ export default {
       // Misalnya lu redirect ke API atau generate PDF
       const params = new URLSearchParams({
         arena_name: arena.arena_name,
-        age_category_id: arena.age_category_id,
         scheduled_date: arena.scheduled_date,
       });
 
