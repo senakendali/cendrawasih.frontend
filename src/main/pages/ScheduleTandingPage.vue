@@ -137,77 +137,82 @@
             </div>
 
             <!-- Arena Loop -->
-            <div 
-              v-for="arena in filteredScheduleData"
-              :key="arena.arena_name"
-            >
-              <!-- Header -->
-              <div class="row align-items-center mb-4">
-                <div class="col-3 text-start">
-                  <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
-                </div>
-                
-                <div class="col-6 text-center">
-                  <h4 class="text-dark mb-2 text-uppercase fw-bold">JADWAL {{ arena.arena_name }} {{ arena.age_category_name }}</h4>
-                  <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
-                  <div class="text-dark text-uppercase fw-bold">
-                    {{ formatLongDate(arena.scheduled_date) }}
-                  </div>
-                </div>
-                <div class="col-3 text-end">
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    @click="downloadSchedule(arena)"
-                  >
-                    <i class="bi bi-download me-1"></i> Download Schedule
-                  </button>
-                </div>
-              </div>
+           <div 
+  v-for="arena in filteredScheduleData"
+  :key="arena.arena_name"
+>
+  <!-- ✅ Header Arena -->
+  <div class="row align-items-center mb-4">
+    <div class="col-3 text-start">
+      <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
+    </div>
 
-              <!-- Jadwal Tabel -->
-              <div class="mb-4">
-                <table class="table table-striped">
-                  <thead>
-                    <tr class="table-sub-header">
-                      <th>Partai</th>
-                      <th>Babak</th>
-                      <th class="text-uppercase text-center">Kelas</th>
-                      <th>Pool</th>
-                      <th class="text-uppercase text-center blue">Sudut Biru</th>
-                      <th class="text-uppercase text-center red">Sudut Merah</th>
-                      <th colspan="2" class="text-center">Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr 
-                      v-for="(match, i) in arena.matches" 
-                      :key="i"
-                    >
-                      <td>{{ match.match_number }}</td>
-                      <td>{{ match.round_label }}</td>
-                      <td>{{ match.class_name || '-' }}</td>
-                      <td>{{ match.pool_name || '-' }}</td>
-                      <td class="text-center">
-                        <div class="text-center font-blue">{{ match.participant_one }}</div>
-                        <div class="text-center text-success">{{ match.contingent_one || '-'  }}</div>
-                      </td>
-                       <td class="text-center">
-                        <div class="text-center font-red">{{ match.participant_two }}</div>
-                        <div class="text-center text-success">{{ match.contingent_two || '-'  }}</div>
-                      </td>
-                      
-                      <td class="score-blue"> - </td>
-                      <td class="score-red"> - </td>
-                    </tr>
-                  </tbody>
+    <div class="col-6 text-center">
+      <h4 class="text-dark mb-2 text-uppercase fw-bold">
+        JADWAL {{ arena.arena_name }}
+      </h4>
+      <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
+      <div class="text-dark text-uppercase fw-bold">
+        {{ formatLongDate(arena.scheduled_date) }}
+      </div>
+    </div>
+    <div class="col-3 text-end">
+      <button
+        class="btn btn-sm btn-outline-primary"
+        @click="downloadSchedule(arena)"
+      >
+        <i class="bi bi-download me-1"></i> Download Schedule
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ Loop per age category -->
+  <div 
+    v-for="(group, index) in groupByAgeCategory(arena.matches)" 
+    :key="index"
+    class="mb-4"
+  >
+    
+
+    <table class="table table-striped">
+      <thead>
+        <tr class="table-sub-header">
+          <th>Partai</th>
+          <th>Babak</th>
+          <th class="text-uppercase text-center">Kelas</th>
+          <th>Pool</th>
+          <th class="text-uppercase text-center blue">Sudut Biru</th>
+          <th class="text-uppercase text-center red">Sudut Merah</th>
+          <th colspan="2" class="text-center">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          v-for="(match, i) in group.matches" 
+          :key="i"
+        >
+          <td>{{ match.match_number }}</td>
+          <td>{{ match.round_label }}</td>
+          <td>{{ match.class_name || '-' }}</td>
+          <td>{{ match.pool_name || '-' }}</td>
+          <td class="text-center">
+            <div class="text-center font-blue">{{ match.participant_one }}</div>
+            <div class="text-center text-success">{{ match.contingent_one || '-'  }}</div>
+          </td>
+          <td class="text-center">
+            <div class="text-center font-red">{{ match.participant_two }}</div>
+            <div class="text-center text-success">{{ match.contingent_two || '-'  }}</div>
+          </td>
+          <td class="score-blue"> - </td>
+          <td class="score-red"> - </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 
 
-
-
-                </table>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -249,14 +254,29 @@ export default {
           this.selectedDateFilters.includes(arena.scheduled_date)
         )
         .map(arena => {
-          const filteredMatches = arena.matches.filter(match =>
-            this.selectedPoolFilters.includes(match.pool_name) &&
-            this.selectedRoundFilters.includes(match.round_label)
-          );
-          return { ...arena, matches: filteredMatches };
+          // 🔁 FLATTEN semua match ke satu array
+          const allMatches = arena.age_category_rounds?.flatMap(category =>
+            category.rounds?.flatMap(round =>
+              round.matches?.filter(match =>
+                this.selectedPoolFilters.includes(match.pool_name) &&
+                this.selectedRoundFilters.includes(match.round_label)
+              ) || []
+            ) || []
+          ) || [];
+
+          // 🔁 Optional: Sort berdasarkan match_order
+          allMatches.sort((a, b) => a.match_order - b.match_order);
+
+          return {
+            ...arena,
+            matches: allMatches
+          };
         })
         .filter(arena => arena.matches.length > 0);
     }
+
+
+
 
 
 
@@ -267,6 +287,24 @@ export default {
   },
 
   methods: {
+    groupByAgeCategory(matches) {
+      const grouped = {};
+
+      matches.forEach(match => {
+        const key = match.age_category_id;
+        if (!grouped[key]) {
+          grouped[key] = {
+            age_category_id: match.age_category_id,
+            age_category_name: match.age_category_name,
+            matches: []
+          };
+        }
+        grouped[key].matches.push(match);
+      });
+
+      // Urutkan berdasarkan age_category_id
+      return Object.values(grouped).sort((a, b) => a.age_category_id - b.age_category_id);
+    },
     downloadSchedule(arena) {
       // Misalnya lu redirect ke API atau generate PDF
       const params = new URLSearchParams({
@@ -328,21 +366,23 @@ export default {
         // Ambil semua arena unik
         this.allArenaNames = [...new Set(this.scheduleData.map(item => item.arena_name))];
 
-        const allPools = [];
-        const allRounds = [];
+        const allPools = new Set();
+        const allRounds = new Set();
 
         this.scheduleData.forEach(item => {
-          item.matches.forEach(match => {
-            allPools.push(match.pool_name);
-            allRounds.push(match.round_label);
+          item.age_category_rounds?.forEach(category => {
+            category.rounds?.forEach(round => {
+              allRounds.add(round.round_label);
+              round.matches?.forEach(match => {
+                allPools.add(match.pool_name);
+              });
+            });
           });
         });
 
-        this.allPoolNames = [...new Set(allPools)];
-        this.allRoundLabels = [...new Set(allRounds)];
-        this.allDates = [
-          ...new Set(this.scheduleData.map(item => item.scheduled_date)),
-        ];
+        this.allPoolNames = [...allPools];
+        this.allRoundLabels = [...allRounds];
+        this.allDates = [...new Set(this.scheduleData.map(item => item.scheduled_date))];
 
         // Default tampil semua
         this.selectedArenaFilters = [...this.allArenaNames];
@@ -354,6 +394,7 @@ export default {
         console.error("Gagal ambil jadwal:", error);
       }
     },
+
 
     downloadPDF() {
       const element = this.$refs.printArea;
