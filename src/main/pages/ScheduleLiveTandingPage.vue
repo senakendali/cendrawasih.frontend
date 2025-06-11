@@ -1,10 +1,11 @@
+
 <template>
   <div class="main-container">
     <div class="container" ref="printArea">
       <!-- Header Section -->
       <div class="row">
         <div class="col-lg-12 text-center my-4">
-          <h1>Jadwal Pertandingan</h1>
+          <h1>Jadwal Pertandingan Kategori: Tanding </h1>
           <!--p>
             Pendaftaran Kejuaraan Pencak Silat <strong>[Nama Kejuaraan]</strong> Telah Dibuka! 
             Jangan Lewatkan Kesempatan untuk Bertanding dengan Atlet-Atlet Berbakat Lainnya. 
@@ -134,78 +135,88 @@
             <div v-if="filteredScheduleData.length === 0" class="text-center text-muted my-5">
               <h5>Belum ada jadwal pertandingan yang tersedia.</h5>
             </div>
+
             <!-- Arena Loop -->
-            <div 
-              v-for="arena in filteredScheduleData"
-              :key="arena.arena_name"
-            >
+           <div 
+  v-for="arena in filteredScheduleData"
+  :key="arena.arena_name"
+>
+  <!-- ✅ Header Arena -->
+  <div class="row align-items-center mb-4">
+    <div class="col-3 text-start">
+      <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
+    </div>
+
+    <div class="col-6 text-center">
+      <h4 class="text-dark mb-2 text-uppercase fw-bold">
+        JADWAL {{ arena.arena_name }}
+      </h4>
+      <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
+      <div class="text-dark text-uppercase fw-bold">
+        {{ formatLongDate(arena.scheduled_date) }}
+      </div>
+    </div>
+    <div class="col-3 text-end">
+      <button
+        class="btn btn-sm btn-outline-primary"
+        @click="downloadSchedule(arena)"
+      >
+        <i class="bi bi-download me-1"></i> Download Schedule
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ Loop per age category -->
+  <div 
+    v-for="(group, index) in groupByAgeCategory(arena.matches)" 
+    :key="index"
+    class="mb-4"
+  >
+    
+
+    <table class="table table-striped">
+      <thead>
+        <tr class="table-sub-header">
+          <th>Partai</th>
+          <th>Babak</th>
+          <th class="text-uppercase text-center">Kelas</th>
+          <th>Pool</th>
+          <th class="text-uppercase text-center blue">Sudut Biru</th>
+          <th class="text-uppercase text-center red">Sudut Merah</th>
+          <th colspan="2" class="text-center">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          v-for="(match, i) in group.matches" 
+          :key="i"
+        >
+          <td>{{ match.match_number }}</td>
+          <td>{{ match.round_label }}</td>
+          <td>{{ match.class_name || '-' }}</td>
+          <td>{{ match.pool_name || '-' }}</td>
+          <td class="text-center">
+            <div class="text-center font-blue">{{ match.participant_one }}</div>
+            <div class="text-center text-success">{{ match.contingent_one || '-'  }}</div>
+          </td>
+          <td class="text-center">
+            <div class="text-center font-red">{{ match.participant_two }}</div>
+            <div class="text-center text-success">{{ match.contingent_two || '-'  }}</div>
+          </td>
+          <td class="score-blue"> - </td>
+          <td class="score-red"> - </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 
-              <!-- Logo + Header -->
-              <div class="row align-items-center mb-4">
-                <div class="col-3 text-start">
-                  <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
-                </div>
-                <div class="col-6 text-center">
-                  <h4 class="text-dark mb-2 text-uppercase fw-bold">JADWAL {{ arena.arena_name }}</h4>
-                  <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
-                  <div class="text-dark text-uppercase fw-bold">
-                    {{ formatLongDate(arena.scheduled_date) }}
-                  </div>
-                </div>
-                <div class="col-3"></div>
-              </div>
-
-              <!-- Pool Loop -->
-              <div class="mb-4">
-                <div 
-                  v-for="pool in arena.pools"
-                  :key="pool.pool_name"
-                  class="mb-3"
-                >
-
-
-
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th colspan="4" class="table-header text-uppercase">
-                          {{ pool.pool_name }}
-                        </th>
-                      </tr>
-                      <tr class="table-sub-header">
-                        <th>#</th> 
-                        <th class="text-uppercase">Peserta 1</th>
-                        <th class="text-uppercase">Peserta 2</th>
-                        <th class="text-uppercase">Waktu</th>  
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template 
-                        v-for="round in pool.rounds.filter(r => selectedRoundFilters.includes(r.round_label))"
-                        :key="round.round_label"
-                      >
-                        <tr class="round-separator">
-                          <td colspan="4" class="fw-bold">{{ round.round_label }}</td>
-                        </tr>
-                        <tr v-for="(match, i) in round.matches" :key="i">
-                          <td>{{ match.match_order }}</td> 
-                          <td>{{ match.participant_one }} ({{ match.contingent_one || '-' }})</td>
-                          <td>{{ match.participant_two }} ({{ match.contingent_two || '-' }})</td>
-                          <td>{{ match.match_time }}</td>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
 
           </div>
-          
-
         </div>
       </div>
+
     
     </div>
   </div>
@@ -213,12 +224,14 @@
 
 <script>
 import axios from "axios";
+import API from "@/config/api";
 import html2pdf from "html2pdf.js";
 
 export default {
   name: "SchedulePage",
   data() {
     return {
+      intervalId: null,
       scheduleData: [],
       allArenaNames: [],
       selectedArenaFilters: [],
@@ -239,36 +252,82 @@ export default {
       return this.scheduleData
         .filter(arena =>
           this.selectedArenaFilters.includes(arena.arena_name) &&
-          this.selectedDateFilters.includes(arena.scheduled_date) // ⬅️ Tambahan filter tanggal
+          this.selectedDateFilters.includes(arena.scheduled_date)
         )
         .map(arena => {
-          const filteredPools = arena.pools
-            .filter(pool => this.selectedPoolFilters.includes(pool.pool_name))
-            .map(pool => {
-              const filteredRounds = pool.rounds
-                .filter(round =>
-                  this.selectedRoundFilters.includes(round.round_label) &&
-                  round.matches.length > 0
-                );
-              return { ...pool, rounds: filteredRounds };
-            })
-            .filter(pool => pool.rounds.length > 0); // hanya pool dengan round yang valid
+          // 🔁 FLATTEN semua match ke satu array
+          const allMatches = arena.age_category_rounds?.flatMap(category =>
+            category.rounds?.flatMap(round =>
+              round.matches?.filter(match =>
+                this.selectedPoolFilters.includes(match.pool_name) &&
+                this.selectedRoundFilters.includes(match.round_label)
+              ) || []
+            ) || []
+          ) || [];
+
+          // 🔁 Optional: Sort berdasarkan match_order
+          allMatches.sort((a, b) => a.match_order - b.match_order);
 
           return {
             ...arena,
-            pools: filteredPools
+            matches: allMatches
           };
         })
-        .filter(arena => arena.pools.length > 0); // hanya arena dengan pool valid
+        .filter(arena => arena.matches.length > 0);
     }
+
+
+
+
+
 
   },
 
   mounted() {
     this.fetchSchedules();
+    this.fetchSchedules();
+    this.intervalId = setInterval(() => {
+      this.fetchSchedules();
+    }, 3000); // setiap 3 detik
   },
 
+  beforeUnmount() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      console.log("🧹 Interval dibersihkan");
+    }
+  },
+
+
   methods: {
+    groupByAgeCategory(matches) {
+      const grouped = {};
+
+      matches.forEach(match => {
+        const key = match.age_category_id;
+        if (!grouped[key]) {
+          grouped[key] = {
+            age_category_id: match.age_category_id,
+            age_category_name: match.age_category_name,
+            matches: []
+          };
+        }
+        grouped[key].matches.push(match);
+      });
+
+      // Urutkan berdasarkan age_category_id
+      return Object.values(grouped).sort((a, b) => a.age_category_id - b.age_category_id);
+    },
+    downloadSchedule(arena) {
+      // Misalnya lu redirect ke API atau generate PDF
+      const params = new URLSearchParams({
+        arena_name: arena.arena_name,
+        scheduled_date: arena.scheduled_date,
+      });
+
+      const url = `${API.API_BASE_URL}/tanding/export-schedule?${params.toString()}`;
+      window.open(url, '_blank');
+    },
     toggleAllDates() {
       if (this.selectedDateFilters.length === this.allDates.length) {
         this.selectedDateFilters = [];
@@ -310,46 +369,44 @@ export default {
 
     async fetchSchedules() {
       try {
-        const tournamentId = this.$route.query.tournament_id;
-        const response = await axios.get(`/tournaments/${tournamentId}/match-schedules`);
+        const { slug } = this.$route.params;
+
+        // Ambil jadwal tanding berdasarkan slug
+        const response = await axios.get(`/tournaments/${slug}/match-schedules/tanding`);
         this.scheduleData = response.data.data;
 
         // Ambil semua arena unik
         this.allArenaNames = [...new Set(this.scheduleData.map(item => item.arena_name))];
 
-        const allPools = [];
-          const allRounds = [];
+        const allPools = new Set();
+        const allRounds = new Set();
 
-          this.scheduleData.forEach(item => {
-            item.pools.forEach(pool => {
-              allPools.push(pool.pool_name);
-              pool.rounds.forEach(round => {
-                allRounds.push(round.round_label);
+        this.scheduleData.forEach(item => {
+          item.age_category_rounds?.forEach(category => {
+            category.rounds?.forEach(round => {
+              allRounds.add(round.round_label);
+              round.matches?.forEach(match => {
+                allPools.add(match.pool_name);
               });
             });
           });
+        });
 
-          this.allPoolNames = [...new Set(allPools)];
-          this.allRoundLabels = [...new Set(allRounds)];
-          this.allDates = [
-            ...new Set(this.scheduleData.map(item => item.scheduled_date)),
-          ];
-          
+        this.allPoolNames = [...allPools];
+        this.allRoundLabels = [...allRounds];
+        this.allDates = [...new Set(this.scheduleData.map(item => item.scheduled_date))];
 
-          // Default tampil semua
-          this.selectedArenaFilters = [...this.allArenaNames];
-          this.selectedPoolFilters = [...this.allPoolNames];
-          this.selectedRoundFilters = [...this.allRoundLabels];
-          this.selectedDateFilters = [...this.allDates];
+        // Default tampil semua
+        this.selectedArenaFilters = [...this.allArenaNames];
+        this.selectedPoolFilters = [...this.allPoolNames];
+        this.selectedRoundFilters = [...this.allRoundLabels];
+        this.selectedDateFilters = [...this.allDates];
 
-        // Set default: tampilkan semua
-        if (this.selectedArenaFilters.length === 0) {
-          this.selectedArenaFilters = [...this.allArenaNames];
-        }
       } catch (error) {
         console.error("Gagal ambil jadwal:", error);
       }
     },
+
 
     downloadPDF() {
       const element = this.$refs.printArea;
@@ -367,6 +424,28 @@ export default {
 </script>
 
 <style scoped>
+
+.score-blue, .score-red {
+    width: 60px;
+    text-align: center;
+  }
+
+.font-blue{
+  color: #002FB9;
+}
+
+.font-red{
+  color: #F80000;
+}
+
+.blue{
+  background-color: #002FB9 !important;
+}
+
+.red{
+  background-color: #F80000 !important;
+}
+
 .filter {
   background-color: #343a40;
   color: #ffffff;

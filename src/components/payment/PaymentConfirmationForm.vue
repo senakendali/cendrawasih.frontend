@@ -142,7 +142,7 @@
 
 
             <div class="mb-3">
-                <a href="#" v-if="form.payment_document" class="button button-primary"  @click="openModal"><i class="bi bi-file-earmark-post-fill"></i> View Struk</a>
+                <a href="#" v-if="form.payment_document  && form.status !== 'waiting for payment'" class="button button-primary"  @click="openModal"><i class="bi bi-file-earmark-post-fill"></i> View Struk</a>
             </div>
             <div v-if="permissions && permissions.includes('confirm payment') && form.status !== 'waiting for payment'" class="mb-3">
               <label for="status" class="form-label">Payment Status</label>
@@ -192,7 +192,7 @@
               <td>{{ member.name }}</td>
               <td>{{ member.championship_category.name }}</td>
               <td>{{ member.match_category.name }}</td>
-              <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
+              <td>{{ formatNumber(member.registration_fee) }}</td>
             </tr>
             <tr v-if="members.length === 0">
               <td colspan="5" class="text-center">No members found.</td>
@@ -217,7 +217,7 @@
               <span>{{ isConfirm ? "Send Payment Struk" : "Submit Payment" }}</span>
             </button>
 
-            <p>{{ form.status }}</p>
+            <!--p>{{ form.status }}</p-->
             <button v-if="permissions && permissions.includes('confirm payment') && (form.status === 'waiting for confirmation' || form.status === 'paid')" type="submit" class="button button-primary" :disabled="loading">
               <i class="bi bi-floppy"></i>
               <span>{{ isConfirm ? "Confirm Payment" : "Submit Payment" }}</span>
@@ -462,8 +462,10 @@ export default {
 
         if (this.permissions.includes("confirm payment") && (this.form.status === 'waiting for confirmation' || this.form.status === 'paid')) {
           this.toast.success("Payment confirmed successfully.");
+          this.$router.push("/admin/payment");
         } else {
           this.toast.success("Payment document submitted successfully.");
+          this.$router.push("/admin/payment");
         }
         
       } catch (error) {

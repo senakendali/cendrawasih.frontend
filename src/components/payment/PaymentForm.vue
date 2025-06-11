@@ -136,7 +136,7 @@
                       <div v-else>-</div>
                     </td>
 
-                    <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
+                    <td>{{ formatNumber(member.registration_fee) }}</td>
                     <td v-if="isEdit" class="action-column text-center">
                       <button 
                         v-if="!member.exists_in_billing_details"
@@ -224,7 +224,7 @@
                 </div>
                 <div v-else>-</div>
               </td>
-              <td>{{ formatNumber(member.match_category.tournament_categories[0]?.registration_fee) }}</td>
+              <td>{{ formatNumber(member.registration_fee) }}</td>
               <td v-if="isEdit" class="action-column text-center">
                 <input v-if="member.exists_in_billing_details"
                   type="checkbox"
@@ -531,7 +531,7 @@ export default {
             billing_id: this.paymentId, // Kirim billing_id sesuai API
             team_member_id: member.id, // Kirim member_id sesuai API
             tournament_category_id: member.match_category.tournament_categories[0]?.id,
-            amount: member.match_category.tournament_categories[0]?.registration_fee, // Kirim amount sesuai API
+            amount: member.registration_fee, // Kirim amount sesuai API
           },
           {
             headers: {
