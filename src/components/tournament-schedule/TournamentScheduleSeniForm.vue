@@ -38,6 +38,26 @@
               <div class="invalid-feedback">{{ errors.tournament_id }}</div>
             </div>
 
+             <div class="mb-3">
+              <label for="age_category_id" class="form-label">Age Category</label>
+              <select
+                class="form-select"
+                id="age_category_id"
+                v-model="form.age_category_id"
+                :class="{ 'is-invalid': errors.age_category_id }"
+              >
+                <option value="" disabled>Choose Age Category</option>
+                <option 
+                  v-for="ageCategory in ageCategories" 
+                  :key="ageCategory.id" 
+                  :value="ageCategory.id"
+                >
+                  {{ ageCategory.name }}
+                </option>
+              </select>
+              <div class="invalid-feedback">{{ errors.age_category_id }}</div>
+            </div>
+
             
 
             
@@ -182,14 +202,14 @@
 
               <!-- Loop per Pool -->
               <div v-for="pool in categoryGroup.pools" :key="pool.name" class="mb-5">
-                <div>
+                <!--div>
                   <button class="btn btn-sm btn-outline-primary me-2" type="button" @click="selectAllInPool(pool)">
                     Select All
                   </button>
                   <button class="btn btn-sm btn-outline-secondary" type="button" @click="unselectAllInPool(pool)">
                     Unselect All
                   </button>
-                </div>
+                </div-->
                 <table class="table mt-4">
                   <thead>
                     <!-- Header Informasi Pool -->
@@ -413,6 +433,16 @@ export default {
   },
 
   watch: {
+    form: {
+      handler(val) {
+        if (val.age_category_id) {
+          // Set filters.age_category jadi array berisi satu item (yang dipilih)
+          this.filters.age_category = [val.age_category_id];
+        }
+      },
+      deep: true
+    },
+
     'form.match_category_id': 'updateMatchOrderDelayed',
     'form.age_category_id': 'updateMatchOrderDelayed',
     'form.category_class_id': 'updateMatchOrderDelayed',
@@ -652,6 +682,17 @@ export default {
 
   },
 
+  setAllMatchesSelected(value = true) {
+    this.matchList.forEach(group => {
+      group.pools.forEach(pool => {
+        pool.matches.forEach(match => {
+          match.selected = value;
+        });
+      });
+    });
+  },
+
+
   toggleSelectAll() {
     // just trigger updateMatchOrder via selectAll
     this.selectAll = !this.selectAll;
@@ -683,13 +724,13 @@ export default {
   // Update state checkbox selectAll
   this.selectAll = this.allMatchesByPool.every(pool =>
     pool.rounds.every(round =>
-      (!this.selectedRound || round.round == this.selectedRound) &&
-      round.matches.every(match => match && match.selected)
-    )
-  );
+        (!this.selectedRound || round.round == this.selectedRound) &&
+        round.matches.every(match => match && match.selected)
+      )
+    );
 
-  console.log('✅ Updated Match Order after filtering');
-},
+    console.log('✅ Updated Match Order after filtering');
+  },
 
 
   onMatchCheckChanged() {
@@ -761,6 +802,7 @@ export default {
       if (this.filters.age_category.length === 0) {
         this.filters.age_category = this.ageCategoryOptions.map(item => item.id);
       }
+      this.setAllMatchesSelected(true);
 
     } catch (error) {
       console.error("Error loading seni match list:", error);
@@ -859,7 +901,7 @@ export default {
       this.progress = 30;
 
       // Ambil match yang dipilih
-      const selectedMatches = (this.matchList || []).flatMap(group =>
+      const selectedMatches = (this.filteredMatchList || []).flatMap(group =>
         group.pools.flatMap(pool =>
           pool.matches
             .filter(m => m.selected)
@@ -871,6 +913,7 @@ export default {
             }))
         )
       );
+
 
       // Validasi minimal 1 match dipilih
       if (selectedMatches.length === 0) {
@@ -885,6 +928,7 @@ export default {
       const payload = {
         tournament_id: this.form.tournament_id,
         tournament_arena_id: this.form.tournament_arena_id,
+        age_category_id: this.form.age_category_id,
         scheduled_date: this.form.scheduled_date,
         start_time: this.form.start_time,
         end_time: this.form.end_time,

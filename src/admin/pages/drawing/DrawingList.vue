@@ -42,6 +42,17 @@
     <!-- Table to display navigation data -->
     <table class="table mt-4">
       <thead>
+        <tr class="table-header">
+          <th colspan="8" class="header">
+            <select v-model="selectedTournament" @change="loadPools" class="form-select w-auto">
+              <option value="">All Tournaments</option>
+              <option v-for="tournament in tournaments" :key="tournament.id" :value="tournament.id">
+                {{ tournament.name }}
+              </option>
+            </select>
+
+          </th>
+        </tr>
         <tr>
           <th>Tournament</th>
           <th>Pool</th>
@@ -170,6 +181,8 @@ export default {
       pools: [],
       loading: false,
       progress: 0,
+      tournaments: [],
+      selectedTournament: '',
     };
   },
 
@@ -180,6 +193,7 @@ export default {
     return { toast, permissions };
   },
   mounted() {
+    this.loadTournaments();
     this.loadPools(); // Corrected the method name
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
@@ -193,28 +207,40 @@ export default {
       this.poolId = id;
       this.deleteModal.show();
     },
+
+    async loadTournaments() {
+      try {
+        const response = await axios.get("/tournaments/active", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.tournaments = response.data;
+      } catch (error) {
+        console.error("Failed to load tournaments:", error);
+      }
+    },
+
     
     async loadPools() {
       this.loading = true;
-      console.log(this.loading);
       try {
-        this.loading = true;
-
         const response = await axios.get("/pools", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assumes token is in localStorage
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          params: {
+            tournament_id: this.selectedTournament || undefined,
           },
         });
-        const {
-          data,
-        } = response.data;
-
-        this.pools = data; // Assign team members
-        this.loading = false;
+        this.pools = response.data.data;
       } catch (error) {
         console.error("Error loading data:", error);
+      } finally {
+        this.loading = false;
       }
     },
+
 
     GenerateMatch(id) {
       this.$router.push({ name: "GenerateMatch", params: { id } });

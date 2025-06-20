@@ -137,79 +137,71 @@
             </div>
 
             <!-- Arena Loop -->
-           <div 
-  v-for="arena in filteredScheduleData"
-  :key="arena.arena_name"
->
-  <!-- ✅ Header Arena -->
-  <div class="row align-items-center mb-4">
-    <div class="col-3 text-start">
-      <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
-    </div>
+            <div v-for="arena in filteredScheduleData" :key="arena.arena_name">
+              <!-- ✅ Header Arena -->
+              <div class="row align-items-center mb-4">
+                <div class="col-3 text-start">
+                  <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 180px;" />
+                </div>
 
-    <div class="col-6 text-center">
-      <h4 class="text-dark mb-2 text-uppercase fw-bold">
-        JADWAL {{ arena.arena_name }}
-      </h4>
-      <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
-      <div class="text-dark text-uppercase fw-bold">
-        {{ formatLongDate(arena.scheduled_date) }}
-      </div>
-    </div>
-    <div class="col-3 text-end">
-      <button
-        class="btn btn-sm btn-outline-primary"
-        @click="downloadSchedule(arena)"
-      >
-        <i class="bi bi-download me-1"></i> Download Schedule
-      </button>
-    </div>
-  </div>
+                <div class="col-6 text-center">
+                  <h4 class="text-dark mb-2 text-uppercase fw-bold">
+                    JADWAL {{ arena.arena_name }}
+                  </h4>
+                  <h4 class="text-dark mb-2 text-uppercase fw-bold">{{ arena.tournament_name }}</h4>
+                  <div class="text-dark text-uppercase fw-bold">
+                    {{ formatLongDate(arena.scheduled_date) }}
+                  </div>
+                </div>
+                <div class="col-3 text-end">
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    @click="downloadSchedule(arena)"
+                  >
+                    <i class="bi bi-download me-1"></i> Download Schedule
+                  </button>
+                </div>
+              </div>
 
-  <!-- ✅ Loop per age category -->
-  <div 
-    v-for="(group, index) in groupByAgeCategory(arena.matches)" 
-    :key="index"
-    class="mb-4"
-  >
-    
+              <!-- ✅ Semua pertandingan langsung ditampilkan -->
+              <div class="mb-4">
+                <table class="table table-striped">
+                  <thead>
+                    <tr class="table-sub-header">
+                      <th>Partai</th>
+                      <th>Babak</th>
+                      <th class="text-uppercase text-center">Kelas</th>
+                      <th>Pool</th>
+                      <th class="text-uppercase text-center blue">Sudut Biru</th>
+                      <th class="text-uppercase text-center red">Sudut Merah</th>
+                      <th colspan="2" class="text-center">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr 
+                      v-for="(match, i) in arena.matches" 
+                      :key="i"
+                    >
+                      <td>{{ match.match_number }}</td>
+                      <td>{{ match.round_label }}</td>
+                      <td class="text-center">{{ match.class_name || '-' }}</td>
+                      <td>{{ match.pool_name || '-' }}</td>
+                      <td class="text-center">
+                        <div class="text-center font-blue">{{ match.participant_one }}</div>
+                        <div class="text-center text-success">{{ match.contingent_one || '-'  }}</div>
+                      </td>
+                      <td class="text-center">
+                        <div class="text-center font-red">{{ match.participant_two }}</div>
+                        <div class="text-center text-success">{{ match.contingent_two || '-'  }}</div>
+                      </td>
+                      <td class="score-blue"> - </td>
+                      <td class="score-red"> - </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-    <table class="table table-striped">
-      <thead>
-        <tr class="table-sub-header">
-          <th>Partai</th>
-          <th>Babak</th>
-          <th class="text-uppercase text-center">Kelas</th>
-          <th>Pool</th>
-          <th class="text-uppercase text-center blue">Sudut Biru</th>
-          <th class="text-uppercase text-center red">Sudut Merah</th>
-          <th colspan="2" class="text-center">Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr 
-          v-for="(match, i) in group.matches" 
-          :key="i"
-        >
-          <td>{{ match.match_number }}</td>
-          <td>{{ match.round_label }}</td>
-          <td>{{ match.class_name || '-' }}</td>
-          <td>{{ match.pool_name || '-' }}</td>
-          <td class="text-center">
-            <div class="text-center font-blue">{{ match.participant_one }}</div>
-            <div class="text-center text-success">{{ match.contingent_one || '-'  }}</div>
-          </td>
-          <td class="text-center">
-            <div class="text-center font-red">{{ match.participant_two }}</div>
-            <div class="text-center text-success">{{ match.contingent_two || '-'  }}</div>
-          </td>
-          <td class="score-blue"> - </td>
-          <td class="score-red"> - </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
 
 
 
@@ -257,7 +249,10 @@ export default {
           // 🔁 FLATTEN semua match ke satu array
           const allMatches = arena.age_category_rounds?.flatMap(category =>
             category.rounds?.flatMap(round =>
-              round.matches?.filter(match =>
+              round.matches?.map(match => ({
+                ...match,
+                round_label: round.round_label // inject round_label ke tiap match
+              })).filter(match =>
                 this.selectedPoolFilters.includes(match.pool_name) &&
                 this.selectedRoundFilters.includes(match.round_label)
               ) || []
@@ -273,7 +268,7 @@ export default {
           };
         })
         .filter(arena => arena.matches.length > 0);
-    }
+    },
 
 
 

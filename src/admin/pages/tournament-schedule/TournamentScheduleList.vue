@@ -1,4 +1,23 @@
 <template>
+  <!-- Modal Konfirmasi Delete -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" ref="deleteModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus Jadwal</h5>
+         
+        </div>
+        <div class="modal-body">
+          Apakah kamu yakin ingin menghapus jadwal ini?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-danger" @click="deleteSchedule">Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="dashboard-container">
     <div
       v-if="loading"
@@ -40,8 +59,10 @@
           <th>Match Category</th>
           <th>Arena Name</th>
           <th>Match Date</th>
-          <th>Start Time</th>
-          <th>End Time</th>
+          <th>Age Category</th>
+          <th>Round</th>
+          <!--th>Start Time</th>
+          <th>End Time</th-->
           <th>Actions</th>
         </tr>
       </thead>
@@ -52,17 +73,22 @@
           <td>{{ tournamentSchedule.tournament.name }}</td>
           <td>
             {{
-              tournamentSchedule.details?.[0]?.seni_match?.match_category?.name ||
-              tournamentSchedule.details?.[0]?.tournament_match?.pool?.match_category?.name ||
-              '-'
+              tournamentSchedule.details?.[0]?.tournament_match
+                ? 'Tanding'
+                : 'Seni'
             }}
           </td>
+
+
 
           
           <td>{{ tournamentSchedule.arena.name }}</td>
           <td>{{ tournamentSchedule.scheduled_date }}</td>
-          <td>{{ tournamentSchedule.start_time }}</td>
-          <td>{{ tournamentSchedule.end_time }}</td>
+         <td>{{ tournamentSchedule.age_category?.name || '-' }}</td>
+
+          <td>{{ tournamentSchedule.round_label }}</td>
+          <!--td>{{ tournamentSchedule.start_time }}</td>
+          <td>{{ tournamentSchedule.end_time }}</td-->
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
@@ -74,11 +100,11 @@
                     <i class="bi bi-pencil-square"></i> Edit
                   </a>
                 </li>
-                <!--li>
-                  <a class="dropdown-item" href="#" @click="deleteMenu(member.id)">
+                <li>
+                  <a class="dropdown-item" href="#" @click="confirmDelete(tournamentSchedule.id)">
                     <i class="bi bi-trash"></i> Delete
                   </a>
-                </li-->
+                </li>
               </ul>
             </div>
           </td>
@@ -87,7 +113,7 @@
       <!-- Fallback message when there is no data -->
       <tbody v-else>
         <tr>
-          <td colspan="7" class="text-center">No class found.</td>
+          <td colspan="8" class="text-center">No schedule found.</td>
         </tr>
       </tbody>
 
@@ -131,6 +157,9 @@
 <script>
 import axios from "axios";
 import API from "@/config/api";
+import * as bootstrap from 'bootstrap';
+
+
 
 axios.defaults.baseURL = API.API_BASE_URL;
 
@@ -139,6 +168,8 @@ export default {
   data() {
     return {
       tournamentSchedules: [], // Array to hold paginated team members
+      deleteModalInstance: null,
+      selectedScheduleId: null,
       searchQuery: "", // User's search input
       currentPage: 1, // Current page of results
       perPage: 10, // Results per page
@@ -150,9 +181,35 @@ export default {
     };
   },
   mounted() {
+    const modalEl = this.$refs.deleteModal;
+    this.deleteModalInstance = new bootstrap.Modal(modalEl);
     this.loadTournamentSchedules(); // Load menu data when the component is mounted
   },
   methods: {
+    confirmDelete(id) {
+      this.selectedScheduleId = id;
+      this.deleteModalInstance.show();
+    },
+
+    async deleteSchedule() {
+      if (!this.selectedScheduleId) return;
+
+      try {
+        await axios.delete(`/match-schedules/${this.selectedScheduleId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        this.toast?.success?.("Jadwal berhasil dihapus");
+        this.deleteModalInstance.hide();
+        this.loadTournamentSchedules(); // Refresh data
+      } catch (error) {
+        console.error("Gagal menghapus jadwal:", error);
+        this.toast?.error?.("Gagal menghapus jadwal");
+      }
+    },
+  
     async loadTournamentSchedules(page = 1) {
       this.loading = true;
       try {
@@ -187,7 +244,7 @@ export default {
 
     changePage(page) {
       if (page >= 1 && page <= this.totalPages) {
-        this.tournamentArenas(page);
+        this.loadTournamentSchedules(page);
       }
     },
 

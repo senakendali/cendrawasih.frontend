@@ -175,39 +175,27 @@
                 <div class="invalid-feedback">{{ errors.category_class_id }}</div>
               </div>
 
-              <div class="mb-3">
-                <label for="round" class="form-label">Babak</label>
-                <select
-                  class="form-select"
-                  id="round"
-                  v-model="selectedRound"
+              <select
+                class="form-select"
+                id="round"
+                v-model="selectedRoundLabel"
+              >
+                <option value="">Semua Babak</option>
+                <option 
+                  v-for="round in roundOptions" 
+                  :key="round.label" 
+                  :value="round.label"
                 >
-                  <option value="">Semua Babak</option>
-                  <option 
-                    v-for="round in roundOptions" 
-                    :key="round.value" 
-                    :value="round.value"
-                  >
-                    {{ round.label }}
-                  </option>
-                </select>
-              </div>
+                  {{ round.label }}
+                </option>
+              </select>
+
 
             </div>
 
-            <div class="row mb-3">
+            <div class="row mb-3 mt-3">
               <div class="col-lg-12">
                 <div class="table-responsive">
-                  <div class="mb-3">
-                    <label>
-                      <label>
-                        <input type="checkbox" :checked="selectAll" @change="onSelectAllChange($event)" />
-                        {{ selectAll ? 'Unselect All' : 'Select All' }}
-                      </label>
-                    </label>
-                  </div>
-
-
                   <div v-for="(pools, key) in groupedPoolsByClass" :key="key">
                     <!-- Header per kelas -->
                     <h5 class="text-uppercase font-weight-bold mb-3">
@@ -259,10 +247,6 @@
                       </table>
                     </div>
                   </div>
-
-
-
-
                 </div>
               </div>
             </div>
@@ -310,7 +294,7 @@ export default {
       ageCategories: [],
       categoryClasses: [],
       roundOptions: [], // untuk dropdown babak
-      selectedRound: '', // yang dipilih user
+      selectedRoundLabel: '', // yang dipilih user
       allMatchesByPool : [],
       selectAll: false,
       scheduledMap: {},
@@ -367,17 +351,19 @@ export default {
                 const matchCategoryMatch = !this.form.match_category_id || match.pool?.match_category_id == this.form.match_category_id;
                 const ageCategoryMatch = !this.form.age_category_id || match.age_category_id == this.form.age_category_id;
                 const classMatch = !this.form.category_class_id || match.category_class_id == this.form.category_class_id;
-                const roundMatch = !this.selectedRound || round.round == this.selectedRound;
+                const roundMatch = !this.selectedRoundLabel || round.round_label === this.selectedRoundLabel;
+
                 return matchCategoryMatch && ageCategoryMatch && classMatch && roundMatch;
               });
 
               return {
                 round: round.round,
-                round_label: round.round_label || `Babak ${round.round}`,
+                round_label: round.round_label,
                 matches: filteredMatches
               };
             })
-            .filter(round => round.matches.length > 0 || !this.selectedRound || round.round == this.selectedRound) // ✅ Tampilkan babak walau match kosong jika tidak difilter
+            .filter(round => round.matches.length > 0 || !this.selectedRoundLabel || round.round_label === this.selectedRoundLabel)
+
         };
       });
     }
@@ -471,33 +457,7 @@ export default {
       }
     },
 
-    getRoundLabels(totalRounds) {
-        const labels = {};
-
-        for (let i = 1; i <= totalRounds; i++) {
-          if (totalRounds === 1) {
-            labels[i] = "Final";
-          } else if (totalRounds === 2) {
-            labels[i] = i === 1 ? "Semifinal" : "Final";
-          } else if (totalRounds === 3) {
-            labels[i] = i === 1 ? "Perempat Final" : (i === 2 ? "Semifinal" : "Final");
-          } else {
-            if (i === 1) {
-              labels[i] = "Penyisihan";
-            } else if (i === totalRounds - 2) {
-              labels[i] = "Perempat Final";
-            } else if (i === totalRounds - 1) {
-              labels[i] = "Semifinal";
-            } else if (i === totalRounds) {
-              labels[i] = "Final";
-            } else {
-              labels[i] = `Babak ${i}`;
-        }
-      }
-    }
-
-    return labels;
-  },
+   
 
 
 
@@ -581,38 +541,7 @@ export default {
     this.onSelectAllChange({ target: { checked: this.selectAll } });
   },
 
-  updateMatchOrder__PATCH() {
-  let order = 1;
-
-  // Start dari waktu yang ditentukan
-  let currentTime = new Date(`1970-01-01T${this.form.start_time || "07:30"}:00`);
-
-  this.allMatchesByPool.forEach(pool => {
-    pool.rounds.forEach(round => {
-      // Skip jika round bukan yang dipilih
-      if (this.selectedRound && round.round != this.selectedRound) return;
-
-      round.matches.forEach(match => {
-        if (match.selected) {
-          match.match_order = order++;
-          match.match_time = currentTime.toTimeString().substring(0, 5);
-          currentTime.setMinutes(currentTime.getMinutes() + 5);
-        }
-        // ⚠️ Jangan kosongkan match yang tidak dipilih saat edit!
-      });
-    });
-  });
-
-  // Update state checkbox selectAll
-  this.selectAll = this.allMatchesByPool.every(pool =>
-    pool.rounds.every(round =>
-      (!this.selectedRound || round.round == this.selectedRound) &&
-      round.matches.every(match => match && match.selected)
-    )
-  );
-
-  console.log('✅ Updated Match Order after filtering');
-},
+ 
 
   updateMatchOrder() {
     let order = 1;
@@ -621,7 +550,8 @@ export default {
     this.allMatchesByPool.forEach(pool => {
       pool.rounds.forEach(round => {
         // Lewati ronde kalau lagi difilter dan bukan ronde terpilih
-        if (this.selectedRound && round.round != this.selectedRound) return;
+        if (this.selectedRoundLabel && round.round_label !== this.selectedRoundLabel) return;
+
 
         round.matches.forEach(match => {
           // Cek apakah match ini sesuai filter
@@ -696,12 +626,6 @@ export default {
       const pools = response.data.data;
 
       if (Array.isArray(pools)) {
-        // ⬇️ Ambil round label dari roundOptions
-        const roundLabelMap = {};
-        this.roundOptions.forEach(opt => {
-          roundLabelMap[parseInt(opt.value)] = opt.label;
-        });
-
         this.allMatchesByPool = pools.map(pool => ({
           pool_id: pool.pool_id,
           pool_name: pool.pool_name,
@@ -710,7 +634,7 @@ export default {
           gender: pool.gender === 'male' ? 'PUTRA' : 'PUTRI',
           rounds: pool.rounds.map(round => ({
             round: round.round,
-            round_label: roundLabelMap[round.round] || `Babak ${round.round}`, // ✅ Gunakan label dari roundOptions
+            round_label: round.round_label, // ✅ Ambil langsung dari API
             matches: round.matches.map(match => ({
               ...match,
               match_category_id: match.pool?.category_class?.match_category_id || null,
@@ -729,7 +653,6 @@ export default {
         this.$nextTick(() => {
           this.updateMatchOrder();
         });
-
       } else {
         console.error("Expected array from API, got:", pools);
         this.toast.error("Invalid match data format.");
@@ -852,7 +775,7 @@ export default {
 
       const selectedMatches = this.allMatchesByPool.flatMap(pool =>
         pool.rounds
-          .filter(round => !this.selectedRound || round.round == this.selectedRound)
+          .filter(round => !this.selectedRoundLabel || round.round_label === this.selectedRoundLabel) // ✅ filter babak
           .flatMap(round =>
             round.matches
               .filter(match => match.selected)
@@ -863,7 +786,6 @@ export default {
                   note: `Match between ${match.participant_one?.name || 'Unknown'} vs ${match.participant_two?.name || 'Unknown'}`
                 };
 
-                // 🧠 Deteksi apakah ini pertandingan seni atau tanding
                 if (match.seni_match_id) {
                   return { ...base, seni_match_id: match.seni_match_id };
                 } else {
@@ -897,8 +819,10 @@ export default {
         start_time: this.form.start_time,
         end_time: this.form.end_time,
         note: this.form.note,
+        age_category_id: this.form.age_category_id,
+        round_label: this.selectedRoundLabel || '',
         matches: selectedMatches,
-        ...(isTanding && { match_category_id: this.form.match_category_id }) // kirim hanya untuk tanding
+        ...(isTanding && { match_category_id: this.form.match_category_id })
       };
 
       try {
@@ -938,6 +862,7 @@ export default {
         this.loading = false;
       }
     }
+
 
 
   }

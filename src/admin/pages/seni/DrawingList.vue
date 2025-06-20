@@ -41,6 +41,17 @@
 
     <!-- Filter Section -->
     <div class="admin-form d-flex flex-column gap-3 mb-4">
+      <!-- Tournament Dropdown -->
+        <div>
+          <label class="form-label d-block mb-1"><strong>Turnamen</strong></label>
+          <select class="form-select" v-model="selectedTournament" @change="onTournamentChange">
+            <option value="" disabled selected>Pilih Turnamen</option>
+            <option v-for="tournament in tournamentOptions" :key="tournament.id" :value="tournament.id">
+              {{ tournament.name }}
+            </option>
+          </select>
+        </div>
+
       <!-- Match Category -->
       <div>
         <label class="form-label d-block mb-1"><strong>Match Category</strong></label>
@@ -102,12 +113,6 @@
       </div>
     </div>
 
-
-
-
-
-
-
     <!-- Table to display navigation data -->
     <div v-for="categoryGroup in filteredMatchList" :key="categoryGroup.category + '-' + categoryGroup.gender">
 
@@ -123,12 +128,12 @@
           <thead>
             <!-- Header Informasi Pool -->
             <tr>
-              <th colspan="6" class="table-header text-start text-uppercase">
+              <th colspan="5" class="table-header text-start text-uppercase">
                 {{ pool.name }}
               </th>
             </tr>
             <tr>
-              <th colspan="6" class="text-start text-uppercase">
+              <th colspan="5" class="text-start text-uppercase">
               
                 {{ pool.matches[0]?.pool?.age_category?.name.toUpperCase() }}
               </th>
@@ -136,7 +141,7 @@
 
             <!-- Header Kolom Peserta -->
             <tr class="table-sub-header">
-              <th>Match Number</th>
+              
               <th>Kontingen</th>
 
               <th v-if="pool.matches[0]?.match_type === 'seni_tunggal'">Peserta</th>
@@ -156,7 +161,7 @@
 
           <tbody>
             <tr v-for="entry in pool.matches" :key="entry.id">
-              <td>{{ entry.match_order }}</td>
+              
               <td>{{ entry.contingent?.name || '-' }}</td>
 
               <!-- Tunggal -->
@@ -199,6 +204,8 @@ export default {
   name: "ContingentList",
   data() {
     return {
+      selectedTournament: '',
+      tournamentOptions: [], // dropdown turnamen
       poolId: null,
       deleteModal: null,
       pools: [],
@@ -281,10 +288,32 @@ export default {
     return { toast, permissions };
   },
   mounted() {
-    this.loadPools(); // Corrected the method name
+    this.fetchTournaments();
+    //this.loadPools(); // Corrected the method name
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    async fetchTournaments() {
+      try {
+        const res = await axios.get("/tournaments/active", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.tournamentOptions = res.data;
+      } catch (err) {
+        console.error('Gagal ambil turnamen:', err);
+      }
+    },
+    onTournamentChange() {
+      if (!this.selectedTournament) {
+        this.matchList = {};
+        return;
+      }
+
+      this.loadPools(); // panggil ulang data
+    },
+
     isMatchByFilter(value, filterArray) {
       return filterArray.includes(value);
     },
@@ -308,18 +337,7 @@ export default {
       return false;
     },
 
-    /*isAllChecked(type) {
-      if (type === 'match_category') {
-        return this.filters.match_category.length === this.matchCategoryOptions.length;
-      } else if (type === 'gender') {
-        return this.filters.gender.length === this.genderOptions.length;
-      } else if (type === 'age_category') {
-        return this.filters.age_category.length === this.ageCategoryOptions.length;
-      } else if (type === 'pool') {
-        return this.filters.pool.length === this.poolOptions.length;
-      }
-      return false;
-    },*/
+    
     toggleAll(type) {
       if (type === 'match_category') {
         this.filters.match_category = this.isAllChecked(type)
@@ -358,11 +376,13 @@ export default {
     async loadPools() {
       this.loading = true;
       try {
-        const response = await axios.get("/seni/matches", {
+        
+        const response = await axios.get(`/seni/matches?tournament_id=${this.selectedTournament}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
+
 
         this.matchList = response.data;
 
