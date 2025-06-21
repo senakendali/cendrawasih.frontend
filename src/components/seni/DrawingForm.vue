@@ -46,7 +46,7 @@
               >
                 <option value="" disabled>Choose Match Category</option>
                 <option 
-                  v-for="category in matchCategories.filter(c => [2, 3, 4].includes(c.id))" 
+                  v-for="category in matchCategories.filter(c => [2, 3, 4, 5].includes(c.id))" 
                   :key="category.id" 
                   :value="category.id"
                 >
