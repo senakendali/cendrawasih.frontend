@@ -52,7 +52,7 @@
           <option v-for="cat in ageCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
         </select>
       </div>
-      <div class="col-md-12">
+      <div class="col-md-12 mb-3">
         <select class="form-select" v-model="form.category_class_id" @change="loadTeamMembers">
           <option value="">All Class</option>
           <option v-for="cc in categoryClasses" :key="cc.id" :value="cc.id">
@@ -60,6 +60,14 @@
           </option>
         </select>
       </div>
+      <div class="col-md-12">
+        <select class="form-select" v-model="form.payment_status" @change="loadTeamMembers">
+          <option value="">All Payment Status</option>
+          <option value="paid">Paid</option>
+          <option value="unpaid">Unpaid</option>
+        </select>
+      </div>
+
     </div>
 
 
@@ -86,7 +94,7 @@
     <table class="table mt-4">
       <thead>
         <tr class="table-header">
-          <th colspan="9" class="header">
+          <th colspan="10" class="header">
               <input 
                 v-model="searchQuery" 
                 type="text" 
@@ -105,6 +113,7 @@
           <th>Age Category</th> 
           <th>Class</th>        
           <th>Registration Status</th>
+          <th>Payment Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -139,6 +148,15 @@
           <td>
             <i class="bi bi-check-square"></i> Registered
           </td>
+          <td>
+            <span v-if="member.tournament_participants && member.tournament_participants.length > 0">
+              <i class="bi bi-check-circle-fill text-success"></i> Paid
+            </span>
+            <span v-else>
+              <i class="bi bi-x-circle-fill text-danger"></i> Unpaid
+            </span>
+          </td>
+
           <td class="action-column">
             <div class="btn-group" role="group">
               <button type="button" class="button button-primary" data-bs-toggle="dropdown" aria-expanded="false">
@@ -163,7 +181,7 @@
       <!-- Fallback message when there is no data -->
       <tbody v-else>
         <tr>
-          <td colspan="9" class="text-center">No members found.</td>
+          <td colspan="10" class="text-center">No members found.</td>
         </tr>
       </tbody>
 
@@ -240,6 +258,7 @@ export default {
         match_category_id: '',
         age_category_id: '',
         category_class_id: '',
+        payment_status: '', 
       },
       memberId: null,
       matchCategories: [],
@@ -353,6 +372,7 @@ export default {
             match_category_id: this.form.match_category_id || undefined,
             age_category_id: this.form.age_category_id || undefined,
             category_class_id: this.form.category_class_id || undefined,
+            payment_status: this.form.payment_status || undefined,
           },
           responseType: "blob",
         });
@@ -400,6 +420,7 @@ export default {
             match_category_id: this.form.match_category_id || undefined,
             age_category_id: this.form.age_category_id  || undefined,
             category_class_id: this.form.category_class_id  || undefined,
+            payment_status: this.form.payment_status || undefined,
           },
         });
         const {

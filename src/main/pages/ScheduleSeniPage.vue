@@ -262,11 +262,11 @@ export default {
       allDates: [],
       allArenaNames: [],
       allPoolNames: [],
-      allCategories: ['Tunggal', 'Ganda', 'Regu'],
+      allCategories: ['Tunggal', 'Ganda', 'Regu', 'Solo Kreatif'],
       selectedDateFilters: [],
       selectedArenaFilters: [],
       selectedPoolFilters: [],
-      selectedCategoryFilters: ['Tunggal', 'Ganda', 'Regu'],
+      selectedCategoryFilters: ['Tunggal', 'Ganda', 'Regu', 'Solo Kreatif'],
       allGenders: ['male', 'female'],
       selectedGenderFilters: ['male', 'female'],
 

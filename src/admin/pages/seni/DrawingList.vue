@@ -213,7 +213,7 @@ export default {
       loading: false,
       progress: 0,
       filters: {
-        match_category: ['seni_tunggal', 'seni_ganda', 'seni_regu'],
+        match_category: ['seni_tunggal', 'seni_ganda', 'seni_regu', 'solo_kreatif'],
         gender: ['male', 'female'],
         age_category: [], // diisi setelah load
         pool: [] // diisi setelah load
@@ -222,6 +222,7 @@ export default {
         { label: 'Tunggal', value: 'seni_tunggal' },
         { label: 'Ganda', value: 'seni_ganda' },
         { label: 'Regu', value: 'seni_regu' },
+        { label: 'Solo Kreatif', value: 'solo_kreatif' },
       ],
       genderOptions: [
         { label: 'Putra', value: 'male' },
