@@ -39,6 +39,8 @@ import MatchPage from '@/admin/pages/drawing/MatchPage.vue';
 import MatchList from '@/admin/pages/drawing/MatchList.vue';
 import DrawingList from '@/admin/pages/drawing/DrawingList.vue';
 import MatchChartPage from '@/admin/pages/match-chart/MatchChartPage.vue';
+import MatchRecapPage from '@/admin/pages/drawing/MatchRecapPage.vue';
+
 
 import SeniMatchCreatePage from '@/admin/pages/seni/DrawingCreatePage.vue';
 import SeniMatchEditPage from '@/admin/pages/seni/DrawingEditPage.vue';
@@ -394,6 +396,19 @@ const routes = [
     ]
     //meta: { requiresAdmin: true }  // admin-only form for menu
   },
+  {
+    path: '/admin/tanding/matches',
+    component: AdminLayout,
+    children: [
+      {
+        path: ':tournament_id',
+        name: "MatchRecap",
+        component: MatchRecapPage,
+        props: true
+      }
+    ]
+  },
+
 
   {
     path: '/admin/seni',

@@ -43,14 +43,24 @@
     <table class="table mt-4">
       <thead>
         <tr class="table-header">
-          <th colspan="8" class="header">
-            <select v-model="selectedTournament" @change="loadPools" class="form-select w-auto">
+          <th colspan="7" class="header">
+            <select v-model="selectedTournament" @change="loadPools" class="form-select w-auto d-inline-block me-2">
               <option value="">All Tournaments</option>
               <option v-for="tournament in tournaments" :key="tournament.id" :value="tournament.id">
                 {{ tournament.name }}
               </option>
             </select>
+          </th>
+          <th class="header text-end">
+            <button
+              v-if="selectedTournament"
+              class="btn btn-success btn-sm"
+              @click="goToMatchRecap"
+            >
+              <i class="bi bi-table"></i> Matches
+            </button>
 
+           
           </th>
         </tr>
         <tr>
@@ -197,7 +207,15 @@ export default {
     this.loadPools(); // Corrected the method name
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
-  methods: {
+    methods: {
+    goToMatchRecap() {
+      this.$router.push({
+        name: "MatchRecap",
+        params: {
+          tournament_id: this.selectedTournament
+        },
+      });
+    },
     formatMatchCount(count) {
       const matchLabel = count === 1 ? 'Match' : 'Matches';
       const athleteLabel = count * 2 === 1 ? 'Athlete' : 'Athletes';
