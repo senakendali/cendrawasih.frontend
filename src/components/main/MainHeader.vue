@@ -40,8 +40,8 @@
 
                       <div class="row">
                         <!-- Preview Column -->
-                        <div class="col-6">
-                          <div class="fw-semibold text-muted small">Preview</div>
+                        <div class="col-12">
+                         
                           <ul class="list-unstyled mb-2">
                             <li>
                               <router-link
@@ -61,25 +61,7 @@
                         </div>
 
                         <!-- Live Column -->
-                        <div class="col-6">
-                          <div class="fw-semibold text-muted small">Live</div>
-                          <ul class="list-unstyled">
-                            <li>
-                              <router-link
-                                class="dropdown-item px-0 py-1"
-                                :to="`/schedule/live/${t.slug}/tanding`"
-                                @click="menuOpen = false"
-                              >Tanding</router-link>
-                            </li>
-                            <li>
-                              <router-link
-                                class="dropdown-item px-0 py-1"
-                                :to="`/schedule/live/${t.slug}/seni`"
-                                @click="menuOpen = false"
-                              >Seni</router-link>
-                            </li>
-                          </ul>
-                        </div>
+                        
                       </div>
 
                     </div>

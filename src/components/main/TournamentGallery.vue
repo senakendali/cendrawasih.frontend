@@ -1,25 +1,27 @@
 <template>
   <div id="gallery" class="gallery-container">
-    <div class="masonry-grid" ref="grid">
-      <!-- Sizer menentukan lebar kolom -->
-      <div class="masonry-sizer"></div>
+    <div class="container">
+      <div class="masonry-grid" ref="grid">
+        <!-- Sizer menentukan lebar kolom -->
+        <div class="masonry-sizer"></div>
 
-      <div
-        v-for="tournament in tournaments"
-        :key="tournament.id"
-        class="masonry-item"
-      >
-        <router-link
-          :to="{ name: 'GalleryDetail', params: { slug: tournament.slug } }"
+        <div
+          v-for="tournament in tournaments"
+          :key="tournament.id"
+          class="masonry-item"
         >
-          <img
-            :src="tournament.image"
-            class="img-fluid"
-            alt="Tournament Image"
-          />
-        </router-link>
+          <router-link
+            :to="{ name: 'GalleryDetail', params: { slug: tournament.slug } }"
+          >
+            <img
+              :src="tournament.image"
+              class="img-fluid"
+              alt="Tournament Image"
+            />
+          </router-link>
+        </div>
       </div>
-    </div>
+    </div> 
   </div>
 </template>
 
