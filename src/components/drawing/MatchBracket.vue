@@ -320,7 +320,7 @@ export default {
       while (this.autoGenerating) {
         try {
           await this.goToNextPool();
-           await this.fetchPoolData(); // harus isi poolData
+           //await this.fetchPoolData(); // harus isi poolData
         } catch (error) {
           this.autoGenerating = false;
           this.autoGenerateCaption = "Auto Generate";
@@ -339,7 +339,7 @@ export default {
       const nextPool = response.data;
       this.poolId = nextPool.id;
       this.$router.push(`/admin/tanding/match/${nextPool.id}`);
-
+      await this.fetchPoolData();
       await this.fetchRounds();
       await this.$nextTick();
       await new Promise(resolve => setTimeout(resolve, 5000));
