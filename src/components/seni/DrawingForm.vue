@@ -58,6 +58,42 @@
             </div>
 
             <div class="mb-3">
+              <label for="mode" class="form-label">Mode Pertandingan</label>
+              <select
+                class="form-select"
+                id="mode"
+                v-model="form.mode"
+                :class="{ 'is-invalid': errors.mode }"
+              >
+                <option value="" disabled>Pilih Mode</option>
+                <option value="default">Pool</option>
+                <option value="battle">Battle</option>
+              </select>
+              <div class="invalid-feedback">{{ errors.mode }}</div>
+            </div>
+
+            <div v-if="form.mode === 'battle'" class="mb-3">
+              <label for="bracket_type" class="form-label">Tipe Bagan</label>
+              <select
+                class="form-select"
+                id="bracket_type"
+                v-model="form.bracket_type"
+                :class="{ 'is-invalid': errors.bracket_type }"
+              >
+                <option value="" disabled>Choose Match Chart</option>
+                <option value="2">Bagan 2</option>
+                <option value="4">Bagan 4</option>
+                <option value="6">Bagan 6</option>
+                <option value="8">Bagan 8</option>
+                <option value="16">Bagan 16</option>
+                <option value="full_prestasi">Full Prestasi</option>
+              </select>
+              <div class="invalid-feedback">{{ errors.bracket_type }}</div>
+            </div>
+
+
+
+            <div class="mb-3">
               <label for="age_category_id" class="form-label">Age Category</label>
               <select
                 class="form-select"
@@ -99,7 +135,7 @@
               <div class="invalid-feedback">{{ errors.gender }}</div>
             </div>
 
-            <div class="mb-3">
+            <div v-if="form.mode !== 'battle'" class="mb-3">
               <label for="pool_size" class="form-label">
                 Number of Performances per Pool
               </label>
@@ -171,6 +207,8 @@ export default {
         gender: "",
         name: "",
         match_chart:"",
+        mode: "",          // <--- baru
+        bracket_type: "",  // <--- baru
       },
       maleClasses: [], // Move the data here
       femaleClasses: [], // Move the data here

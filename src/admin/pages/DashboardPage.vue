@@ -22,7 +22,6 @@
           <div class="card-body">
             
             <h5 class="card-title">{{ tournament.name }}</h5>
-            <p class="card-text">{{ tournament.description }}</p>
            
             <div class="d-flex gap-2 justify-content-start">
               <router-link v-if="tournament.status === 'active'"
@@ -218,10 +217,11 @@ export default {
 
 .card-body {
   padding: 20px;
+  height: 120px;
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 

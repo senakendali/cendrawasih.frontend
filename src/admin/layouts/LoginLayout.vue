@@ -1,11 +1,8 @@
 <template>
     
-    <div class="login-layout">
+     <div class="login-layout d-flex justify-content-center" style="background-image: url('/images/login-bg.png');  ">
       
-        <!-- First Column: Image -->
-        <div class="login-image d-flex justify-content-center">
-            <img src="@/assets/images/silat.png" alt="">
-        </div>
+        
         <!-- Second Column: Login Form -->
         <div class="login-form">
             <div class="form-container">
@@ -28,6 +25,13 @@
     height: 100vh;
     display: flex;
     align-items: center;
+
+    /* ✅ Tambahan untuk background */
+   
+    
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   .login-image {

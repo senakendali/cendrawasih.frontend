@@ -118,9 +118,18 @@
 
 
       <!-- Judul Kategori dan Gender -->
-      <h4 class="text-uppercase text-primary mb-3">
-        {{ categoryGroup.category }} - {{ categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI' }}
-      </h4>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="text-uppercase text-primary mb-0">
+          {{ categoryGroup.category }} - {{ categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI' }}
+        </h4>
+        <button
+          class="btn btn-outline-success"
+          @click="regenerateGroup(categoryGroup)"
+        >
+          <i class="bi bi-arrow-clockwise"></i> Regenerate
+        </button>
+      </div>
+
 
       <!-- Loop per Pool -->
       <div v-for="pool in categoryGroup.pools" :key="pool.name" class="mb-5">
@@ -228,6 +237,13 @@ export default {
         { label: 'Putra', value: 'male' },
         { label: 'Putri', value: 'female' },
       ],
+      matchCategoryMap: {
+        seni_tunggal: 2,
+        seni_ganda: 3,
+        seni_regu: 4,
+        solo_kreatif: 5
+      },
+
       ageCategoryOptions: [], // diisi saat loadPools
       poolOptions: [] // diisi saat loadPools
 
@@ -294,6 +310,55 @@ export default {
     this.deleteModal = new Modal(document.getElementById("confirmDeleteModal"));
   },
   methods: {
+    async regenerateGroup(categoryGroup) {
+      if (!this.selectedTournament) {
+        this.toast.error("Pilih turnamen terlebih dahulu.");
+        return;
+      }
+
+      // Ambil age_category_id dari match pertama
+      const firstMatch = categoryGroup.pools[0]?.matches[0];
+      const ageCategoryId = firstMatch?.pool?.age_category?.id;
+      const matchType = firstMatch?.match_type;
+      const matchCategoryId = this.matchCategoryMap[matchType];
+
+      // Hitung jumlah peserta dalam pool pertama untuk tentuin pool_size
+      const firstPool = categoryGroup.pools[0];
+      const poolSize = firstPool?.matches?.length || 4;
+
+      if (!ageCategoryId || !matchCategoryId) {
+        this.toast.error("Data tidak lengkap (match type / age category tidak ditemukan).");
+        return;
+      }
+
+      if (!confirm(`Regenerate semua match ${categoryGroup.category} - ${categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI'}?`)) {
+        return;
+      }
+
+      try {
+        this.loading = true;
+
+        await axios.post(`/seni/matches/regenerate`, {
+          tournament_id: this.selectedTournament,
+          match_category_id: matchCategoryId,
+          age_category_id: ageCategoryId,
+          gender: categoryGroup.gender,
+          pool_size: poolSize
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        this.toast.success("Berhasil regenerate peserta.");
+        await this.loadPools(); // reload data
+      } catch (err) {
+        console.error("Gagal regenerate:", err);
+        this.toast.error("Gagal regenerate.");
+      } finally {
+        this.loading = false;
+      }
+    },
     async fetchTournaments() {
       try {
         const res = await axios.get("/tournaments/active", {
