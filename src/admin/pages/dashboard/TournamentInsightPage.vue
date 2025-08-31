@@ -10,14 +10,14 @@
     </div>
     
     <div class="d-flex w-100 gap-3">
-      <div class="summary-data flex-grow-1">
+      <!--div class="summary-data flex-grow-1">
         <div class="title">
           Jumlah Pengguna
         </div>
         <div class="value">
           {{ totalAccount }}
         </div>
-      </div>
+      </div-->
       <div class="summary-data flex-grow-1">
         <div class="title">
           Jumlah Kotingen

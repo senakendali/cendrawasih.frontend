@@ -131,7 +131,7 @@ export default {
   flex-direction: column;
   align-items: center;
   overflow-y: auto; /* <-- enables vertical scroll */
-  z-index: 9999;     /* keeps it on top */
+  z-index: 1030;     /* keeps it on top */
 }
 
 .sidebar::-webkit-scrollbar {

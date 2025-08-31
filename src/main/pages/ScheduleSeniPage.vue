@@ -150,95 +150,144 @@
 
             <!-- Loop per Tanggal -->
             <div v-for="(arenas, date) in groupedByDate" :key="date">
-  <div v-for="(groupList, arenaName) in arenas" :key="arenaName">
-    <div v-if="groupList && groupList.length">
+              <div v-for="(groupList, arenaName) in arenas" :key="arenaName">
+                <div v-if="groupList && groupList.length">
 
-      <!-- Header Jadwal -->
-      <div class="row align-items-center mb-4">
-        <div class="col-3 d-flex align-items-center gap-3">
-          <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 140px;" />
-        </div>
-        <div class="col-6 text-center">
-          <h4 class="text-dark mb-2 text-uppercase fw-bold">
-            JADWAL {{ arenaName }}
-          </h4>
-          <h4 class="text-dark mb-2 text-uppercase fw-bold">
-            {{ groupList[0]?.tournament_name || '-' }}
-          </h4>
-          <div class="text-dark text-uppercase fw-bold">
-            {{ formatLongDate(date) }}
-          </div>
-        </div>
-        <div class="col-3 text-end">
-          <button class="btn btn-outline-primary btn-sm" @click="downloadSchedule(groupList[0], date)">
-            <i class="bi bi-download me-1"></i> Download Schedule
-          </button>
-        </div>
-      </div>
+                  <!-- Header Jadwal (per tanggal & arena) -->
+                  <div class="row align-items-center mb-4">
+                    <div class="col-3 d-flex align-items-center gap-3">
+                      <img src="@/assets/images/ipsi.png" alt="Logo" style="width: 140px;" />
+                    </div>
+                    <div class="col-6 text-center">
+                      <h4 class="text-dark mb-2 text-uppercase fw-bold">JADWAL {{ arenaName }}</h4>
+                      <h4 class="text-dark mb-2 text-uppercase fw-bold">
+                        {{ groupList[0]?.tournament_name || '-' }}
+                      </h4>
+                      <div class="text-dark text-uppercase fw-bold">
+                        {{ formatLongDate(date) }}
+                      </div>
+                    </div>
+                    <div class="col-3 text-end">
+                      <button class="btn btn-outline-primary btn-sm" @click="downloadSchedule(groupList[0], date)">
+                        <i class="bi bi-download me-1"></i> Download Schedule
+                      </button>
+                    </div>
+                  </div>
 
-      <!-- Loop per Kategori -->
-      <div v-for="(categoryGroup, index) in groupList" :key="index">
-          <!-- Loop per Pool -->
-          <div v-for="pool in categoryGroup.pools" :key="pool.name" class="mb-5">
-            <div v-if="pool.matches.length > 0">
-              <table class="table table-striped">
-                <thead>
-                  <tr class="table-sub-header">
-                    <th>PARTAI</th>
-                    <th>Kontingen</th>
-                    <th colspan="3">Nama Atlet</th>
-                    <th>Waktu</th>
-                    <th>Score</th>
-                  </tr>
-                  <tr>
-                    <th colspan="7" class="text-center fw-bold text-uppercase table-header">
-                      {{ categoryGroup.category }}
-                      {{ categoryGroup.gender === 'male' ? 'PUTRA' : 'PUTRI' }}
-                      {{ pool.matches[0]?.pool?.age_category?.name?.toUpperCase() || '-' }}
-                      - {{ pool.name }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="entry in pool.matches" :key="entry.id">
-                    <td>{{ entry.match_order }}</td>
-                    <td>{{ entry.contingent?.name || '-' }}</td>
+                  <!-- ===================== BATTLE: SATU TABEL GABUNGAN ===================== -->
+                  <!-- === BATTLE: satu tabel gabungan per arena === -->
+                  <template v-if="getArenaBattleRows(groupList).length">
+                    <table class="table table-striped mb-5">
+                      <thead>
+                        <tr class="table-sub-header">
+                          <th>PARTAI</th>
+                          <th>Babak</th>
+                          <th>Kelas</th>
+                          <th class="text-center" colspan="2">Peserta</th>
+                          <th class="text-center" colspan="2">Waktu</th>
+                          <th class="text-center" colspan="2">Score</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="row in getArenaBattleRows(groupList)" :key="'b-'+row.order">
+                          <td>{{ row.order }}</td>
+                          <td class="text-uppercase">{{ row.round_label || '-' }}</td>
+                          <td class="text-uppercase">{{ row.class_label || '-' }}</td>
 
-                    <!-- Tunggal -->
-                    <template v-if="entry.match_type === 'seni_tunggal'">
-                      <td>{{ entry.team_member1?.name || '-' }}</td>
-                      <td colspan="2">-</td>
-                    </template>
+                         <td class="corner-blue">
+                          <template v-if="hasAny(row.blue)">
+                            <div class="names" v-if="row.blue.names">{{ row.blue.names }}</div>
+                            <div class="contingent" v-if="row.blue.contingent">{{ row.blue.contingent }}</div>
+                          </template>
 
-                    <!-- Ganda -->
-                    <template v-else-if="entry.match_type === 'seni_ganda'">
-                      <td>{{ entry.team_member1?.name || '-' }}</td>
-                      <td>{{ entry.team_member2?.name || '-' }}</td>
-                      <td>-</td>
-                    </template>
+                          <!-- ✅ fallback kalau belum ada nama -->
+                          <template v-else-if="row.source_blue_order">
+                            Pemenang Partai #{{ row.source_blue_order }}
+                          </template>
 
-                    <!-- Regu -->
-                    <template v-else-if="entry.match_type === 'seni_regu'">
-                      <td>{{ entry.team_member1?.name || '-' }}</td>
-                      <td>{{ entry.team_member2?.name || '-' }}</td>
-                      <td>{{ entry.team_member3?.name || '-' }}</td>
-                    </template>
+                          <template v-else>-</template>
+                        </td>
 
-                    <td>{{ entry.match_time || '-' }}</td>
-                    <td>{{ entry.final_score || '-' }}</td>
-                  </tr>
-                </tbody>
-              </table>
+                        <td class="corner-red">
+                          <template v-if="hasAny(row.red)">
+                            <div class="names" v-if="row.red.names">{{ row.red.names }}</div>
+                            <div class="contingent" v-if="row.red.contingent">{{ row.red.contingent }}</div>
+                          </template>
+
+                          <!-- ✅ fallback kalau belum ada nama -->
+                          <template v-else-if="row.source_red_order">
+                            Pemenang Partai #{{ row.source_red_order }}
+                          </template>
+
+                          <template v-else>-</template>
+                        </td>
+
+
+
+                          <!-- duplikasi waktu/score biar simetris kiri/kanan -->
+                          <td class="text-center">{{ row.time  || '-' }}</td>
+                          <td class="text-center">{{ row.time  || '-' }}</td>
+                          <td class="text-center">{{ row.score || '-' }}</td>
+                          <td class="text-center">{{ row.score || '-' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </template>
+
+                  <!-- ===================== NON-BATTLE: PER POOL (seperti biasa) ===================== -->
+                  <template v-for="tb in getNonBattleTables(groupList)" :key="arenaName+'-'+tb.key">
+                    <table class="table table-striped mb-5">
+                      <thead>
+                        <tr class="table-sub-header">
+                          <th>PARTAI</th>
+                          <th>Kontingen</th>
+                          <th colspan="3">Nama Atlet</th>
+                          <th class="text-center">Waktu</th>
+                          <th class="text-center">Score</th>
+                        </tr>
+                        <tr>
+                          <th :colspan="7" class="text-center fw-bold text-uppercase table-header">
+                            {{ tb.title.category }}
+                            {{ tb.title.gender === 'male' ? 'PUTRA' : 'PUTRI' }}
+                            {{ tb.title.age?.toUpperCase() || '-' }} - {{ tb.title.pool }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="entry in tb.rows" :key="'nb-'+entry.id">
+                          <td>{{ entry.match_order ?? entry.order ?? '-' }}</td>
+                          <td>{{ entry.contingent?.name || '-' }}</td>
+
+                          <template v-if="entry.match_type === 'seni_tunggal'">
+                            <td colspan="3">{{ entry.team_member1?.name || '-' }}</td>
+                          </template>
+                          <template v-else-if="entry.match_type === 'seni_ganda'">
+                            <td>{{ entry.team_member1?.name || '-' }}</td>
+                            <td>{{ entry.team_member2?.name || '-' }}</td>
+                            <td>-</td>
+                          </template>
+                          <template v-else-if="entry.match_type === 'seni_regu'">
+                            <td>{{ entry.team_member1?.name || '-' }}</td>
+                            <td>{{ entry.team_member2?.name || '-' }}</td>
+                            <td>{{ entry.team_member3?.name || '-' }}</td>
+                          </template>
+                          <template v-else>
+                            <td colspan="3">{{ entry.team_member1?.name || '-' }}</td>
+                          </template>
+
+                          <td class="text-center">{{ entry.match_time || '-' }}</td>
+                          <td class="text-center">{{ entry.final_score || '-' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </template>
+
+
+                </div>
+              </div>
             </div>
-            <div v-else class="text-center text-muted my-3">
-              Tidak ada pertandingan pada pool ini.
-            </div>
-          </div>
-        </div>
 
-      </div>
-    </div>
-  </div>
+
 
 
           </div>
@@ -271,6 +320,8 @@ export default {
       selectedGenderFilters: ['male', 'female'],
 
       scheduleData: [],
+      allRoundLabels: [],
+      selectedRoundFilters: [],
 
       
 
@@ -387,13 +438,462 @@ export default {
   mounted() {
     this.fetchSchedules();
     console.log("📦 Filters Aktif:");
-console.log("🎯 Category:", this.selectedCategoryFilters);
-console.log("🎯 Gender:", this.selectedGenderFilters);
-console.log("🎯 Pool:", this.selectedPoolFilters);
+    console.log("🎯 Category:", this.selectedCategoryFilters);
+    console.log("🎯 Gender:", this.selectedGenderFilters);
+    console.log("🎯 Pool:", this.selectedPoolFilters);
 
   },
 
   methods: {
+
+    hasAny(side) {
+      return !!(side && (side.contingent || side.names));
+    },
+
+
+     getNonBattlePools(categoryGroup) {
+        const pools = (categoryGroup?.pools || []).map(p => {
+          const matches = (p.matches || [])
+            .filter(m => m?.mode !== 'battle')
+            .sort((a, b) => (a.order ?? a.match_order ?? 0) - (b.order ?? b.match_order ?? 0));
+          return { name: p.name, matches };
+        });
+        return pools.filter(p => p.matches.length > 0);
+      },
+
+    _matchTypeToCategory(mt) {
+      switch (mt) {
+        case 'seni_tunggal': return 'TUNGGAL';
+        case 'seni_ganda':   return 'GANDA';
+        case 'seni_regu':    return 'REGU';
+        case 'solo_kreatif': return 'SOLO KREATIF';
+        default:             return 'KATEGORI';
+      }
+    },
+
+    /**
+       * Gabung nama atlet utk tiap side:
+       * - Tunggal: 1 nama
+       * - Ganda/Regu: "nama1, nama2[, nama3]"
+       * - Jika slot kosong (misal BYE), tampilkan 'BYE'
+       */
+
+    _joinMemberNames(entry) {
+      if (!entry) return '';
+      const names = [];
+      if (entry.team_member1?.name) names.push(entry.team_member1.name);
+      if (entry.team_member2?.name) names.push(entry.team_member2.name);
+      if (entry.team_member3?.name) names.push(entry.team_member3.name);
+      return names.join(', ');
+    },
+
+    // === ranking label babak (buat tau "sebelumnya" itu apa)
+    _roundRank(label) {
+      const L = String(label || '').toLowerCase();
+      if (L.includes('final') && !L.includes('semi') && !L.includes('perempat') && !L.includes('delapan')) return 5; // Final
+      if (L.includes('semifinal'))    return 4;
+      if (L.includes('perempat'))     return 3;
+      if (L.includes('perdelapan') || L.includes('16')) return 2;
+      if (L.includes('penyisihan') || L.includes('babak')) return 1;
+      return 1; // fallback
+    },
+
+    // === TABLE BATTLE ARENA-LEVEL: diratakan, urut match_order, isi winner untuk slot kosong
+
+    
+
+  getArenaBattleRows(groupList) {
+  const toStr = v => (v ?? '').toString().trim();
+  const genderText = g => (g === 'male' ? 'PUTRA' : g === 'female' ? 'PUTRI' : toStr(g).toUpperCase());
+
+  const byOrder = new Map(); // key = match_order, val = row gabungan (blue+red)
+
+  // ⬅️ PERBAIKAN PENTING: iterasi ARRAY groupList
+  for (const group of (groupList || [])) {
+    const category = toStr(group?.category);        // ex: 'Tunggal' / 'Ganda' / ...
+    const age      = toStr(group?.age_category);    // ex: 'REMAJA'
+    const gender   = genderText(group?.gender);     // PUTRA / PUTRI
+
+    for (const pool of (group?.pools || [])) {
+      for (const m of (pool?.matches || [])) {
+        if (!m || m.mode !== 'battle') continue;
+
+        const order = m.match_order ?? m.order;
+        if (order == null) continue; // harus ada nomor partai
+
+        // siapkan row kalau belum ada
+        if (!byOrder.has(order)) {
+          const classLabel =
+            toStr(m.class_label) ||
+            [category, age, gender].filter(Boolean).join(' ').toUpperCase();
+
+          byOrder.set(order, {
+            order,
+            round_label: toStr(m.round_label),
+            class_label: classLabel,
+            blue: { names: null, contingent: null },
+            red:  { names: null, contingent: null },
+            time: m.match_time ?? null,
+            score: m.final_score ?? m.score ?? null,
+
+            // pointer “Pemenang Partai #X” per corner
+            source_blue_order: null,
+            source_red_order:  null,
+          });
+        }
+
+        const row = byOrder.get(order);
+
+        // isi info dasar kalau belum terisi
+        if (!row.round_label && m.round_label) row.round_label = toStr(m.round_label);
+        if (!row.time && m.match_time)         row.time        = m.match_time;
+        if (!row.score && (m.final_score ?? m.score)) row.score = m.final_score ?? m.score;
+
+        // build sisi dari data match ini
+        const sideObj = this.buildCornerObject(m);
+
+        // pointer asal partai untuk fallback text
+        const fromOrder =
+          m.source_blue_order ?? m.source_red_order ??
+          m.source_from_order ?? m.winner_of_order ??
+          m.source_order ?? m.prev_order ?? null;
+
+        const corner = toStr(m.corner).toLowerCase();
+        if (corner === 'blue') {
+          row.blue = sideObj;
+          if (!row.source_blue_order) row.source_blue_order = m.source_blue_order ?? fromOrder;
+        } else if (corner === 'red') {
+          row.red = sideObj;
+          if (!row.source_red_order)  row.source_red_order  = m.source_red_order  ?? fromOrder;
+        } else {
+          // fallback kalau corner kosong: tebak parity (jarang terjadi)
+          if ((order % 2) === 0) {
+            row.red = sideObj;
+            if (!row.source_red_order) row.source_red_order = m.source_red_order ?? fromOrder;
+          } else {
+            row.blue = sideObj;
+            if (!row.source_blue_order) row.source_blue_order = m.source_blue_order ?? fromOrder;
+          }
+        }
+      }
+    }
+  }
+
+  // hasil akhir urut berdasarkan nomor partai
+  return Array.from(byOrder.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+},
+
+buildCornerObject(m) {
+  const names = [];
+  if (m?.team_member1?.name) names.push(m.team_member1.name);
+  if (m?.team_member2?.name) names.push(m.team_member2.name);
+  if (m?.team_member3?.name) names.push(m.team_member3.name);
+
+  return {
+    names: names.length ? names.join(' / ') : null,
+    contingent: m?.contingent?.name || null,
+  };
+},
+
+
+
+
+  getArenaBattleRows__backup(groupList = []) {
+  // util kecil
+  const toStr = (v) => (v ?? '').toString().trim();
+  const sanitize = (v) => {
+    const s = toStr(v);
+    if (!s) return '';
+    const u = s.toUpperCase();
+    return (u === '-' || u === '—' || u === 'N/A' || u === 'NULL' || u === 'UNDEFINED' || u === 'BYE' || u === 'TBD')
+      ? ''
+      : s;
+  };
+  const genderLabel = (g) => (g === 'male' ? 'PUTRA' : g === 'female' ? 'PUTRI' : toStr(g).toUpperCase());
+
+  // key = order (global di arena), val = row gabungan (blue+red)
+  const byOrder = new Map();
+
+  for (const group of (groupList || [])) {
+    const category = toStr(group?.category);         // ex. 'Tunggal'
+    const gender   = genderLabel(group?.gender);     // 'PUTRA' / 'PUTRI'
+    const pools    = group?.pools || [];
+
+    for (const pool of pools) {
+      const matches = pool?.matches || [];
+
+      for (const m of matches) {
+        if (m?.mode !== 'battle') continue;
+
+        const order = (m.order ?? m.match_order);
+        if (order == null) continue; // mesti ada nomor partai
+
+        if (!byOrder.has(order)) {
+          byOrder.set(order, {
+            order,
+            round_label: toStr(m.round_label),
+            class_label: '',                 // diisi sekali per order
+            blue: { contingent: '', names: '' },
+            red:  { contingent: '', names: '' },
+            time: m.match_time || '',
+            score: m.final_score || '',
+          });
+        }
+
+        const row = byOrder.get(order);
+
+        // round label (ambil yang terisi)
+        if (!row.round_label && m.round_label) {
+          row.round_label = toStr(m.round_label);
+        }
+
+        // CLASS LABEL: "TUNGGAL REMAJA PUTRA" (uppercase)
+        if (!row.class_label) {
+          const age = toStr(m?.pool?.age_category?.name) || toStr(group?.age_category);
+          const cls = [category, age, gender].filter(Boolean).join(' ');
+          row.class_label = cls.toUpperCase();
+        }
+
+        // NAMA2 atlet (gabung), TANPA fallback '-'
+        const namesJoined = [
+          m?.team_member1?.name,
+          m?.team_member2?.name,
+          m?.team_member3?.name,
+        ].filter(Boolean).join(', ');
+        let names = sanitize(namesJoined);
+
+        // Kalau kosong, coba pakai info "pemenang partai #<no>"
+        const winnerOrder =
+          m?.winner_of_order ??
+          m?.winner_from_order ??
+          m?.source_order ??
+          m?.from_order ??
+          m?.prev_order ??
+          null;
+        if (!names && winnerOrder) {
+          names = `Pemenang partai #${winnerOrder}`;
+        }
+
+        // Kontingen TANPA fallback '-'
+        const cont = sanitize(m?.contingent?.name ?? m?.contingent_name);
+
+        const side = { contingent: cont, names };
+        const corner = toStr(m?.corner).toLowerCase();
+
+        if (corner === 'blue') {
+          row.blue = side;
+        } else if (corner === 'red') {
+          row.red = side;
+        } else {
+          // fallback: paritas nomor partai (jarang kepakai)
+          const isEven = ((order ?? 0) % 2) === 0;
+          if (isEven) row.red = side; else row.blue = side;
+        }
+
+        // waktu/score pertama yang ada disimpan
+        if (!row.time && m.match_time)   row.time  = m.match_time;
+        if (!row.score && m.final_score) row.score = m.final_score;
+      }
+    }
+  }
+
+  // hasil akhir: array urut by order ASC
+  return Array.from(byOrder.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+},
+
+
+
+    // === Untuk BATTLE: kembalikan array group per babak, setiap group punya rows terurut
+    // dan kolom display_no (1..N) lokal per tabel babak tsb.
+    buildBattleGroups(matches = []) {
+      // Pair per battle_group
+      const byGroup = new Map(); // battle_group -> row
+
+      for (const m of (matches || [])) {
+        const g = m.battle_group ?? m.match_order ?? m.id;
+        if (!byGroup.has(g)) {
+          byGroup.set(g, {
+            key: `g-${g}`,
+            // tetap simpan order global untuk sort (biar urut eksekusi asli)
+            order: (m.order ?? m.match_order ?? Number.MAX_SAFE_INTEGER),
+            round_label: m.round_label || '-',
+            blue: { contingent: '-', names: '' },
+            red:  { contingent: '-', names: '' },
+            time: m.match_time ?? null,
+            score: m.final_score ?? null,
+          });
+        }
+
+        const row = byGroup.get(g);
+
+        const names = [
+          m.team_member1?.name,
+          m.team_member2?.name,
+          m.team_member3?.name,
+        ].filter(Boolean).join(', ');
+
+        const roundNum  = Number(m.round || 1);
+        const namesStr  = names || (roundNum === 1 ? 'BYE' : 'TBD');
+        const cont      = m.contingent?.name || '-';
+        const corner    = (m.corner || '').toLowerCase();
+
+        if (corner === 'blue') {
+          row.blue = { contingent: cont, names: namesStr };
+        } else if (corner === 'red') {
+          row.red = { contingent: cont, names: namesStr };
+        } else {
+          // fallback (kalau corner belum ada): tebak parity
+          const isEven = ((m.match_order ?? 0) % 2) === 0;
+          if (isEven) row.red = { contingent: cont, names: namesStr };
+          else        row.blue = { contingent: cont, names: namesStr };
+        }
+
+        // ambil order minimum dalam satu group
+        const candOrder = (m.order ?? m.match_order ?? Number.MAX_SAFE_INTEGER);
+        if (candOrder < row.order) row.order = candOrder;
+
+        // rapihkan label
+        if ((!row.round_label || row.round_label === '-') && m.round_label) {
+          row.round_label = m.round_label;
+        }
+
+        if (!row.time && m.match_time)   row.time  = m.match_time;
+        if (!row.score && m.final_score) row.score = m.final_score;
+      }
+
+      // rows (tiap pasangan) urutkan by order global
+      const rows = Array.from(byGroup.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+      // group per round_label
+      const bucket = new Map(); // label -> { label, rows: [], minOrder }
+      for (const r of rows) {
+        const label = r.round_label || '-';
+        if (!bucket.has(label)) bucket.set(label, { label, rows: [], minOrder: Number.MAX_SAFE_INTEGER });
+        bucket.get(label).rows.push(r);
+        bucket.get(label).minOrder = Math.min(bucket.get(label).minOrder, (r.order ?? Number.MAX_SAFE_INTEGER));
+      }
+
+      // urutkan row di dalam babak & assign display_no lokal (1..N)
+      const grouped = Array.from(bucket.values())
+        .sort((a, b) => a.minOrder - b.minOrder) // Semifinal (min order kecil) muncul duluan ketimbang Final, dst
+        .map(g => {
+          g.rows.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          g.rows = g.rows.map((r, i) => ({ ...r, display_no: i + 1 })); // nomor lokal
+          return g;
+        });
+
+      return grouped;
+    },
+
+    // === Untuk NON-BATTLE: kembalikan matches yang sudah disort + display_no lokal (1..N)
+    getNonBattleTables(groupList = []) {
+      const tables = [];
+
+      (groupList || []).forEach(cg => {
+        const gender = cg.gender; // 'male' / 'female'
+        (cg.pools || []).forEach(pool => {
+          const age = pool?.matches?.[0]?.pool?.age_category?.name || '-';
+
+          // ambil hanya non-battle, sort by order/match_order, lalu nomor lokal 1..N
+          const rows = (pool.matches || [])
+            .filter(m => m?.mode !== 'battle')
+            .sort((a, b) =>
+              (a.match_order ?? a.order ?? 0) - (b.match_order ?? b.order ?? 0)
+            )
+            .map((m, i) => ({ ...m, display_no: i + 1 }));
+
+          if (rows.length > 0) {
+            tables.push({
+              key: `${cg.category}|${gender}|${age}|${pool.name}`,
+              title: {
+                category: cg.category,
+                gender,
+                age,
+                pool: pool.name,
+              },
+              rows,
+            });
+          }
+        });
+      });
+
+      return tables;
+    },
+
+    // Tetap dipakai di non-battle kalau kamu butuh versi baris lokal
+    getNonBattleRows(matches = []) {
+      const sorted = [...matches].sort((a, b) => {
+        const oa = a.match_order ?? a.order ?? 0;
+        const ob = b.match_order ?? b.order ?? 0;
+        if (oa !== ob) return oa - ob;
+        return (a.id ?? 0) - (b.id ?? 0);
+      });
+      return sorted.map((m, i) => ({ ...m, display_no: i + 1 }));
+    },
+
+
+
+
+      
+    
+
+      /**
+       * Build baris battle dari daftar match (blue+red dalam satu baris),
+       * dikelompokkan berdasarkan (round, battle_group).
+       */
+      buildBattleRows(matches = []) {
+        const groups = {};
+
+        matches.forEach(m => {
+          if (m?.mode !== 'battle') return;
+          const gkey = `${m.round || 1}-${m.battle_group || m.match_order || 0}`;
+
+          if (!groups[gkey]) {
+            groups[gkey] = {
+              order: m.match_order ?? null,
+              round_label: m.round_label ?? null,
+              blue: null,
+              red: null,
+              time: m.match_time ?? null,
+              score: m.final_score ?? null,
+            };
+          }
+
+          // Keep the earliest filled info (order/time/label)
+          if (!groups[gkey].order && m.match_order) groups[gkey].order = m.match_order;
+          if (!groups[gkey].round_label && m.round_label) groups[gkey].round_label = m.round_label;
+          if (!groups[gkey].time && m.match_time) groups[gkey].time = m.match_time;
+          if (!groups[gkey].score && m.final_score) groups[gkey].score = m.final_score;
+
+          if (m.corner === 'blue') groups[gkey].blue = m;
+          if (m.corner === 'red')  groups[gkey].red  = m;
+        });
+
+        // Convert ke array + sort by order lalu round
+        return Object.entries(groups)
+          .map(([key, g]) => ({
+            key,
+            order: g.order,
+            round_label: g.round_label,
+            time: g.time,
+            score: g.score,
+            blue: {
+              contingent: g.blue?.contingent?.name || (g.blue?.contingent_name ?? null),
+              names: this._joinMemberNames(g.blue),
+            },
+            red: {
+              contingent: g.red?.contingent?.name || (g.red?.contingent_name ?? null),
+              names: this._joinMemberNames(g.red),
+            },
+          }))
+          .sort((a, b) => {
+            // primary by order, secondary by round label (optional)
+            const ao = a.order ?? 0, bo = b.order ?? 0;
+            if (ao !== bo) return ao - bo;
+            return String(a.round_label || '').localeCompare(String(b.round_label || ''));
+          });
+      },
+
     downloadSchedule(arena, date) {
       const params = new URLSearchParams({
         arena_name: arena.arena_name,
@@ -545,6 +1045,31 @@ console.log("🎯 Pool:", this.selectedPoolFilters);
   background-color: #343a40;
   color: #ffffff;
 }
+
+/* Sudut */
+.corner-blue {
+  background: #002FB9 !important; /* bootstrap primary */
+  color: #fff !important;
+  width: 35%;
+}
+.corner-red {
+  background: #F80000 !important; /* bootstrap danger */
+  color: #fff !important;
+  width: 35%;
+}
+.corner-blue .contingent,
+.corner-red .contingent {
+  font-style: italic;
+  font-size: 0.85rem;
+  opacity: 0.95;
+  margin-bottom: 2px;
+}
+.corner-blue .names,
+.corner-red .names {
+  font-weight: 600;
+  line-height: 1.15rem;
+}
+
 
 
 

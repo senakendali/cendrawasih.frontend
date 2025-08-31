@@ -5,7 +5,8 @@
     
       <p v-if="userName">Welcome, {{ userName }}! Senang bertemu lagi.</p>
       <p v-else>Loading user data...</p>
-      <p>Dibawah ini adalah kejuaran yang bisa Anda ikuti. Silahkan klik tombol daftar untuk mendaftarkan kontingen Anda.</p>
+      <p v-if="!permissions && !permissions.includes('view insight')">Dibawah ini adalah kejuaran yang bisa Anda ikuti. Silahkan klik tombol daftar untuk mendaftarkan kontingen Anda.</p>
+      <p v-else>Dibawah ini adalah daftar kejuaran yang sudah dibuat. Silahkan klik tombol detail untuk melihat data secara lengkap.</p>
     </div>
     <div class="row row-cols-1 row-cols-md-3 g-4">
       <!-- Tournament Cards -->
@@ -210,8 +211,6 @@ export default {
 }
 
 .card-image {
-  margin-top: 20px;
-  max-height: 200px;
   object-fit: cover;
 }
 

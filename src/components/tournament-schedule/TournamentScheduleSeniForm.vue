@@ -130,6 +130,27 @@
               ></textarea>
             </div>
 
+            <!-- Mode: Default / Battle -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Mode</strong></label>
+              <select class="form-select" v-model="form.mode">
+                <option value="default">Default</option>
+                <option value="battle">Battle</option>
+              </select>
+            </div>
+
+            <!-- Babak (muncul hanya saat Battle) -->
+            <div class="mb-3" v-if="form.mode === 'battle'">
+              <label class="form-label"><strong>Babak</strong></label>
+              <select class="form-select" v-model="selectedBattleRound">
+                <option value="">Semua Babak</option>
+                <option v-for="opt in battleRoundOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
+
+
             <div class="admin-form d-flex flex-column gap-3 mb-4">
               <!-- Match Category -->
               <div>
@@ -193,7 +214,7 @@
             </div>
 
             <!-- Table to display navigation data -->
-            <div v-for="categoryGroup in filteredMatchList" :key="categoryGroup.category + '-' + categoryGroup.gender">
+           <div v-for="categoryGroup in filteredMatchList" :key="categoryGroup.category + '-' + categoryGroup.gender">
 
               <!-- Judul Kategori dan Gender -->
               <h4 class="text-uppercase text-primary mb-3">
@@ -202,14 +223,6 @@
 
               <!-- Loop per Pool -->
               <div v-for="pool in categoryGroup.pools" :key="pool.name" class="mb-5">
-                <!--div>
-                  <button class="btn btn-sm btn-outline-primary me-2" type="button" @click="selectAllInPool(pool)">
-                    Select All
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" @click="unselectAllInPool(pool)">
-                    Unselect All
-                  </button>
-                </div-->
                 <table class="table mt-4">
                   <thead>
                     <!-- Header Informasi Pool -->
@@ -220,17 +233,77 @@
                     </tr>
                     <tr>
                       <th colspan="6" class="table-header text-start text-uppercase">
-                        {{ pool.matches[0]?.pool?.age_category?.name.toUpperCase() }}
+                        {{ pool.matches[0]?.pool?.age_category?.name?.toUpperCase() }}
                       </th>
                     </tr>
-                    <tr class="table-sub-header">
-                      <th>Match Number</th>
+
+                    <!-- Header kolom: beda untuk battle vs non-battle -->
+                    <tr
+                      class="table-sub-header"
+                      v-if="pool.matches?.length && pool.matches[0]?.mode === 'battle'"
+                    >
+                      <th style="width:110px; display: none;">Match Number</th>
+                      <th style="width:140px;">Babak</th>
+                      
                       <th>Kontingen</th>
-                      <th colspan="3">Peserta</th> <!-- Kolom dinamis, nanti isi di tbody -->
+                      <th colspan="3">Peserta</th>
+                    </tr>
+
+                    <tr
+                      class="table-sub-header"
+                      v-else
+                    >
+                      <th style="width:110px;">Match Number</th>
+                      <th>Kontingen</th>
+                      <th colspan="3">Peserta</th>
                     </tr>
                   </thead>
 
-                  <tbody>
+                  <!-- BODY: BATTLE -->
+                  <tbody v-if="pool.matches?.length && pool.matches[0]?.mode === 'battle'">
+                    <tr
+                      v-for="entry in pool.matches"
+                      :key="entry.id"
+                      :class="rowClass(entry)"
+                    >
+                      <!-- Match Number + checkbox -->
+                      <td style="width:110px; display: none;">
+                        <input type="checkbox" v-model="entry.selected" />
+                        {{ entry.match_order }}
+                      </td>
+
+                      <!-- Babak -->
+                      <td>{{ entry.round_label || '-' }}</td>
+
+                     
+
+                      <!-- Kontingen (pakai helper agar BYE/TBD kebaca) -->
+                      <td>
+                        {{ displayContingent(entry, entry.round) }}
+                      </td>
+
+                      <!-- Peserta dinamis + BYE/TBD aware (pakai displayName) -->
+                      <template v-if="entry.match_type === 'seni_tunggal'">
+                        <td>{{ displayName(entry.team_member1, entry.round) }}</td>
+                        <td colspan="2">-</td>
+                      </template>
+
+                      <template v-else-if="entry.match_type === 'seni_ganda'">
+                        <td>{{ displayName(entry.team_member1, entry.round) }}</td>
+                        <td>{{ displayName(entry.team_member2, entry.round) }}</td>
+                        <td>-</td>
+                      </template>
+
+                      <template v-else-if="entry.match_type === 'seni_regu'">
+                        <td>{{ displayName(entry.team_member1, entry.round) }}</td>
+                        <td>{{ displayName(entry.team_member2, entry.round) }}</td>
+                        <td>{{ displayName(entry.team_member3, entry.round) }}</td>
+                      </template>
+                    </tr>
+                  </tbody>
+
+                  <!-- BODY: NON-BATTLE (unchanged) -->
+                  <tbody v-else>
                     <tr v-for="entry in pool.matches" :key="entry.id">
                       <td>
                         <input type="checkbox" v-model="entry.selected" />
@@ -238,7 +311,6 @@
                       </td>
                       <td>{{ entry.contingent?.name || '-' }}</td>
 
-                      <!-- Dinamis: render kolom peserta tergantung match_type -->
                       <template v-if="entry.match_type === 'seni_tunggal'">
                         <td>{{ entry.team_member1?.name || '-' }}</td>
                         <td colspan="2">-</td>
@@ -258,9 +330,9 @@
                     </tr>
                   </tbody>
                 </table>
-
               </div>
             </div>
+
 
             
 
@@ -340,8 +412,11 @@ export default {
         scheduled_date: "",
         start_time: "08:00",
         end_time: "17:00",
-        note: ""
+        note: "",
+        mode: "default",         
       },
+      battleRoundOptions: [],
+      selectedBattleRound: "", 
       errors: {},
       loading: false,
       progress: 0,
@@ -364,43 +439,56 @@ export default {
       return this.allPools.filter(pool => this.shouldShowPool(pool));
     },
     filteredMatchList() {
-      const data = Array.isArray(this.matchList)
+      const raw = Array.isArray(this.matchList)
         ? this.matchList
-        : Object.values(this.matchList);
+        : Object.values(this.matchList || {});
 
-      return data
+      return raw
         .map(item => {
-          const matchType = item.pools[0]?.matches[0]?.match_type;
-          const gender = item.gender;
+          const pools = (item.pools || [])
+            .map(pool => {
+              // 1) filter dulu berdasar MODE + (jika battle) ROUND LABEL
+              let matches = (pool.matches || []).filter(m => {
+                const isBattle = m?.mode === 'battle';
+                if (this.form.mode === 'battle') {
+                  if (!isBattle) return false;
+                  if (this.selectedBattleRound) {
+                    return String(m.round_label || '') === String(this.selectedBattleRound);
+                  }
+                  return true;
+                } else {
+                  return !isBattle; // default mode: non-battle saja
+                }
+              });
 
-          const matchCategoryMatch =
-            this.filters.match_category.length > 0 &&
-            this.isMatchByFilter(matchType, this.filters.match_category);
+              if (!matches.length) return null;
 
-          const genderMatch =
-            this.filters.gender.length > 0 &&
-            this.isMatchByFilter(gender, this.filters.gender);
+              // 2) apply filter UI lain (kategori, gender, age, pool)
+              const matchType = matches[0]?.match_type || null;
+              const passCategory =
+                this.filters.match_category.length === 0 ||
+                this.filters.match_category.includes(matchType);
 
-          const ageCategoryMatch =
-            this.filters.age_category.length > 0 &&
-            item.pools.some(pool =>
-              pool.matches[0]?.pool?.age_category &&
-              this.isMatchByFilter(pool.matches[0].pool.age_category.id, this.filters.age_category)
-            );
+              const passGender =
+                this.filters.gender.length === 0 ||
+                this.filters.gender.includes(item.gender);
 
-          const filteredPools = item.pools.filter(pool =>
-            this.filters.pool.length > 0 &&
-            this.isMatchByFilter(pool.name, this.filters.pool)
-          );
+              const ageId = matches[0]?.pool?.age_category?.id;
+              const passAge =
+                this.filters.age_category.length === 0 ||
+                (ageId && this.filters.age_category.includes(ageId));
 
-          if (matchCategoryMatch && genderMatch && ageCategoryMatch && filteredPools.length > 0) {
-            return {
-              ...item,
-              pools: filteredPools,
-            };
-          }
+              const passPool =
+                this.filters.pool.length === 0 ||
+                this.filters.pool.includes(pool.name);
 
-          return null;
+              return (passCategory && passGender && passAge && passPool)
+                ? { ...pool, matches }
+                : null;
+            })
+            .filter(Boolean);
+
+          return pools.length ? { ...item, pools } : null;
         })
         .filter(Boolean);
     },
@@ -458,33 +546,236 @@ export default {
       },
     },
     'form.tournament_id': {
-      handler: async function (newId, oldId) {
-        if (!newId) return; 
-        // Skip if in edit mode or if the value didn't actually change
-        if (this.isEdit || newId === oldId){
-          this.fetchArenasByTournament(newId);
-          this.fetchRounds(newId); // ✅ tambahin di sini juga buat edit mode
-          return;
-        }
-        
-        if (newId) {
-          this.fetchArenasByTournament(newId);
-          await this.fetchRounds(newId); // ⬅️ tunggu roundOptions siap
-          this.fetchMatchList(newId);    // ⬅️ baru fetch match pakai round label yang bener
-          this.form.tournament_arena_id = "";
-          this.fetchMatchList();
-          
+      immediate: true,
+      handler: async function (newId) {
+        if (!newId) return;
+
+        await this.fetchArenasByTournament(newId);
+
+        // siapkan pilihan babak kalau mode battle
+        if (this.form.mode === 'battle') {
+          await this.fetchBattleRounds(newId);
         } else {
-          this.allArenas = [];
-          this.allMatches = [];
-          this.roundOptions = [];
+          this.battleRoundOptions = [];
+          this.selectedBattleRound = "";
         }
-      },
-      immediate: true
-    }
+
+        // ambil match list (BE boleh abaikan param; kita tetap filter di client)
+        await this.fetchMatchList();
+      }
+    },
+
+    'form.mode': {
+      immediate: false,
+      handler: async function (mode) {
+        if (!this.form.tournament_id) return;
+
+        if (mode === 'battle') {
+          await this.fetchBattleRounds(this.form.tournament_id);
+        } else {
+          this.battleRoundOptions = [];
+          this.selectedBattleRound = "";
+        }
+        // tidak wajib refetch server; tapi kalau BE support filter server-side, boleh:
+        await this.fetchMatchList();
+      }
+    },
+
+    // kalau ganti babak: cukup recompute (computed akan jalan).
+    // kalau BE support param round_label, boleh panggil fetchMatchList lagi.
+    selectedBattleRound() {
+      // client-side only: biarkan computed yang menyaring
+      // kalau mau minta BE, uncomment:
+      // this.fetchMatchList();
+    },
   },
 
   methods: {
+    async fetchBattleRounds(tournamentId) {
+      this.battleRoundOptions = [];
+      this.selectedBattleRound = "";
+      if (!tournamentId) return;
+
+      try {
+        // (opsional) kalau BE support: kembalikan { rounds: { "Final":"Final", ... } }
+        const res = await axios.get(`/seni/tournament/${tournamentId}/available-rounds`, {
+          params: { mode: 'battle' }
+        });
+        const rounds = res.data?.rounds || {};
+        const opts = Object.entries(rounds).map(([value, label]) => ({
+          value, label: label || value
+        }));
+        if (opts.length) {
+          this.battleRoundOptions = opts;
+          return;
+        }
+      } catch (_) {
+        // ignore -> fallback
+      }
+
+      // Fallback: scan dari matchList yang ada
+      const set = new Set();
+      (Array.isArray(this.matchList) ? this.matchList : []).forEach(group => {
+        (group.pools || []).forEach(pool => {
+          (pool.matches || [])
+            .filter(m => m.mode === 'battle' && m.round_label)
+            .forEach(m => set.add(m.round_label));
+        });
+      });
+      this.battleRoundOptions = Array.from(set).map(v => ({ value: v, label: v }));
+    },
+    rowClass(entry) {
+      if (!entry) return '';
+      if (entry.mode === 'battle') {
+        if (entry.corner === 'blue') return 'battle-row battle-blue';
+        if (entry.corner === 'red')  return 'battle-row battle-red';
+      }
+      return '';
+    },
+    getUnitCols(pool) {
+      switch (pool.matches[0]?.match_type) {
+        case 'seni_tunggal': return 1
+        case 'seni_ganda': return 2
+        case 'seni_regu': return 3
+        default: return 1
+      }
+    },
+
+    // total kolom table per pool (untuk colspan header)
+    getTotalCols(pool) {
+      if (pool?.matches?.[0]?.mode === 'battle') {
+        return 1 /* Round */ + (this.getUnitCols(pool) * 2); // Biru + Merah
+      }
+      return this.getUnitCols(pool); // non-battle: hanya kolom peserta
+    },
+
+
+    _isEmptySlot(player) {
+      if (!player) return true;
+      if (typeof player === 'string') {
+        const s = this._s(player);
+        return !s || this._isBye(s) || this._isPlaceholder(s);
+      }
+      // object tanpa nama valid dianggap kosong
+      return this._extractName(player) === '';
+    },
+    displayName(player, round) {
+      const r = Number(round) || 1;
+      if (this._isEmptySlot(player)) return r === 1 ? 'BYE' : 'TBD';
+      return this._extractName(player) || (r === 1 ? 'BYE' : 'TBD');
+    },
+
+    displayContingent(entity, round) {
+      const r = Number(round) || 1;
+
+      // Deteksi: entity adalah "side/match" (pair[0]/pair[1]) atau "player"
+      const isSide =
+        entity && typeof entity === 'object' &&
+        ('corner' in entity || 'match_type' in entity || 'team_member1' in entity || 'round_label' in entity);
+
+      if (isSide) {
+        const side = entity;
+        const tm = side.team_member1; // battle tunggal: kontingen diambil dari side, fallback ke player
+        // Slot kosong → BYE/TBD
+        if (!tm || this._isEmptySlot(tm)) return r === 1 ? 'BYE' : 'TBD';
+
+        // 1) Coba ambil dari level side (pair[x].contingent)
+        let cg = '';
+        const c = side.contingent;
+        if (c) {
+          if (typeof c === 'object') {
+            const objCand = [c.name, c.short_name, c.fullname, c.display_name];
+            for (const v of objCand) {
+              const s = this._s(v);
+              if (s && !this._isPlaceholder(s)) { cg = s; break; }
+            }
+          } else if (typeof c === 'string') {
+            const s = this._s(c);
+            if (s && !this._isPlaceholder(s)) cg = s;
+          }
+        }
+        // 2) Fallback dari player (kalau side kosong)
+        if (!cg) cg = this._extractContingent(tm);
+
+        return cg || '-';
+      }
+
+      // ==== entity dianggap "player" ====
+      if (this._isEmptySlot(entity)) return r === 1 ? 'BYE' : 'TBD';
+      const cg = this._extractContingent(entity);
+      return cg || '-';
+    },
+
+    _extractName(player) {
+    if (!player) return '';
+    if (typeof player === 'string') {
+      const s = this._s(player);
+      return (this._isBye(s) || this._isPlaceholder(s)) ? '' : s;
+    }
+    // object
+    const cand = [
+      player.name,
+      player.full_name,
+      player.display_name,
+      player.player_name,
+      player?.team_member?.name,
+    ];
+    for (const v of cand) {
+      const s = this._s(v);
+      if (s && !this._isBye(s) && !this._isPlaceholder(s)) return s;
+    }
+    return '';
+  },
+
+  // Ambil kontingen dari berbagai bentuk (object/string/alias/nested)
+  _extractContingent(player) {
+    if (!player) return '';
+    // kalau string -> tidak ada info kontingen
+    if (typeof player === 'string') return '';
+
+    const c = player.contingent;
+    // contingent sebagai object
+    if (c && typeof c === 'object') {
+      const objCand = [c.name, c.short_name, c.fullname, c.display_name];
+      for (const v of objCand) {
+        const s = this._s(v);
+        if (s && !this._isPlaceholder(s)) return s;
+      }
+    }
+    // contingent sebagai string / alias lain
+    const flatCand = [
+      player.contingent,            // string
+      player.contingent_name,
+      player.team_name,
+      player?.team?.name,
+      player?.team_member?.contingent_name,
+      player?.team_member?.contingent?.name,
+      player?.member?.contingent_name,
+      player?.member?.contingent?.name,
+      player?.club?.name,
+      player?.club_name,
+    ];
+    for (const v of flatCand) {
+      const s = this._s(v);
+      if (s && !this._isPlaceholder(s)) return s;
+    }
+    return '';
+  },
+
+  _s(v) {
+    return (v === 0 || typeof v === 'number' || typeof v === 'string')
+      ? String(v).trim()
+      : '';
+  },
+  _isBye(v) {
+    const s = this._s(v).toUpperCase();
+    return s === 'BYE';
+  },
+  _isPlaceholder(v) {
+    // treat '-' / '—' / 'N/A' / 'NULL' / 'UNDEFINED' as kosong
+    const s = this._s(v).toUpperCase();
+    return s === '-' || s === '—' || s === 'N/A' || s === 'NULL' || s === 'UNDEFINED';
+  },
     selectAllInPool(pool) {
       pool.matches.forEach(match => match.selected = true);
     },
@@ -767,50 +1058,47 @@ export default {
     try {
       const params = {
         tournament_id: this.form.tournament_id,
+        mode: this.form.mode || undefined,
+        round_label: this.form.mode === 'battle' && this.selectedBattleRound
+          ? this.selectedBattleRound
+          : undefined,
       };
-
-      if (this.isEdit) {
-        params.include_scheduled = true; // ✅ hanya kalau edit
-      }
+      if (this.isEdit) params.include_scheduled = true;
 
       const response = await axios.get("/seni/match-list", {
         params,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
       });
 
-      this.matchList = response.data;
+      this.matchList = response.data || [];
 
-      // Pool list (unique)
-      const poolNames = [...new Set(response.data.flatMap(g => g.pools.map(p => p.name)))];
+      // poolOptions
+      const poolNames = [...new Set(
+        (this.matchList || []).flatMap(g => (g.pools || []).map(p => p.name))
+      )];
       this.poolOptions = poolNames;
+      if (this.filters.pool.length === 0) this.filters.pool = poolNames;
 
-      if (this.filters.pool.length === 0) {
-        this.filters.pool = poolNames;
-      }
-
-      // Age Category list
+      // ageCategoryOptions
       const ageMap = new Map();
-      response.data.flatMap(g => g.pools).forEach(pool => {
-        const age = pool.matches[0]?.pool?.age_category;
-        if (age && !ageMap.has(age.id)) {
-          ageMap.set(age.id, age.name);
-        }
+      (this.matchList || []).flatMap(g => g.pools || []).forEach(pool => {
+        const age = pool.matches?.[0]?.pool?.age_category;
+        if (age && !ageMap.has(age.id)) ageMap.set(age.id, age.name);
       });
-      this.ageCategoryOptions = Array.from(ageMap.entries()).map(([id, name]) => ({ id, name }));
-
+      this.ageCategoryOptions = Array.from(ageMap, ([id, name]) => ({ id, name }));
       if (this.filters.age_category.length === 0) {
-        this.filters.age_category = this.ageCategoryOptions.map(item => item.id);
+        this.filters.age_category = this.ageCategoryOptions.map(a => a.id);
       }
-      this.setAllMatchesSelected(true);
 
+      this.setAllMatchesSelected(true);
     } catch (error) {
       console.error("Error loading seni match list:", error);
+      this.matchList = [];
     } finally {
       this.loading = false;
     }
   },
+
 
     
     
@@ -904,13 +1192,17 @@ export default {
       // Ambil match yang dipilih
       const selectedMatches = (this.filteredMatchList || []).flatMap(group =>
         group.pools.flatMap(pool =>
-          pool.matches
+            pool.matches
             .filter(m => m.selected)
             .map(m => ({
               seni_match_id: m.id,
-              order: m.order || null,
-              start_time: m.start_time || null,
-              note: m.note || `Seni Match in ${pool.name}`
+              // pakai properti yang lu set di updateMatchOrder()
+              order: m.match_order || null,
+            start_time: m.match_time || null,
+              // kirim info babak biar tersimpan
+              round: (typeof m.round === 'number') ? m.round : null,
+              round_label: m.mode === 'battle' ? (m.round_label || '') : undefined,
+              note: m.note || `Seni Match in ${pool.name}`,
             }))
         )
       );
@@ -934,6 +1226,7 @@ export default {
         start_time: this.form.start_time,
         end_time: this.form.end_time,
         note: this.form.note,
+        mode: this.form.mode,
         matches: selectedMatches
       };
 
@@ -943,6 +1236,9 @@ export default {
           ? `/match-schedules/${this.scheduleId}`
           : "/match-schedules";
         const method = this.isEdit ? "put" : "post";
+
+        console.log('PAYLOAD =>', JSON.parse(JSON.stringify(payload)));
+
 
         await axios[method](endpoint, payload, {
           headers: {
@@ -990,6 +1286,21 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
 }
+
+/* ==== Highlight baris battle: biru / merah ==== */
+.battle-row td {
+  transition: background-color .15s ease-in-out, border-left-color .15s ease-in-out;
+}
+.battle-blue td {
+  background-color: #002FB9;           /* biru muda */
+  color: #FFFFFF;
+}
+.battle-red td {
+  background-color: #F80000;           /* merah muda */
+  color: #FFFFFF;
+  
+}
+
 
 .progress-bar {
   position: absolute;

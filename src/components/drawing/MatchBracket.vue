@@ -60,43 +60,104 @@
             :key="'manual-' + index"
             class="match-container"
           >
+            <!-- Player 1 -->
             <div class="player-1">
-              {{ game.player1.name }} / {{ game.player1.contingent }}
+              <div class="p-name">{{ game?.player1?.name || '-' }}</div>
+              <div class="p-contingent" v-if="game?.player1?.contingent">
+                {{ game.player1.contingent }}
+              </div>
             </div>
+
+            <!-- Player 2 -->
             <div class="player-2">
-              {{ game.player2.name === 'BYE'
-                ? 'TBD'
-                : game.player2.name + ' / ' + game.player2.contingent }}
+              <template v-if="game?.player2 && game.player2.name && game.player2.name.toUpperCase() !== 'BYE'">
+                <div class="p-name">{{ game.player2.name }}</div>
+                <div class="p-contingent" v-if="game.player2.contingent">
+                  {{ game.player2.contingent }}
+                </div>
+              </template>
+              <template v-else>
+                TBD
+              </template>
             </div>
           </div>
         </div>
+
 
         <!-- CASE: Only one match in bracket (Final Only) -->
         <div
           v-else-if="rounds.length === 1 && rounds[0]?.games?.length === 1"
           class="final-only"
         >
-          <div class="match-container">
+          <div
+            class="match-container"
+            v-if="rounds && rounds[0] && rounds[0].games && rounds[0].games[0]"
+          >
+            <!-- Player 1 -->
             <div class="player-1">
-              {{ rounds[0].games[0].player1.name }} /
-              {{ rounds[0].games[0].player1.contingent }}
+              <div class="p-name">
+                {{ (rounds[0].games[0].player1 && rounds[0].games[0].player1.name) || '-' }}
+              </div>
+              <div
+                class="p-contingent"
+                v-if="rounds[0].games[0].player1 && rounds[0].games[0].player1.contingent"
+              >
+                {{ rounds[0].games[0].player1.contingent }}
+              </div>
             </div>
+
+            <!-- Player 2 -->
             <div class="player-2">
-              {{ rounds[0].games[0].player2.name === 'BYE'
-                ? 'TBD'
-                : rounds[0].games[0].player2.name + ' / ' + rounds[0].games[0].player2.contingent }}
+              <!-- BYE -> tampilkan 'TBD' -->
+              <template v-if="!rounds[0].games[0].player2 || rounds[0].games[0].player2.name === 'BYE'">
+                TBD
+              </template>
+
+              <!-- Bukan BYE -->
+              <template v-else>
+                <div class="p-name">
+                  {{ rounds[0].games[0].player2.name }}
+                </div>
+                <div
+                  class="p-contingent"
+                  v-if="rounds[0].games[0].player2.contingent"
+                >
+                  {{ rounds[0].games[0].player2.contingent }}
+                </div>
+              </template>
             </div>
           </div>
+
         </div>
 
         <!-- CASE: Normal bracket -->
+        <!-- CASE: Normal bracket -->
         <div v-else>
           <bracket :rounds="rounds">
-            <template v-slot:player="{ player }">
-              {{ player.name }}
+            <template #player="{ player }">
+              <div
+                class="vtb-player-custom"
+                :title="
+                  (player?.name || '') +
+                  (player?.contingent && player?.name?.toUpperCase() !== 'BYE'
+                    ? (' • ' + player.contingent)
+                    : '')
+                "
+              >
+                <div class="p-name">
+                  {{ player?.name && player.name.toUpperCase() !== 'BYE' ? player.name : 'TBD' }}
+                </div>
+                <div
+                  class="p-contingent"
+                  v-if="player?.contingent && player?.name && player.name.toUpperCase() !== 'BYE'"
+                >
+                  {{ player.contingent }}
+                </div>
+              </div>
             </template>
           </bracket>
         </div>
+
       </div>
 
         
@@ -518,6 +579,7 @@ body .final-only .vtb-item-child:after {
 
   ::v-deep(.vtb-item-players .vtb-player.vtb-player1.defeated) {
     width: 200px;
+    height: 70px;
     background-color: #002FB9;
     color: #FFFFFF;
   }
@@ -546,7 +608,7 @@ body .final-only .vtb-item-child:after {
     font-size: 12px;
     color: #FFFFFF;
     width: 100%;
-    height: 50px;
+    height: 70px;
     padding: 12px;
     border-left: 5px solid #002FB9;
     border-top: 1px solid #002FB9;
@@ -571,7 +633,7 @@ body .final-only .vtb-item-child:after {
     font-size: 12px;
     color: #FFFFFF;
     width: 100%;
-    height: 50px;
+    height: 70px;
     padding: 12px;
     border-left: 5px solid #F80000;
     border-bottom-left-radius: 5px;
@@ -620,6 +682,9 @@ body .final-only .vtb-item-child:after {
     background-color: #388E3C;
     animation: loader-animation 1.5s infinite;
   }
+
+  .p-name { font-weight: 500; line-height: 1.1; }
+  .p-contingent { font-size: 11px; opacity: .9; margin-top: 2px; font-style: italic;}
 
   /* Animasi garis loader */
 @keyframes loader-animation {
